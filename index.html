@@ -1,49 +1,359 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Portfolio of Angelika Kovaleva, product and web designer." />
-  <title>Angelika Kovaleva — Web Designer</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-  <style>
-    :root{--bg:#10101a;--surface:rgba(255,255,255,.06);--surface-strong:rgba(255,255,255,.1);--text:#f7f5ff;--muted:#b7b4c9;--line:rgba(255,255,255,.13);--accent:#9f75ff;--accent-2:#ff8b70;--shadow:0 18px 60px rgba(5,3,21,.28);--radius:24px}
-    body.light{--bg:#fffaf6;--surface:rgba(255,255,255,.76);--surface-strong:#fff;--text:#292433;--muted:#706b78;--line:rgba(70,45,50,.12);--accent:#7252d3;--accent-2:#e86b52;--shadow:0 18px 50px rgba(74,47,69,.11)}
-    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Inter,Arial,sans-serif;transition:background .45s,color .45s;overflow-x:hidden} a{color:inherit;text-decoration:none} button,input,textarea{font:inherit} button{cursor:pointer}
-    .orb{position:fixed;border-radius:50%;filter:blur(1px);opacity:.25;z-index:-1;pointer-events:none}.orb.one{width:500px;height:500px;background:#7144e4;top:-240px;right:-120px}.orb.two{width:430px;height:430px;background:#ec6d80;bottom:5%;left:-240px}
-    .container{width:min(1120px,calc(100% - 40px));margin:auto}.nav{position:fixed;z-index:20;top:18px;left:50%;transform:translateX(-50%);width:min(1120px,calc(100% - 32px));display:flex;align-items:center;justify-content:space-between;padding:12px 15px 12px 20px;background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(18px);border-radius:18px;box-shadow:var(--shadow)}.brand{font-weight:700;letter-spacing:-.04em;font-size:18px}.brand span{color:var(--accent-2)}.nav-links{display:flex;gap:24px;color:var(--muted);font-size:13px}.nav-links a:hover{color:var(--text)}.controls{display:flex;align-items:center;gap:8px}.lang{display:flex;background:rgba(127,127,127,.12);padding:3px;border-radius:10px}.lang button,.theme{border:0;background:transparent;color:var(--muted);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700}.lang button.active{background:var(--surface-strong);color:var(--text)}.theme{font-size:16px;padding:6px 8px}.theme .fa-sun{display:none}body.light .theme .fa-moon{display:none}body.light .theme .fa-sun{display:block}
-    section{padding:105px 0}.hero{min-height:100vh;padding-top:150px;display:flex;align-items:center}.hero-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:55px;align-items:center}.eyebrow,.section-kicker{font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-2)}h1,h2{font-family:"Playfair Display",Georgia,serif;line-height:.98;letter-spacing:-.055em;margin:0}h1{font-size:clamp(54px,8.4vw,106px);max-width:800px}h1 em{font-weight:600;color:var(--accent);white-space:nowrap}.lead{max-width:575px;color:var(--muted);font-size:18px;margin:28px 0 34px}.actions{display:flex;gap:13px;align-items:center}.button{display:inline-flex;align-items:center;gap:10px;padding:13px 19px;border:1px solid var(--line);border-radius:13px;font-weight:600;transition:transform .25s,background .25s}.button.primary{background:linear-gradient(120deg,var(--accent),#bd78f1);color:white;border:0;box-shadow:0 12px 28px rgba(112,82,211,.28)}.button:hover{transform:translateY(-3px)}.socials{display:flex;gap:10px;margin-top:40px}.socials a{display:grid;place-items:center;width:39px;height:39px;border:1px solid var(--line);border-radius:50%;color:var(--muted);transition:.25s}.socials a:hover{background:var(--surface-strong);color:var(--text);transform:translateY(-3px)}
-    .portrait{position:relative;min-height:430px}.portrait-card{position:absolute;inset:20px 0 0 30px;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(145deg,rgba(150,107,245,.27),rgba(255,139,112,.10)),var(--surface);overflow:hidden;box-shadow:var(--shadow)}.portrait-card:before{content:"AK";position:absolute;bottom:-56px;right:-8px;font:700 230px/.8 "Playfair Display";color:rgba(255,255,255,.12)}.portrait-card:after{content:"DIGITAL \A DESIGNER";white-space:pre;position:absolute;left:30px;bottom:30px;font-size:12px;letter-spacing:.18em;font-weight:700}.badge{position:absolute;z-index:1;top:0;left:0;background:var(--surface-strong);border:1px solid var(--line);backdrop-filter:blur(10px);border-radius:15px;padding:12px 16px;box-shadow:var(--shadow);font-size:13px}.badge b{display:block;font-size:20px;color:var(--accent-2)}
-    .section-title{font-size:clamp(40px,5vw,66px);margin:10px 0 34px}.about-grid,.contact-grid{display:grid;grid-template-columns:.75fr 1.25fr;gap:50px}.about-copy{font-size:20px;line-height:1.55;margin:0;color:var(--muted)}.about-copy strong{color:var(--text);font-weight:600}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:35px}.stat{padding:18px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}.stat b{display:block;font-size:24px;color:var(--accent)}.stat span{font-size:12px;color:var(--muted)}
-    .skills{display:grid;grid-template-columns:1fr 1fr;gap:18px}.skill-card,.experience-item,.contact-form{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);backdrop-filter:blur(14px);box-shadow:var(--shadow)}.skill-card{padding:28px;transition:transform .28s,border-color .28s}.skill-card:hover{transform:translateY(-6px);border-color:var(--accent)}.skill-card h3{margin:0 0 18px;font-size:19px}.tags{display:flex;flex-wrap:wrap;gap:8px}.tag{padding:7px 10px;border-radius:8px;background:rgba(142,106,239,.13);color:var(--text);font-size:12px}
-    .experience-list{display:grid;gap:12px}.experience-item{overflow:hidden;transition:border-color .25s}.experience-item[open]{border-color:rgba(159,117,255,.6)}summary{display:grid;grid-template-columns:140px 1fr auto;gap:20px;align-items:center;padding:22px 25px;list-style:none;cursor:pointer}summary::-webkit-details-marker{display:none}.company{font-weight:700;font-size:18px}.date{color:var(--muted);font-size:13px}.role{color:var(--muted)}.chevron{transition:transform .25s;color:var(--accent)}details[open] .chevron{transform:rotate(45deg)}.experience-body{padding:0 25px 24px;margin-left:160px;color:var(--muted);max-width:710px}.experience-body ul{margin:12px 0 0;padding-left:18px}
-    .contact{padding-bottom:65px}.contact-title{font-size:clamp(43px,6vw,76px);max-width:600px}.contact-text{color:var(--muted);font-size:17px}.contact-links{margin-top:25px;display:grid;gap:10px}.contact-links a{width:max-content;border-bottom:1px solid var(--line);padding-bottom:3px}.contact-form{padding:26px;display:grid;gap:14px}.contact-form label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}.field{display:grid;gap:6px}.field input,.field textarea{width:100%;color:var(--text);background:rgba(127,127,127,.08);border:1px solid var(--line);border-radius:10px;padding:12px;outline:none;resize:vertical}.field input:focus,.field textarea:focus{border-color:var(--accent)}.form-status{min-height:20px;margin:0;color:var(--accent-2);font-size:13px}.footer{border-top:1px solid var(--line);padding:20px 0;color:var(--muted);font-size:12px}.footer .container{display:flex;justify-content:space-between}.top{position:fixed;right:22px;bottom:22px;width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--surface-strong);color:var(--text);backdrop-filter:blur(12px);opacity:0;visibility:hidden;transform:translateY(12px);transition:.25s}.top.show{opacity:1;visibility:visible;transform:none}.reveal{opacity:0;transform:translateY(24px);transition:opacity .65s ease,transform .65s ease}.reveal.visible{opacity:1;transform:none}
-    @media(max-width:760px){.nav{top:10px;padding:10px 12px}.nav-links{display:none}.brand{font-size:16px}.hero{padding-top:115px}.hero-grid,.about-grid,.contact-grid{grid-template-columns:1fr;gap:32px}.portrait{min-height:260px;max-width:360px}.portrait-card{inset:15px 0 0 15px}.portrait-card:before{font-size:160px}.portrait-card:after{left:20px;bottom:20px}.skills{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}summary{grid-template-columns:1fr auto;gap:4px;padding:18px}.date{grid-row:2}.role{display:none}.experience-body{margin:0;padding:0 18px 19px}.lead{font-size:16px}.actions{flex-wrap:wrap}section{padding:75px 0}.footer .container{display:block}.footer p{margin:4px 0}.controls{gap:3px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#151515">
+<title>Angela Kovaleva — Middle UI/UX &amp; Marketing Designer</title>
+<meta name="description" content="Angela Kovaleva — Middle UI/UX &amp; Product Designer creating clear, high-impact digital products, websites and design systems.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23151515'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='800' font-size='26' text-anchor='middle' fill='%23B7EA68'%3EKA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.figma.com">
+<link rel="dns-prefetch" href="https://www.figma.com">
+<link rel="preload" as="image" href="https://www.figma.com/api/mcp/asset/b4481ae8-6c56-4c64-b792-901c93d0ec48.png" fetchpriority="high">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<script>(function(){try{var l=localStorage.getItem("ak-lang");if(l==="ru"){var d=document.documentElement;d.lang="ru";d.classList.add("i18n-wait");setTimeout(function(){d.classList.remove("i18n-wait")},1500)}}catch(e){}})();</script>
 </head>
-<body>
-  <div class="orb one"></div><div class="orb two"></div>
-  <header class="nav"><a class="brand" href="#home">angelika<span>.</span></a><nav class="nav-links"><a href="#about" data-i18n="navAbout">Обо мне</a><a href="#skills" data-i18n="navSkills">Навыки</a><a href="#experience" data-i18n="navExperience">Опыт</a><a href="#contact" data-i18n="navContact">Контакты</a></nav><div class="controls"><div class="lang" aria-label="Language"><button class="active" data-lang="ru">RU</button><button data-lang="en">EN</button></div><button class="theme" aria-label="Toggle colour theme"><i class="fa-solid fa-moon"></i><i class="fa-solid fa-sun"></i></button></div></header>
-  <main>
-    <section class="hero" id="home"><div class="container hero-grid"><div class="reveal"><p class="eyebrow" data-i18n="heroEyebrow">Веб-дизайнер · 5 лет опыта</p><h1 data-i18n-html="heroTitle">Создаю <em>цифровые</em> впечатления, которые работают.</h1><p class="lead" data-i18n="heroLead">Я Анжелика Ковалёва — product & web designer. Превращаю сложные продукты в ясные, красивые и человечные интерфейсы.</p><div class="actions"><a class="button primary" href="#contact" data-i18n="heroCta">Обсудить проект <i class="fa-solid fa-arrow-up-right-from-square"></i></a><a class="button" href="#experience" data-i18n="heroSecondary">Смотреть опыт</a></div><div class="socials"><a href="mailto:hello@angelikadesign.com" aria-label="Email"><i class="fa-solid fa-envelope"></i></a><a href="https://www.linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a><a href="https://dribbble.com" target="_blank" rel="noreferrer" aria-label="Dribbble"><i class="fa-brands fa-dribbble"></i></a></div></div><div class="portrait reveal"><div class="badge"><b>5+</b><span data-i18n="years">лет в дизайне</span></div><div class="portrait-card"></div></div></div></section>
-    <section id="about"><div class="container about-grid reveal"><div><p class="section-kicker" data-i18n="aboutKicker">01 / Обо мне</p><h2 class="section-title" data-i18n="aboutTitle">Дизайн — это ясность.</h2></div><div><p class="about-copy" data-i18n-html="aboutText">Более пяти лет я проектирую интерфейсы для <strong>SaaS, CRM и HealthTech</strong> — от первого пользовательского сценария до дизайн-системы, готовой к масштабированию. Мне близок дизайн, который говорит с человеком простым языком и помогает бизнесу расти.</p><div class="stats"><div class="stat"><b>5+</b><span data-i18n="statYears">лет опыта</span></div><div class="stat"><b>30+</b><span data-i18n="statProjects">проектов запущено</span></div><div class="stat"><b>3</b><span data-i18n="statAreas">ключевые индустрии</span></div></div></div></div></section>
-    <section id="skills"><div class="container reveal"><p class="section-kicker" data-i18n="skillsKicker">02 / Инструменты</p><h2 class="section-title" data-i18n="skillsTitle">Внимательна к деталям<br>и людям.</h2><div class="skills"><article class="skill-card"><h3 data-i18n="softTitle">Soft skills</h3><div class="tags" id="soft-tags"></div></article><article class="skill-card"><h3 data-i18n="hardTitle">Hard skills</h3><div class="tags" id="hard-tags"></div></article></div></div></section>
-    <section id="experience"><div class="container reveal"><p class="section-kicker" data-i18n="experienceKicker">03 / Карьера</p><h2 class="section-title" data-i18n="experienceTitle">Опыт, который<br>виден в продукте.</h2><div class="experience-list" id="experience-list"></div></div></section>
-    <section class="contact" id="contact"><div class="container contact-grid reveal"><div><p class="section-kicker" data-i18n="contactKicker">04 / Контакты</p><h2 class="contact-title" data-i18n="contactTitle">Давайте сделаем что-то важное.</h2><p class="contact-text" data-i18n="contactText">Есть идея, продукт или вопрос? Расскажите — отвечу в ближайшее время.</p><div class="contact-links"><a href="mailto:hello@angelikadesign.com">hello@angelikadesign.com</a><a href="https://t.me" target="_blank" rel="noreferrer">Telegram ↗</a></div></div><form class="contact-form" id="contact-form"><div class="field"><label for="name" data-i18n="formName">Ваше имя</label><input id="name" required data-i18n-placeholder="formNamePlaceholder" placeholder="Как к вам обращаться?" /></div><div class="field"><label for="email" data-i18n="formEmail">Email</label><input id="email" type="email" required placeholder="you@email.com" /></div><div class="field"><label for="message" data-i18n="formMessage">Расскажите о проекте</label><textarea id="message" rows="5" required data-i18n-placeholder="formMessagePlaceholder" placeholder="Пара слов о вашей задаче..."></textarea></div><button class="button primary" type="submit" data-i18n="formSubmit">Отправить сообщение <i class="fa-solid fa-arrow-right"></i></button><p class="form-status" id="form-status" aria-live="polite"></p></form></div></section>
-  </main>
-  <footer class="footer"><div class="container"><p>© 2026 Angelika Kovaleva</p><p data-i18n="footer">Дизайн с ясностью и заботой.</p></div></footer><button class="top" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
-  <script>
-    const content={ru:{navAbout:'Обо мне',navSkills:'Навыки',navExperience:'Опыт',navContact:'Контакты',heroEyebrow:'Веб-дизайнер · 5 лет опыта',heroTitle:'Создаю <em>цифровые</em> впечатления, которые работают.',heroLead:'Я Анжелика Ковалёва — product & web designer. Превращаю сложные продукты в ясные, красивые и человечные интерфейсы.',heroCta:'Обсудить проект <i class="fa-solid fa-arrow-up-right-from-square"></i>',heroSecondary:'Смотреть опыт',years:'лет в дизайне',aboutKicker:'01 / Обо мне',aboutTitle:'Дизайн — это ясность.',aboutText:'Более пяти лет я проектирую интерфейсы для <strong>SaaS, CRM и HealthTech</strong> — от первого пользовательского сценария до дизайн-системы, готовой к масштабированию. Мне близок дизайн, который говорит с человеком простым языком и помогает бизнесу расти.',statYears:'лет опыта',statProjects:'проектов запущено',statAreas:'ключевые индустрии',skillsKicker:'02 / Инструменты',skillsTitle:'Внимательна к деталям<br>и людям.',softTitle:'Soft skills',hardTitle:'Hard skills',experienceKicker:'03 / Карьера',experienceTitle:'Опыт, который<br>виден в продукте.',contactKicker:'04 / Контакты',contactTitle:'Давайте сделаем что-то важное.',contactText:'Есть идея, продукт или вопрос? Расскажите — отвечу в ближайшее время.',formName:'Ваше имя',formNamePlaceholder:'Как к вам обращаться?',formEmail:'Email',formMessage:'Расскажите о проекте',formMessagePlaceholder:'Пара слов о вашей задаче...',formSubmit:'Отправить сообщение <i class="fa-solid fa-arrow-right"></i>',formSuccess:'Спасибо! Открою почту, чтобы отправить сообщение.',footer:'Дизайн с ясностью и заботой.',soft:['Коммуникация','Эмпатия','Фасилитация','Системное мышление','Менторство','Презентация решений'],hard:['Figma','UX research','UI design','Design systems','Prototyping','HTML / CSS'],experience:[['Goodini','2024 — сейчас','Product Designer','Развиваю цифровой продукт на стыке здоровья и технологий.','Веду дизайн полного цикла: от исследования потребностей до передачи решений в разработку.','Создала и поддерживаю дизайн-систему, которая делает интерфейсы целостными.'],['Chatspace','2023 — 2024','Senior Product Designer','Проектировала коммуникационную платформу для современных команд.','Улучшала ключевые пользовательские пути и онбординг.','Синхронизировала дизайн-решения с продуктовой стратегией и разработкой.'],['Innowise','2022 — 2023','UX/UI Designer','Работала с B2B-продуктами и сложными корпоративными сервисами.','Превращала бизнес-требования в понятные пользовательские сценарии.','Создавала интерфейсы для веб- и мобильных приложений.'],['VOKA','2021 — 2022','UX/UI Designer','Создавала образовательный digital-опыт с фокусом на вовлечение.','Проектировала интерфейсы, в которых легко учиться и находить нужное.','Работала в кросс-функциональной команде с продуктом и разработчиками.'],['Chatspace','2020 — 2021','Web Designer','Начала карьеру в продуктовом дизайне и веб-проектах.','Собирала лендинги и интерфейсы, работающие на бизнес-задачи.','Освоила процесс от брифа до запуска продукта.']]},en:{navAbout:'About',navSkills:'Skills',navExperience:'Experience',navContact:'Contact',heroEyebrow:'Web designer · 5 years of experience',heroTitle:'Designing <em>digital</em> experiences that work.',heroLead:'I’m Angelika Kovaleva — a product & web designer. I turn complex products into clear, beautiful, human-centred interfaces.',heroCta:'Let’s talk <i class="fa-solid fa-arrow-up-right-from-square"></i>',heroSecondary:'Explore experience',years:'years in design',aboutKicker:'01 / About',aboutTitle:'Design is clarity.',aboutText:'For over five years, I have designed interfaces for <strong>SaaS, CRM and HealthTech</strong> — from the first user journey to scalable design systems. I believe in design that speaks plainly to people and helps businesses grow.',statYears:'years of experience',statProjects:'projects launched',statAreas:'core industries',skillsKicker:'02 / Toolkit',skillsTitle:'Attentive to details<br>and people.',softTitle:'Soft skills',hardTitle:'Hard skills',experienceKicker:'03 / Career',experienceTitle:'Experience you can<br>feel in the product.',contactKicker:'04 / Contact',contactTitle:'Let’s make something meaningful.',contactText:'Have an idea, a product, or a question? Tell me about it — I’ll get back to you soon.',formName:'Your name',formNamePlaceholder:'What should I call you?',formEmail:'Email',formMessage:'Tell me about your project',formMessagePlaceholder:'A few words about your challenge...',formSubmit:'Send message <i class="fa-solid fa-arrow-right"></i>',formSuccess:'Thank you! Your email client will open to send the message.',footer:'Design with clarity and care.',soft:['Communication','Empathy','Facilitation','Systems thinking','Mentoring','Design storytelling'],hard:['Figma','UX research','UI design','Design systems','Prototyping','HTML / CSS'],experience:[['Goodini','2024 — present','Product Designer','Growing a digital product at the intersection of health and technology.','Leading the full design cycle, from understanding needs to developer handoff.','Building and maintaining a system that keeps the experience cohesive.'],['Chatspace','2023 — 2024','Senior Product Designer','Designed a communication platform for modern teams.','Improved key user journeys and onboarding.','Aligned design decisions with product strategy and engineering.'],['Innowise','2022 — 2023','UX/UI Designer','Worked on B2B products and complex enterprise services.','Turned business requirements into intuitive user journeys.','Created interfaces for web and mobile applications.'],['VOKA','2021 — 2022','UX/UI Designer','Created engaging digital learning experiences.','Designed clear interfaces that make learning and discovery easy.','Partnered with product and engineering in a cross-functional team.'],['Chatspace','2020 — 2021','Web Designer','Started my product-design career across web projects.','Created landing pages and interfaces focused on business outcomes.','Learned the process from brief to product launch.']]}};
-    let lang=localStorage.getItem('portfolio-language')||'ru'; const $=s=>document.querySelector(s);
-    function render(){const t=content[lang];document.documentElement.lang=lang;document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t[e.dataset.i18n]);document.querySelectorAll('[data-i18n-html]').forEach(e=>e.innerHTML=t[e.dataset.i18nHtml]);document.querySelectorAll('[data-i18n-placeholder]').forEach(e=>e.placeholder=t[e.dataset.i18nPlaceholder]);document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));$('#soft-tags').innerHTML=t.soft.map(x=>`<span class="tag">${x}</span>`).join('');$('#hard-tags').innerHTML=t.hard.map(x=>`<span class="tag">${x}</span>`).join('');$('#experience-list').innerHTML=t.experience.map((x,i)=>`<details class="experience-item" ${i===0?'open':''}><summary><div><div class="company">${x[0]}</div><div class="date">${x[1]}</div></div><div class="role">${x[2]}</div><i class="fa-solid fa-plus chevron"></i></summary><div class="experience-body"><strong>${x[3]}</strong><ul><li>${x[4]}</li><li>${x[5]}</li></ul></div></details>`).join('')}
-    document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>{lang=b.dataset.lang;localStorage.setItem('portfolio-language',lang);render()}));
-    const theme=localStorage.getItem('portfolio-theme')||'dark';document.body.classList.toggle('light',theme==='light');$('.theme').addEventListener('click',()=>{document.body.classList.toggle('light');localStorage.setItem('portfolio-theme',document.body.classList.contains('light')?'light':'dark')});
-    const top=$('.top');window.addEventListener('scroll',()=>top.classList.toggle('show',scrollY>500),{passive:true});top.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
-    const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll('.reveal').forEach(e=>observer.observe(e));
-    $('#contact-form').addEventListener('submit',e=>{e.preventDefault();const n=$('#name').value,m=$('#message').value;$('#form-status').textContent=content[lang].formSuccess;location.href=`mailto:hello@angelikadesign.com?subject=${encodeURIComponent('Portfolio enquiry from '+n)}&body=${encodeURIComponent(m)}`});render();
-  </script>
+<body class="home">
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<div class="progress" aria-hidden="true"><div class="progress__bar"></div></div>
+<div class="bg-fx" aria-hidden="true"><div class="bg-fx__grid"></div><div class="bg-fx__glow"></div><div class="bg-fx__lens"></div></div>
+<header class="hdr" id="hdr">
+  <div class="wrap">
+    <div class="hdr-inner">
+      <nav class="hdr-nav" aria-label="Primary">
+        <a href="#home" data-nav data-i18n="nav.home" class="is-active">Home</a>
+<a href="#works" data-nav data-i18n="nav.works">Works</a>
+<a href="#skills" data-nav data-i18n="nav.skills">Skills</a>
+<a href="#contact" data-nav data-i18n="nav.contact">Contact</a>
+      </nav>
+      <a href="#home" class="wordmark">KOVALEVA A</a>
+      <div class="hdr-status">
+        <div class="hdr-meta"><span class="clock">00:00:00</span><span class="pipe" aria-hidden="true">|</span><span class="loc" data-i18n="loc">Minsk, Belarus</span></div>
+        <div class="hdr-ctrl">
+          <div class="lang" role="group" aria-label="Language / Язык"><span class="lang-thumb" aria-hidden="true"></span><button type="button" data-set-lang="ru" aria-pressed="false" lang="ru" aria-label="Русский">RU</button><button type="button" data-set-lang="en" aria-pressed="true" lang="en" aria-label="English">EN</button></div>
+          <button type="button" class="icon-btn burger" id="burger" aria-expanded="false" aria-controls="mobileNav" aria-label="Menu" data-i18n-aria="nav.menu"><span class="burger-glyph" aria-hidden="true"><i></i><i></i><i></i></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <div class="wrap">
+      <ul>
+        <li><a href="#home" data-nav data-i18n="nav.home">Home</a></li>
+        <li><a href="#works" data-nav data-i18n="nav.works">Works</a></li>
+        <li><a href="#skills" data-nav data-i18n="nav.skills">Skills</a></li>
+        <li><a href="#contact" data-nav data-i18n="nav.contact">Contact</a></li>
+      </ul>
+      <div class="m-meta"><span class="clock">00:00:00</span><span aria-hidden="true">|</span><span data-i18n="loc">Minsk, Belarus</span></div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="section" id="home">
+    <div class="wrap">
+      <div class="hero">
+        <div class="hero-top">
+          <div class="portrait"><div class="media"><img src="https://www.figma.com/api/mcp/asset/b4481ae8-6c56-4c64-b792-901c93d0ec48.png" alt="Angela Kovaleva" width="320" height="320" loading="eager" fetchpriority="high" decoding="async"></div></div>
+          <a class="btn btn-accent btn-call" href="#contact"><span class="call-dot" aria-hidden="true"></span><span data-i18n="cta.call">Schedule a Call</span></a>
+        </div>
+        <div class="hero-copy">
+          <div class="hero-head">
+            <p class="eyebrow" data-i18n="hero.eyebrow">UI/UX · MARKETING DESIGNER · WEB DESIGNER</p>
+            <h1 class="hero-name"><span data-i18n="hero.first">Angela</span> <span class="accent" data-i18n="hero.last">Kovaleva</span></h1>
+          </div>
+          <p class="hero-sub" data-i18n="hero.sub">Middle UI/UX & Product Designer creating clear, high-impact digital products, websites and design systems for complex businesses.</p>
+          <nav class="hero-links" aria-label="Profiles">
+            <a href="https://t.me/atohsce" target="_blank" rel="noopener noreferrer" data-i18n="link.tg">Telegram</a>
+            <a href="https://www.linkedin.com/in/angelica-kovaleva-39b566269" target="_blank" rel="noopener noreferrer" data-i18n="link.li">LinkedIn</a>
+            <a href="Designer-CV-Kovaliova-Anzhelika.pdf" target="_blank" rel="noopener noreferrer" data-i18n="link.cv">CV</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0" aria-label="In numbers">
+    <div class="wrap">
+      <div class="proof">
+        <div class="proof-pill"><span class="proof-num">5</span><span class="proof-label" data-i18n="proof.years">years in design</span></div>
+        <div class="proof-pill"><span class="proof-num">30</span><span class="proof-label" data-i18n="proof.shipped">shipped interfaces</span></div>
+        <div class="proof-pill"><span class="proof-num">7</span><span class="proof-label" data-i18n="proof.industries">industries</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="works" style="padding-top:0">
+    <div class="wrap">
+      <div class="block-head">
+        <h2 class="block-title"><span class="dim" data-i18n="work.t1">Selected</span> <span data-i18n="work.t2">works</span></h2>
+        <div class="filters" id="workFilters" role="group" aria-label="Filter projects">
+          <button type="button" class="filter" data-filter="all" aria-pressed="true">All</button>
+        </div>
+      </div>
+      <div class="work-grid" id="workGrid">
+        <a class="proj" href="voka.html" data-cat="medtech">
+          <div class="proj-cover"><div class="media"><img src="https://www.figma.com/api/mcp/asset/535e1af6-8b3a-4fe7-baac-918ac4e44611.png" alt="VOKA Anatomy Pro cover" width="1132" height="802" loading="lazy" decoding="async"></div><span class="proj-open" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">VOKA Anatomy Pro</h3>
+              <ul class="proj-tags"><li class="tag">MedTech</li><li class="tag">Product</li><li class="tag">3D</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.voka">VOKA is a 3D anatomy platform for medical students and doctors. It makes complex medical data visual and accessible through a user-friendly web and mobile interface with clear navigation.</p>
+          </div>
+        </a>
+        <a class="proj" href="kiva.html" data-cat="fintech">
+          <div class="proj-cover"><div class="media"><img src="https://www.figma.com/api/mcp/asset/98aba126-9020-4259-87bb-c9481cd58581.png" alt="KIVA cover" width="1132" height="802" loading="lazy" decoding="async"></div><span class="proj-open" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">KIVA</h3>
+              <ul class="proj-tags"><li class="tag">FinTech</li><li class="tag">Digital Banking</li><li class="tag">Cards</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.kiva">KIVA is a booking platform without intermediaries. It shows real hotel rates instead of inflated prices, giving you wholesale access to over 500,000 hotels worldwide. Your subscription pays off with your first trip.</p>
+          </div>
+        </a>
+        <a class="proj" href="qpdates.html" data-cat="dating">
+          <div class="proj-cover"><div class="media"><img src="https://www.figma.com/api/mcp/asset/bd59aac2-7f0b-41d1-8b4c-9e7a2f047e95.png" alt="QPdates cover" width="1132" height="802" loading="lazy" decoding="async"></div><span class="proj-open" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">QPdates</h3>
+              <ul class="proj-tags"><li class="tag">Dating</li><li class="tag">B2C</li><li class="tag">Product</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.qpdates">QP Dates is a dating platform where users create profiles, find partners based on shared interests, and chat. Objective: Transform a cluttered interface into a vibrant, emotional space where making a choice takes seconds rather than minutes.</p>
+          </div>
+        </a>
+        <a class="proj" href="molement.html" data-cat="webdesign">
+          <div class="proj-cover"><div class="media"><img src="https://www.figma.com/api/mcp/asset/3fba49e4-86cd-4e0e-aa86-feceb604907f.png" alt="Molement cover" width="1132" height="802" loading="lazy" decoding="async"></div><span class="proj-open" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">Molement</h3>
+              <ul class="proj-tags"><li class="tag">WebDesign</li><li class="tag">B2B</li><li class="tag">CorporateSite</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.molement">MOLEMENT is a company specializing in comprehensive facility outfitting, covering the design, production, and installation of premium solutions. Objective: Present the full service cycle as a unified system, alleviate concerns regarding complex projects, and highlight the company's 33 years of experience and 5-year warranty.</p>
+          </div>
+        </a>
+        <div class="proj is-pending" data-pending="true" data-cat="logistics">
+          <div class="proj-cover"><div class="media"><img src="assets/covers/kontinental.webp" alt="Kontinental project cover" width="1132" height="802" loading="lazy" decoding="async" fetchpriority="low"></div><div class="proj-pending" aria-hidden="true"><span class="proj-pending__dot"></span><span class="proj-pending__text" data-i18n="proj.pending">Project in progress</span></div></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">Kontinental</h3>
+              <ul class="proj-tags"><li class="tag">Logistics</li><li class="tag">B2B</li><li class="tag">SaaS</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.kontinental">Kontinental is a logistics platform for B2B shipments. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.</p>
+          </div>
+        </div>
+        <div class="proj is-pending" data-pending="true" data-cat="edtech">
+          <div class="proj-cover"><div class="media"><img src="assets/covers/w1do.webp" alt="W1DO project cover" width="1132" height="802" loading="lazy" decoding="async" fetchpriority="low"></div><div class="proj-pending" aria-hidden="true"><span class="proj-pending__dot"></span><span class="proj-pending__text" data-i18n="proj.pending">Project in progress</span></div></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">W1DO</h3>
+              <ul class="proj-tags"><li class="tag">EdTech</li><li class="tag">Mobile</li><li class="tag">Product</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.w1do">W1DO is a mobile learning app. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.</p>
+          </div>
+        </div>
+        <div class="proj is-pending" data-pending="true" data-cat="e-commerce">
+          <div class="proj-cover"><div class="media"><img src="assets/covers/belavi.webp" alt="Belavi project cover" width="1132" height="802" loading="lazy" decoding="async" fetchpriority="low"></div><div class="proj-pending" aria-hidden="true"><span class="proj-pending__dot"></span><span class="proj-pending__text" data-i18n="proj.pending">Project in progress</span></div></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">Belavi</h3>
+              <ul class="proj-tags"><li class="tag">E-commerce</li><li class="tag">Beauty</li><li class="tag">Branding</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.belavi">Belavi is an online beauty store. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.</p>
+          </div>
+        </div>
+        <div class="proj is-pending" data-pending="true" data-cat="ai">
+          <div class="proj-cover"><div class="media"><img src="assets/covers/youlvion.webp" alt="Youlvion project cover" width="1132" height="802" loading="lazy" decoding="async" fetchpriority="low"></div><div class="proj-pending" aria-hidden="true"><span class="proj-pending__dot"></span><span class="proj-pending__text" data-i18n="proj.pending">Project in progress</span></div></div>
+          <div class="proj-meta">
+            <div class="proj-left">
+              <h3 class="proj-title">Youlvion</h3>
+              <ul class="proj-tags"><li class="tag">AI</li><li class="tag">SaaS</li><li class="tag">Dashboard</li></ul>
+            </div>
+            <p class="proj-desc" data-i18n="proj.youlvion">Youlvion is an AI workspace for teams. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.</p>
+          </div>
+        </div>
+      </div>
+      <p class="work-empty" id="workEmpty" hidden data-i18n="work.empty">No projects in this category yet.</p>
+    </div>
+  </section>
+
+  <div class="marquee" role="region" aria-label="Tools"><div class="marquee-track" id="marqueeTrack"></div></div>
+
+
+
+  <section class="section" id="skills">
+    <div class="wrap">
+      <div class="skills-intro">
+        <h2 class="block-title"><span data-i18n="skills.t1">Design thinking</span><br><span class="dim" data-i18n="skills.t2">with product sense.</span></h2>
+        <p data-i18n="skills.lead">I combine visual craft with research, systems thinking and business context — from the first hypothesis to a polished interface.</p>
+      </div>
+      <div class="skills-grid">
+        <article class="skill-card">
+          <h3 data-i18n="skills.hard">Hard skills</h3>
+          <ul class="skill-list"><li data-i18n="hs.1">UI / UX Design</li><li data-i18n="hs.2">Product Design</li><li data-i18n="hs.3">Design Systems</li><li data-i18n="hs.4">UX Research</li><li data-i18n="hs.5">Information Architecture</li><li data-i18n="hs.6">Prototyping</li><li data-i18n="hs.7">Web & Mobile</li><li data-i18n="hs.8">Visual Design</li><li data-i18n="hs.9">AI-assisted Design</li></ul>
+        </article>
+        <article class="skill-card">
+          <h3 data-i18n="skills.soft">Soft skills</h3>
+          <ul class="skill-list"><li data-i18n="ss.1">Critical Thinking</li><li data-i18n="ss.2">Problem Solving</li><li data-i18n="ss.3">Communication</li><li data-i18n="ss.4">Empathy</li><li data-i18n="ss.5">Team Collaboration</li><li data-i18n="ss.6">Adaptability</li><li data-i18n="ss.7">Time Management</li><li data-i18n="ss.8">Presentation</li></ul>
+        </article>
+        <article class="quote-card">
+          <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+          <p data-i18n="skills.quote">Good design is not decoration. It is the shortest path between a user's need and a product's value.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="career" style="padding-top:0">
+    <div class="wrap">
+      <h2 class="block-title" style="margin-bottom:28px"><span data-i18n="career.t1">Career</span> <span class="dim" data-i18n="career.t2">path</span></h2>
+      <div class="career-list">
+        <article class="career-row career-chatspace" style="--career-accent:#56EBFF">
+          <div class="career-company"><span class="logo-plate "><img src="https://www.figma.com/api/mcp/asset/0e218d00-bb19-4140-a514-0d2f9cf5905b.svg" alt="Chat Space logo" width="38" height="38" loading="lazy" decoding="async"></span><span><span class="name">Chat Space</span></span></div>
+          <div><div class="cc-label" data-i18n="cc.role">Role</div><div class="cc-value" data-i18n="role.1">Product · Marketing Designer</div></div>
+          <div><div class="cc-label" data-i18n="cc.period">Period</div><div class="cc-value">2023 — 2024</div></div>
+          <span class="career-mark" aria-hidden="true"><img src="assets/career-icons/01.svg" alt="" width="34" height="34" loading="lazy" decoding="async"></span>
+        </article>
+        <article class="career-row career-voka" style="--career-accent:#4DA850">
+          <div class="career-company"><span class="logo-plate is-voka"><img src="https://www.figma.com/api/mcp/asset/1a4c40ed-1375-4340-af0e-b30140e75277.png" alt="VOKA logo" width="38" height="38" loading="lazy" decoding="async"></span><span><span class="name">VOKA</span><span class="sub">Innowise</span></span></div>
+          <div><div class="cc-label" data-i18n="cc.role">Role</div><div class="cc-value" data-i18n="role.2">Product · Marketing · UI/UX Designer</div></div>
+          <div><div class="cc-label" data-i18n="cc.period">Period</div><div class="cc-value">2024 — 2025</div></div>
+          <span class="career-mark" aria-hidden="true"><img src="assets/career-icons/02.svg" alt="" width="34" height="34" loading="lazy" decoding="async"></span>
+        </article>
+        <article class="career-row career-innowise" style="--career-accent:#FFD058">
+          <div class="career-company"><span class="logo-plate "><img src="https://www.figma.com/api/mcp/asset/841c375a-951f-439d-91bb-fa62670c74b2.png" alt="Innowise logo" width="38" height="38" loading="lazy" decoding="async"></span><span><span class="name">Innowise</span></span></div>
+          <div><div class="cc-label" data-i18n="cc.role">Role</div><div class="cc-value" data-i18n="role.3">Marketing · UI/UX Designer</div></div>
+          <div><div class="cc-label" data-i18n="cc.period">Period</div><div class="cc-value">2023 — 2024</div></div>
+          <span class="career-mark" aria-hidden="true"><img src="assets/career-icons/03.svg" alt="" width="34" height="34" loading="lazy" decoding="async"></span>
+        </article>
+        <article class="career-row career-chatspace" style="--career-accent:#56EBFF">
+          <div class="career-company"><span class="logo-plate "><img src="https://www.figma.com/api/mcp/asset/0e218d00-bb19-4140-a514-0d2f9cf5905b.svg" alt="Chat Space logo" width="38" height="38" loading="lazy" decoding="async"></span><span><span class="name">Chat Space</span></span></div>
+          <div><div class="cc-label" data-i18n="cc.role">Role</div><div class="cc-value" data-i18n="role.4">Product / Marketing Designer</div></div>
+          <div><div class="cc-label" data-i18n="cc.period">Period</div><div class="cc-value">2023 — 2024</div></div>
+          <span class="career-mark" aria-hidden="true"><img src="assets/career-icons/01.svg" alt="" width="34" height="34" loading="lazy" decoding="async"></span>
+        </article>
+        <article class="career-row career-freelance" style="--career-accent:#6889FF">
+          <div class="career-company"><span class="logo-plate "><img src="https://www.figma.com/api/mcp/asset/084dcef7-ad19-4ede-bb04-4f5d494eb246.png" alt="Freelance logo" width="38" height="38" loading="lazy" decoding="async"></span><span><span class="name">Freelance</span></span></div>
+          <div><div class="cc-label" data-i18n="cc.role">Role</div><div class="cc-value" data-i18n="role.5">Web & Graphic Designer</div></div>
+          <div><div class="cc-label" data-i18n="cc.period">Period</div><div class="cc-value">2022 — 2023</div></div>
+          <span class="career-mark" aria-hidden="true"><img src="assets/career-icons/04.svg" alt="" width="34" height="34" loading="lazy" decoding="async"></span>
+        </article>
+        <article class="career-row career-goodini" style="--career-accent:#FF4F4F">
+          <div class="career-company"><span class="logo-plate "><img src="https://www.figma.com/api/mcp/asset/f26e67db-9dcc-4d0e-b6e1-ed9df203c6c9.svg" alt="Goodini Tech logo" width="38" height="38" loading="lazy" decoding="async"></span><span><span class="name">Goodini Tech</span></span></div>
+          <div><div class="cc-label" data-i18n="cc.role">Role</div><div class="cc-value" data-i18n="role.6">UI/UX & Web Designer</div></div>
+          <div><div class="cc-label" data-i18n="cc.period">Period</div><div class="cc-value">2021 — 2022</div></div>
+          <span class="career-mark" aria-hidden="true"><img src="assets/career-icons/05.svg" alt="" width="34" height="34" loading="lazy" decoding="async"></span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact" style="padding-top:0">
+    <div class="wrap">
+      <div class="contact">
+        <div class="contact-fx" aria-hidden="true">
+          <i></i><i></i><i></i>
+          <svg class="rings" viewBox="0 0 200 200"><circle cx="100" cy="100" r="30"/><circle cx="100" cy="100" r="52"/><circle cx="100" cy="100" r="74"/><circle cx="100" cy="100" r="96"/></svg>
+          <span class="contact-spot"></span>
+        </div>
+        <div class="contact-copy">
+          <h2 class="contact-title"><span data-i18n="contact.t1">Let's make something</span><br><span class="dim" data-i18n="contact.t2">worth remembering.</span></h2>
+          <p class="lead" data-i18n="contact.lead">Tell me what you are building, where it is stuck, or where you want to take it next.</p>
+        </div>
+        <div class="contact-actions">
+          <nav class="contact-links" aria-label="Contacts">
+            <a href="https://t.me/atohsce" target="_blank" rel="noopener noreferrer" data-i18n="link.tg">Telegram</a>
+            <a href="https://www.linkedin.com/in/angelica-kovaleva-39b566269" target="_blank" rel="noopener noreferrer" data-i18n="link.li">LinkedIn</a>
+          </nav>
+          <a class="contact-btn" href="https://t.me/atohsce" target="_blank" rel="noopener noreferrer"><span data-i18n="contact.btn">Start a conversation</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <a href="index.html" class="wordmark">KOVALEVA A</a>
+    <span class="legal" data-i18n="footer.legal">© 2026 · Designed &amp; built with intention</span>
+  </div>
+</footer>
+<script>window.PAGE_I18N={"en": {"nav.home": "Home", "nav.works": "Works", "nav.skills": "Skills", "nav.contact": "Contact", "loc": "Minsk, Belarus", "cta.call": "Schedule a Call", "hero.eyebrow": "UI/UX · MARKETING DESIGNER · WEB DESIGNER", "hero.first": "Angela", "hero.last": "Kovaleva", "hero.sub": "Middle UI/UX & Product Designer creating clear, high-impact digital products, websites and design systems for complex businesses.", "link.tg": "Telegram", "link.li": "LinkedIn", "link.cv": "CV", "proof.years": "years in design", "proof.shipped": "shipped interfaces", "proof.industries": "industries", "work.t1": "Selected", "work.t2": "works", "work.empty": "No projects in this category yet.", "proj.voka": "VOKA is a 3D anatomy platform for medical students and doctors. It makes complex medical data visual and accessible through a user-friendly web and mobile interface with clear navigation.", "proj.kiva": "KIVA is a booking platform without intermediaries. It shows real hotel rates instead of inflated prices, giving you wholesale access to over 500,000 hotels worldwide. Your subscription pays off with your first trip.", "proj.qpdates": "QP Dates is a dating platform where users create profiles, find partners based on shared interests, and chat. Objective: Transform a cluttered interface into a vibrant, emotional space where making a choice takes seconds rather than minutes.", "proj.molement": "MOLEMENT is a company specializing in comprehensive facility outfitting, covering the design, production, and installation of premium solutions. Objective: Present the full service cycle as a unified system, alleviate concerns regarding complex projects, and highlight the company's 33 years of experience and 5-year warranty.", "skills.t1": "Design thinking", "skills.t2": "with product sense.", "skills.lead": "I combine visual craft with research, systems thinking and business context — from the first hypothesis to a polished interface.", "skills.hard": "Hard skills", "skills.soft": "Soft skills", "hs.1": "UI / UX Design", "hs.2": "Product Design", "hs.3": "Design Systems", "hs.4": "UX Research", "hs.5": "Information Architecture", "hs.6": "Prototyping", "hs.7": "Web & Mobile", "hs.8": "Visual Design", "hs.9": "AI-assisted Design", "ss.1": "Critical Thinking", "ss.2": "Problem Solving", "ss.3": "Communication", "ss.4": "Empathy", "ss.5": "Team Collaboration", "ss.6": "Adaptability", "ss.7": "Time Management", "ss.8": "Presentation", "skills.quote": "Good design is not decoration. It is the shortest path between a user's need and a product's value.", "career.t1": "Career", "career.t2": "path", "cc.role": "Role", "cc.period": "Period", "role.1": "Product · Marketing Designer", "role.2": "Product · Marketing · UI/UX Designer", "role.3": "Marketing · UI/UX Designer", "role.4": "Product / Marketing Designer", "role.5": "Web & Graphic Designer", "role.6": "UI/UX & Web Designer", "contact.t1": "Let's make something", "contact.t2": "worth remembering.", "contact.lead": "Tell me what you are building, where it is stuck, or where you want to take it next.", "contact.btn": "Start a conversation", "footer.legal": "© 2026 · Designed & built with intention", "proj.kontinental": "Kontinental is a logistics platform for B2B shipments. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.", "proj.w1do": "W1DO is a mobile learning app. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.", "proj.belavi": "Belavi is an online beauty store. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.", "proj.youlvion": "Youlvion is an AI workspace for teams. Placeholder description — replace it with a short summary of the product, the audience and what the design had to achieve.", "meta.title": "Angela Kovaleva — Middle UI/UX & Marketing Designer", "proj.open": "Open case", "proj.pending": "Project in progress"}, "ru": {"nav.home": "Главная", "nav.works": "Работы", "nav.skills": "Навыки", "nav.contact": "Контакты", "loc": "Минск, Беларусь", "cta.call": "Назначить звонок", "hero.eyebrow": "UI/UX · МАРКЕТИНГ-ДИЗАЙНЕР · ВЕБ-ДИЗАЙНЕР", "hero.first": "Анжела", "hero.last": "Ковалёва", "hero.sub": "Middle UI/UX и продуктовый дизайнер. Создаю понятные и работающие цифровые продукты, сайты и дизайн-системы для сложного бизнеса.", "link.tg": "Telegram", "link.li": "LinkedIn", "link.cv": "Резюме", "proof.years": "лет в дизайне", "proof.shipped": "выпущенных интерфейсов", "proof.industries": "индустрий", "work.t1": "Избранные", "work.t2": "работы", "work.empty": "В этой категории пока нет проектов.", "proj.voka": "VOKA — платформа 3D-анатомии для студентов-медиков и врачей. Делает сложные медицинские данные наглядными и доступными через удобный веб- и мобильный интерфейс с понятной навигацией.", "proj.kiva": "KIVA — платформа бронирования без посредников. Показывает реальные тарифы отелей вместо завышенных цен и даёт оптовый доступ к более чем 500 000 отелей по всему миру. Подписка окупается уже первой поездкой.", "proj.qpdates": "QP Dates — платформа знакомств, где пользователи создают анкеты, находят партнёров по общим интересам и общаются. Задача: превратить перегруженный интерфейс в живое эмоциональное пространство, где выбор занимает секунды, а не минуты.", "proj.molement": "MOLEMENT — компания, специализирующаяся на комплексном оснащении объектов: проектирование, производство и монтаж премиальных решений. Задача: показать полный цикл услуг как единую систему, снять опасения по сложным проектам и подчеркнуть 33 года опыта и 5-летнюю гарантию.", "skills.t1": "Дизайн-мышление", "skills.t2": "с продуктовым чутьём.", "skills.lead": "Соединяю визуальное мастерство с исследованиями, системным мышлением и бизнес-контекстом — от первой гипотезы до готового интерфейса.", "skills.hard": "Хард-скиллы", "skills.soft": "Софт-скиллы", "hs.1": "UI / UX дизайн", "hs.2": "Продуктовый дизайн", "hs.3": "Дизайн-системы", "hs.4": "UX-исследования", "hs.5": "Информационная архитектура", "hs.6": "Прототипирование", "hs.7": "Веб и мобайл", "hs.8": "Визуальный дизайн", "hs.9": "Дизайн с ИИ", "ss.1": "Критическое мышление", "ss.2": "Решение задач", "ss.3": "Коммуникация", "ss.4": "Эмпатия", "ss.5": "Работа в команде", "ss.6": "Адаптивность", "ss.7": "Тайм-менеджмент", "ss.8": "Презентация", "skills.quote": "Хороший дизайн — это не украшение. Это кратчайший путь между потребностью пользователя и ценностью продукта.", "career.t1": "Карьерный", "career.t2": "путь", "cc.role": "Роль", "cc.period": "Период", "role.1": "Продуктовый · маркетинг-дизайнер", "role.2": "Продуктовый · маркетинг · UI/UX дизайнер", "role.3": "Маркетинг · UI/UX дизайнер", "role.4": "Продуктовый / маркетинг-дизайнер", "role.5": "Веб- и графический дизайнер", "role.6": "UI/UX и веб-дизайнер", "contact.t1": "Давайте сделаем то,", "contact.t2": "что запомнится.", "contact.lead": "Расскажите, что вы создаёте, где всё застопорилось или куда хотите двигаться дальше.", "contact.btn": "Начать разговор", "footer.legal": "© 2026 · Спроектировано и собрано осознанно", "proj.kontinental": "Kontinental — логистическая платформа для B2B-перевозок. Заглушка — замените коротким описанием продукта, аудитории и задачи, которую решал дизайн.", "proj.w1do": "W1DO — мобильное приложение для обучения. Заглушка — замените коротким описанием продукта, аудитории и задачи, которую решал дизайн.", "proj.belavi": "Belavi — интернет-магазин бьюти-продуктов. Заглушка — замените коротким описанием продукта, аудитории и задачи, которую решал дизайн.", "proj.youlvion": "Youlvion — AI-пространство для командной работы. Заглушка — замените коротким описанием продукта, аудитории и задачи, которую решал дизайн.", "meta.title": "Анжела Ковалёва — Middle UI/UX и маркетинг-дизайнер", "proj.open": "Открыть кейс", "proj.pending": "Проект в процессе загрузки"}};</script>
+<script>
+(function(){
+  "use strict";
+  /* tools marquee — Simple Icons; a lettered chip replaces any icon that fails to load */
+  var ICON = "https://cdn.jsdelivr.net/npm/simple-icons@13/icons/";
+  var TOOLS = [["Figma","F","figma"],["FigJam","F","figma"],["Adobe XD","A","adobexd"],["Photoshop","P","adobephotoshop"],
+    ["Illustrator","I","adobeillustrator"],["Notion","N","notion"],["Miro","M","miro"],["ChatGPT","AI","openai",1],
+    ["Midjourney","✦","midjourney",1],["Hotjar","H","hotjar"],["Maze","◎","maze",1],["Analytics","G","googleanalytics"]];
+  var track = document.getElementById("marqueeTrack");
+  if(track){
+    var h = "";
+    for(var p=0;p<2;p++){
+      h += '<div class="marquee-group"'+(p?' aria-hidden="true"':'')+'>';
+      TOOLS.forEach(function(t){
+        h += '<div class="tool"><img class="tool-icon" src="'+ICON+t[2]+'.svg" alt="" width="28" height="28" loading="lazy" decoding="async" data-chip="'+t[1]+'" data-glyph="'+(t[3]?1:0)+'"><span class="tool-name">'+t[0]+'</span></div>';
+      });
+      h += '</div>';
+    }
+    track.innerHTML = h;
+    Array.prototype.forEach.call(track.querySelectorAll(".tool-icon"), function(img){
+      img.addEventListener("error", function(){
+        var s = document.createElement("span");
+        s.className = img.getAttribute("data-glyph")==="1" ? "tool-glyph" : "tool-fallback";
+        s.setAttribute("aria-hidden","true"); s.textContent = img.getAttribute("data-chip");
+        if(img.parentNode) img.parentNode.replaceChild(s, img);
+      });
+    });
+  }
+  /* project filters — generated from each card's first tag */
+  var filterWrap = document.getElementById("workFilters");
+  var cards = Array.prototype.slice.call(document.querySelectorAll("#workGrid .proj"));
+  var empty = document.getElementById("workEmpty");
+  if(filterWrap && cards.length){
+    var seen = {};
+    var categories = [];
+    cards.forEach(function(card){
+      var tag = card.querySelector(".proj-tags .tag");
+      if(!tag) return;
+      var label = (tag.textContent || "").trim();
+      var key = label.toLowerCase().replace(/[^a-z0-9а-яё]+/gi,"-").replace(/^-|-$/g,"");
+      if(!label || !key) return;
+      card.setAttribute("data-cat", key);
+      if(seen[key]) return;
+      seen[key] = true;
+      categories.push({key:key,label:label});
+    });
+    categories.forEach(function(item){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "filter";
+      btn.setAttribute("data-filter", item.key);
+      btn.setAttribute("aria-pressed", "false");
+      btn.textContent = item.label;
+      filterWrap.appendChild(btn);
+    });
+    var btns = Array.prototype.slice.call(filterWrap.querySelectorAll(".filter"));
+    btns.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var cat = btn.getAttribute("data-filter");
+        var shown = 0;
+        btns.forEach(function(b){ b.setAttribute("aria-pressed", String(b === btn)); });
+        cards.forEach(function(card){
+          var visible = cat === "all" || card.getAttribute("data-cat") === cat;
+          card.hidden = !visible;
+          if(visible) shown++;
+        });
+        empty.hidden = shown > 0;
+      });
+    });
+  }
+})();
+</script>
+<script src="assets/site.js" defer></script>
 </body>
 </html>

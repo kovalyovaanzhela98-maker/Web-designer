@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#151515">
+<title>KIVA — Case Study</title>
+<meta name="description" content="KIVA — hotel booking platform: UI/UX redesign and visual system. Case study by Angela Kovaleva.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23151515'/%3E%3Ctext x='32' y='42' font-family='Arial' font-weight='800' font-size='26' text-anchor='middle' fill='%23B7EA68'%3EKA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.figma.com">
+<link rel="dns-prefetch" href="https://www.figma.com">
+<link rel="preload" as="image" href="https://www.figma.com/api/mcp/asset/4ed46293-9222-4e5a-beae-bb576e79586f.png" fetchpriority="high">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<script>(function(){try{var l=localStorage.getItem("ak-lang");if(l==="ru"){var d=document.documentElement;d.lang="ru";d.classList.add("i18n-wait");setTimeout(function(){d.classList.remove("i18n-wait")},1500)}}catch(e){}})();</script>
+
+<style id="kiva-template-override">
+.kiva-placeholder{min-height:520px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:20px;background:
+ radial-gradient(circle at 18% 20%, rgba(6,179,34,.22), transparent 28%),
+ radial-gradient(circle at 84% 78%, rgba(6,179,34,.12), transparent 34%), #0a0a0a;
+ border:1px solid rgba(255,255,255,.10)}
+.kiva-placeholder.wide{min-height:560px}
+.kiva-placeholder::before{content:"";position:absolute;inset:24px;border:1px solid rgba(255,255,255,.10);border-radius:16px}
+.placeholder-ui{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;color:#fff;padding:48px 24px}
+.placeholder-ui span{font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.08em;opacity:.45}
+.placeholder-ui b{font-size:28px;line-height:34px;font-weight:500}
+.placeholder-ui small{font-size:16px;opacity:.5}
+@media(max-width:900px){.kiva-placeholder,.kiva-placeholder.wide{min-height:360px}.placeholder-ui b{font-size:24px;line-height:30px}}
+</style>
+<script>window.PAGE_I18N={"en":{"meta.title":"KIVA — Case Study","hero.lead":"A mobile app for booking hotels without middlemen. A full UI/UX redesign and a new visual system: direct hotel rates worldwide, transparent terms, and every booking managed in one place.","cap.hero":"Main product overview: mobile hotel booking flow","h.context":"Context","context.copy":"KIVA removes middlemen from hotel booking. The product combines direct hotel rates, transparent terms, smart search, booking, secure payment and trip management into one experience.","h.problem":"The problem","problem.copy":"Hotel aggregators often make the final price harder to understand as fees appear late in the flow. KIVA needed an experience where <strong>price, progress and trip details stay clear from the first screen</strong>.","h.didwhat":"What we did","didwhat.copy":"We rebuilt the product around the core booking journey and created a visual system for mobile and web. The work focused on <strong>clarity, directness and consistent reusable UI</strong>."},"ru":{"meta.title":"KIVA — кейс","hero.lead":"Мобильное приложение для бронирования отелей без посредников. Полный редизайн UI/UX и новая визуальная система: прямые цены отелей, прозрачные условия и управление поездкой в одном месте.","cap.hero":"Обзор продукта: мобильный сценарий бронирования","h.context":"Контекст","context.copy":"KIVA убирает посредников из бронирования отелей. Продукт объединяет прямые цены, прозрачные условия, поиск, оплату и управление поездкой в единый сценарий.","h.problem":"Проблема","problem.copy":"В агрегаторах итоговая стоимость часто становится понятной только ближе к оплате. KIVA нужен был сценарий, где <strong>цена, прогресс и детали поездки остаются понятными с первого экрана</strong>.","h.didwhat":"Что сделали","didwhat.copy":"Мы перестроили продукт вокруг основного сценария бронирования и создали единую визуальную систему для мобильной и веб-версии. Фокус — <strong>понятность, прямота и переиспользуемый UI</strong>."}};</script>
+</head>
+<body class="page-case t-kiva">
+<a class="skip" href="#main" data-i18n="nav.skip">Skip to content</a>
+<div class="progress" aria-hidden="true"><div class="progress__bar"></div></div>
+<div class="bg-fx" aria-hidden="true"><div class="bg-fx__grid"></div><div class="bg-fx__glow"></div><div class="bg-fx__lens"></div></div>
+<header class="hdr case-hdr" id="hdr">
+  <div class="wrap">
+    <div class="hdr-inner">
+      <div class="hdr-lead">
+        <a class="btn btn-ghost btn-back" href="index.html#works"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5.5 8.5 12l6.5 6.5"/></svg><span data-i18n="nav.back">Back</span></a>
+      </div>
+      <a href="index.html" class="wordmark">KOVALEVA A</a>
+      <div class="hdr-status">
+        <div class="hdr-meta"><span class="clock">00:00:00</span><span class="pipe" aria-hidden="true">|</span><span class="loc" data-i18n="loc">Minsk, Belarus</span></div>
+        <div class="hdr-ctrl"><div class="lang" role="group" aria-label="Language / Язык"><span class="lang-thumb" aria-hidden="true"></span><button type="button" data-set-lang="ru" aria-pressed="false" lang="ru" aria-label="Русский">RU</button><button type="button" data-set-lang="en" aria-pressed="true" lang="en" aria-label="English">EN</button></div></div>
+      </div>
+    </div>
+  </div>
+</header>
+<main class="case" id="main">
+  <div class="wrap">
+
+    <section class="section">
+      <h1 class="hero-title"><span class="accent">KIVA</span> Hotel booking platform</h1>
+      <div class="hero-intro">
+        <p data-i18n="hero.lead">A mobile app for booking hotels without middlemen. A full UI/UX redesign and a new visual system: direct hotel rates worldwide, transparent terms, and every booking managed in one place.</p>
+        <div class="hero-side"><div class="pills">
+          <span class="pill primary">Travel</span><span class="pill">B2C</span><span class="pill">Mobile</span><span class="pill">Web</span><span class="pill">UX/UI</span><span class="pill">Product</span><span class="pill">Design system</span>
+        </div></div>
+      </div>
+      <div class="visual-wrap">
+        <div class="big-visual media kiva-placeholder hero-placeholder"><img src="assets/kiva/01-kiva-product-overview.png" alt="KIVA product overview — mobile booking and app flow" loading="eager" decoding="async"></div>
+        <p class="caption" data-i18n="cap.hero">Main product overview: mobile hotel booking flow</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="two-col-head">
+        <h2 class="section-heading" data-i18n="h.context">Context</h2>
+        <p data-i18n="context.copy">KIVA removes middlemen from hotel booking. The product combines direct hotel rates, transparent terms, smart search, booking, secure payment and trip management into one experience.</p>
+      </div>
+      <div class="context-grid">
+        <article class="info-card">
+          <div class="label-mono">Project</div>
+          <p class="body19"><span class="accent-text">KIVA</span> <span class="muted">is a hotel booking product designed around direct rates and a clearer booking experience, across mobile and web.</span></p>
+        </article>
+        <article class="info-card">
+          <div class="label-mono">Brief</div>
+          <p class="body19"><span class="muted">Redesign the UI/UX and build a </span><span>new visual system</span><span class="muted"> that stays consistent across booking, search, payment and responsive web states.</span></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="problem">
+        <div class="problem-copy">
+          <h2 class="section-heading" data-i18n="h.problem">The problem</h2>
+          <p class="body-copy" data-i18n="problem.copy">Hotel aggregators often make the final price harder to understand as fees appear late in the flow. KIVA needed an experience where <strong>price, progress and trip details stay clear from the first screen</strong>.</p>
+        </div>
+        <div class="points">
+          <div class="point"><b>Opaque pricing</b><span>fees can surface<br>late in the flow</span></div>
+          <div class="point"><b>Slow booking</b><span>unclear progress<br>and steps</span></div>
+          <div class="point"><b>Bookings scattered</b><span>vouchers and details<br>across places</span></div>
+          <div class="point"><b>Generic lists</b><span>recommendations<br>without preferences</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="two-col-head">
+        <h2 class="section-heading" data-i18n="h.didwhat">What we did</h2>
+        <p data-i18n="didwhat.copy">We rebuilt the product around the core booking journey and created a visual system for mobile and web. The work focused on <strong>clarity, directness and consistent reusable UI</strong>.</p>
+      </div>
+      <div class="decisions">
+        <article class="decision"><div class="decision-num">01</div><h3>Research</h3><p>Mapped traveller pain points, competitive patterns and the moments where price or progress becomes unclear.</p></article>
+        <article class="decision"><div class="decision-num">02</div><h3>Structure</h3><p>Defined search, hotel details, booking and payment as one coherent flow.</p></article>
+        <article class="decision"><div class="decision-num">03</div><h3>Visual system</h3><p>Built reusable components, states and rules for mobile and desktop screens.</p></article>
+        <article class="decision"><div class="decision-num">04</div><h3>Validation</h3><p>Refined key interactions and error states to keep the journey predictable.</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="two-col-head">
+        <h2 class="section-heading">Selected product views</h2>
+        <p>Placeholder compositions selected from the KIVA Figma file to show the most representative parts of the product without changing the case structure.</p>
+      </div>
+      <div class="visual-wrap">
+        <div class="big-visual media kiva-placeholder"><img src="assets/kiva/02-authentication-registration.png" alt="KIVA authentication and registration mobile screens" loading="lazy" decoding="async"></div>
+        <p class="caption">Authentication and registration — mobile</p>
+      </div>
+      <div class="visual-wrap">
+        <div class="big-visual media kiva-placeholder"><img src="assets/kiva/03-hotel-search-filters.png" alt="KIVA hotel search, filters and mobile results" loading="lazy" decoding="async"></div>
+        <p class="caption">Hotel search, filters and results</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="two-col-head">
+        <h2 class="section-heading">Responsive product</h2>
+        <p>Desktop and mobile views are treated as one system: shared navigation logic, consistent information hierarchy and reusable controls.</p>
+      </div>
+      <div class="visual-wrap">
+        <div class="big-visual media kiva-placeholder wide"><img src="assets/kiva/04-desktop-home-search.png" alt="KIVA desktop home and hotel search experience" loading="lazy" decoding="async"></div>
+        <p class="caption">Desktop booking and search experience</p>
+      </div>
+      <div class="visual-wrap">
+        <div class="big-visual media kiva-placeholder"><img src="assets/kiva/05-partner-experience.png" alt="KIVA partner experience" loading="lazy" decoding="async"></div>
+        <p class="caption">Partner-facing desktop experience</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="two-col-head">
+        <h2 class="section-heading">Mobile flows</h2>
+        <p>Key mobile states across onboarding, search, filters and booking are kept visually aligned with the desktop experience.</p>
+      </div>
+      <div class="visual-wrap">
+        <div class="big-visual media kiva-placeholder"><img src="assets/kiva/06-mobile-screens.png" alt="KIVA selected mobile screens" loading="lazy" decoding="async"></div>
+        <p class="caption">Selected mobile screens</p>
+      </div>
+      <div class="visual-wrap">
+        <div class="big-visual media kiva-placeholder"><img src="assets/kiva/07-payment.png" alt="KIVA payment and reservation states" loading="lazy" decoding="async"></div>
+        <p class="caption">Payment and reservation states</p>
+      </div>
+    </section>
+
+    <section class="section result">
+      <div class="result-head">
+        <h2 class="section-heading">Outcome</h2>
+        <p>The product became a clearer system for booking: direct pricing, predictable steps and a consistent UI across mobile and web.</p>
+      </div>
+      <div class="divider"></div>
+      <div class="metrics">
+        <article class="metric"><h3>Direct pricing</h3><p>the final cost is easier to understand</p></article>
+        <article class="metric"><h3>Clear flow</h3><p>search, details and payment follow one logic</p></article>
+        <article class="metric"><h3>One system</h3><p>shared components across responsive states</p></article>
+      </div>
+    </section>
+
+    <nav class="case-nav" aria-label="Projects">
+      <a class="case-nav__item prev" href="voka.html" style="--c-rgb:5,108,242"><span class="cn-arrow">←</span><span class="cn-name">VOKA</span></a>
+      <a class="case-nav__item next" href="qpdates.html" style="--c-rgb:253,154,20"><span class="cn-arrow">→</span><span class="cn-name">QPdates</span></a>
+    </nav>
+</div>
+</main>
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <a href="index.html" class="wordmark">KOVALEVA A</a>
+    <span class="legal" data-i18n="footer.legal">© 2026 · Designed & built with intention</span>
+  </div>
+</footer>
+<script src="assets/site.js" defer></script>
+</body>
+</html>
