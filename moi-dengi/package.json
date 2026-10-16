@@ -1,0 +1,15 @@
+{
+  "name": "moi-dengi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Мои деньги — личный учёт расходов и доходов",
+  "scripts": {
+    "serve": "node scripts/serve.js",
+    "icons": "python3 scripts/make_icons.py"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  }
+}

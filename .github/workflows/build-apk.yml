@@ -1,0 +1,52 @@
+name: Сборка APK «Мои деньги»
+
+on:
+  push:
+    branches: [main, claude/android-moi-dengi-app-xnfffb]
+    paths: ['moi-dengi/**', '.github/workflows/build-apk.yml']
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: moi-dengi
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: moi-dengi/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Установка зависимостей
+        run: npm ci
+
+      - name: Создание Android-проекта
+        run: |
+          npx cap add android
+          cp -R resources/android/res/. android/app/src/main/res/
+          npx cap sync android
+
+      - name: Сборка debug APK
+        working-directory: moi-dengi/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Переименование
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk moi-dengi-debug.apk
+
+      - name: Выкладываем APK как артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: moi-dengi-apk
+          path: moi-dengi/moi-dengi-debug.apk
+          if-no-files-found: error

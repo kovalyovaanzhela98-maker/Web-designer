@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1420" media="(prefers-color-scheme: dark)">
+<title>Мои деньги</title>
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="top-row">
+      <h1 class="brand">Мои деньги</h1>
+      <button class="icon-btn" id="btnSettings" aria-label="Настройки">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+    <div class="month" role="group" aria-label="Месяц">
+      <button class="icon-btn sm" id="monthPrev" aria-label="Предыдущий месяц">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <button class="month-label" id="monthLabel" aria-label="Перейти к текущему месяцу"></button>
+      <button class="icon-btn sm" id="monthNext" aria-label="Следующий месяц">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="main">
+    <section class="hero" aria-labelledby="heroLabel">
+      <div class="hero-deco" aria-hidden="true"></div>
+      <div class="hero-label" id="heroLabel">Общий баланс</div>
+      <div class="hero-sum" id="heroSum">0,00</div>
+      <button class="hero-reset" id="filterReset" hidden>Показать все карты</button>
+    </section>
+
+    <section class="tiles" aria-label="Итоги месяца">
+      <div class="tile inc">
+        <div class="tile-ic" aria-hidden="true">↓</div>
+        <div class="tile-label">Пришло за месяц</div>
+        <div class="tile-sum" id="sumInc">0,00</div>
+      </div>
+      <div class="tile exp">
+        <div class="tile-ic" aria-hidden="true">↑</div>
+        <div class="tile-label">Потрачено за месяц</div>
+        <div class="tile-sum" id="sumExp">0,00</div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="hAi">
+      <h2 class="h2" id="hAi">Помощник</h2>
+      <div class="card ai">
+        <label class="sr" for="aiText">Опиши операции своими словами</label>
+        <textarea id="aiText" rows="2" placeholder="Напиши своими словами, что потратила или получила" maxlength="1500"></textarea>
+        <div class="ai-row">
+          <span class="ai-hint">Например: «вчера кофе 6 руб. и такси 12 с Visa»</span>
+          <button class="btn primary" id="aiGo"><span class="spin" aria-hidden="true"></span><span class="aiGoText">Разобрать</span></button>
+        </div>
+        <div class="msg err" id="aiErr" role="alert" hidden></div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="hCards">
+      <div class="h2-row"><h2 class="h2" id="hCards">Карты и счета</h2></div>
+      <div class="strip" id="strip"></div>
+    </section>
+
+    <section class="block" id="catBlock" aria-labelledby="hCats">
+      <h2 class="h2" id="hCats">Расходы по категориям</h2>
+      <div class="card" id="catCard"></div>
+    </section>
+
+    <section class="block" aria-labelledby="hTx">
+      <h2 class="h2" id="hTx">Операции</h2>
+      <div id="txList"></div>
+    </section>
+  </main>
+
+  <button class="fab" id="fab">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Добавить операцию</span>
+  </button>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- Операция -->
+<div class="layer" id="lyTx" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="txTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="txTitle">Новая операция</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+    <form id="txForm" novalidate>
+      <div class="seg" role="radiogroup" aria-label="Тип операции">
+        <button type="button" role="radio" class="seg-b" data-type="expense" aria-checked="true">Расход</button>
+        <button type="button" role="radio" class="seg-b" data-type="income" aria-checked="false">Доход</button>
+      </div>
+      <label class="fl" for="txAmount">Сумма</label>
+      <div class="amount-wrap"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="txAmountErr"><span class="cur" id="txCur">Br</span></div>
+      <div class="msg err" id="txAmountErr" hidden></div>
+      <div class="fl">Категория</div>
+      <div class="chips" id="txCats" role="radiogroup" aria-label="Категория"></div>
+      <div class="fl">Карта</div>
+      <div class="chips" id="txAccs" role="radiogroup" aria-label="Карта"></div>
+      <div class="two">
+        <div><label class="fl" for="txDate">Дата</label><input id="txDate" type="date"></div>
+        <div><label class="fl" for="txNote">Заметка</label><input id="txNote" type="text" maxlength="80" placeholder="Необязательно" autocomplete="off"></div>
+      </div>
+      <button class="btn primary wide" type="submit">Сохранить</button>
+    </form>
+  </div>
+</div>
+
+<!-- Карта -->
+<div class="layer" id="lyAcc" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="accTitle">Новая карта</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+    <form id="accForm" novalidate>
+      <label class="fl" for="accName">Название</label>
+      <input id="accName" type="text" maxlength="24" placeholder="Например, Зарплатная" autocomplete="off">
+      <div class="msg err" id="accNameErr" hidden></div>
+      <label class="fl" for="accLast4">Последние 4 цифры <span class="opt">(необязательно)</span></label>
+      <input id="accLast4" type="text" inputmode="numeric" maxlength="4" placeholder="1234" autocomplete="off" aria-describedby="accLast4Note">
+      <div class="note" id="accLast4Note">Полный номер, срок и CVV не нужны — приложение их не спрашивает.</div>
+      <div class="msg err" id="accLast4Err" hidden></div>
+      <label class="fl" for="accBal">Начальный баланс</label>
+      <div class="amount-wrap sm"><input id="accBal" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"><span class="cur curAcc">Br</span></div>
+      <div class="msg err" id="accBalErr" hidden></div>
+      <div class="fl">Цвет</div>
+      <div class="swatches" id="accColors" role="radiogroup" aria-label="Цвет карты"></div>
+      <button class="btn primary wide" type="submit">Сохранить</button>
+      <button class="btn danger wide" type="button" id="accDelete" hidden>Удалить карту</button>
+    </form>
+  </div>
+</div>
+
+<!-- Черновик ИИ -->
+<div class="layer" id="lyDraft" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="draftTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="draftTitle">Проверь черновик</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+    <p class="note top0">Записи появятся в учёте только после кнопки «Добавить всё». Лишнее можно убрать.</p>
+    <div id="draftList"></div>
+    <div class="draft-sum" id="draftSum"></div>
+    <button class="btn primary wide" id="draftOk">Добавить всё</button>
+    <button class="btn ghost wide" id="draftCancel" type="button">Отмена</button>
+  </div>
+</div>
+
+<!-- Настройки -->
+<div class="layer" id="lySet" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="setTitle">Настройки</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+
+    <div class="fl top0">Валюта</div>
+    <div class="chips" id="setCur" role="radiogroup" aria-label="Валюта"></div>
+    <div class="note">Меняется только обозначение, суммы не пересчитываются.</div>
+
+    <label class="fl" for="setKey">API-ключ Anthropic</label>
+    <div class="key-row">
+      <input id="setKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-…">
+      <button class="btn ghost" type="button" id="keyShow" aria-pressed="false">Показать</button>
+    </div>
+    <div class="note">Нужен для ИИ-помощника. Хранится только на этом телефоне и уходит только в Anthropic.</div>
+    <button class="btn soft wide" type="button" id="keySave">Сохранить ключ</button>
+
+    <div class="fl">Резервная копия</div>
+    <button class="btn soft wide" type="button" id="bkCopy">Скопировать копию в буфер</button>
+    <label class="fl sm" for="bkText">Восстановить из копии</label>
+    <textarea id="bkText" rows="3" placeholder="Вставьте сюда скопированный текст"></textarea>
+    <button class="btn soft wide" type="button" id="bkRestore">Восстановить</button>
+    <div class="msg err" id="bkErr" role="alert" hidden></div>
+    <div class="note ctr">Мои деньги · данные хранятся только на устройстве</div>
+  </div>
+</div>
+
+<!-- Подтверждение -->
+<div class="layer dlg" id="lyConfirm" hidden>
+  <div class="scrim" data-close></div>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="cfTitle" aria-describedby="cfText">
+    <h2 id="cfTitle"></h2>
+    <p id="cfText"></p>
+    <div class="dlg-btns">
+      <button class="btn ghost" id="cfNo" type="button">Отмена</button>
+      <button class="btn danger-solid" id="cfYes" type="button">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

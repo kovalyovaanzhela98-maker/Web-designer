@@ -1,0 +1,6 @@
+{
+  "appId": "by.moidengi.app",
+  "appName": "Мои деньги",
+  "webDir": "www",
+  "android": { "backgroundColor": "#EEF1F5" }
+}
