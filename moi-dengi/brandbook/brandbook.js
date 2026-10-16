@@ -52,11 +52,11 @@
     <p>Картинки лежат в <code>www/img/fin</code>, один файл на позу, прозрачный фон. Новую позу добавляй туда и в список <code>POSES</code> в <code>www/js/mascot.js</code>. Сейчас файлы небольшие (до 350 пикселей), для крупных мест нужны оригиналы в высоком разрешении.</p>`);
 
   /* ---------- 2. Логотип ---------- */
-  sec('logo', 'Знак и иконка', 'Знак приложения — Фин на индиго-градиенте. Узнаётся и в мелком размере: большие глаза и лист.',
+  sec('logo', 'Знак и иконка', 'Знак приложения — подмигивающий Фин на тёмно-зелёном фоне. Узнаётся и в мелком размере: большой глаз, лист и румянец.',
     `<div class="bb-grid c3">
-      <div class="bb-card pose"><img src="" alt="" id="icoA" width="104" height="104" style="border-radius:24px"><b>Иконка</b><span>Скруглённый квадрат, фон — градиент индиго</span></div>
-      <div class="bb-card pose"><div style="width:104px;height:104px;border-radius:50%;background:linear-gradient(140deg,#4A66DA,#283EA6 55%,#162062);display:grid;place-items:center;overflow:hidden">${fin('hello', 84)}</div><b>Круглая</b><span>Для круглых масок Android</span></div>
-      <div class="bb-card pose"><div style="width:104px;height:104px;border-radius:24px;background:var(--field);display:grid;place-items:center">${fin('hello', 84)}</div><b>Только Фин</b><span>На светлом фоне, без индиго</span></div>
+      <div class="bb-card pose"><img src="" alt="" id="icoA" width="104" height="104" style="border-radius:24px"><b>Иконка</b><span>Скруглённый квадрат, тёмно-зелёный фон</span></div>
+      <div class="bb-card pose"><div style="width:104px;height:104px;border-radius:50%;background:#1A3125;display:grid;place-items:center;overflow:hidden">${fin('hello', 84)}</div><b>Круглая</b><span>Для круглых масок Android</span></div>
+      <div class="bb-card pose"><div style="width:104px;height:104px;border-radius:24px;background:var(--field);display:grid;place-items:center">${fin('hello', 84)}</div><b>Только Фин</b><span>На светлом фоне, без тёмного фона</span></div>
     </div>
     <h3>Правила</h3>
     <div class="bb-grid c2">
@@ -65,7 +65,7 @@
     </div>
     <h3>Как пересобрать иконку</h3>
     <pre><code>npm run icons</code></pre>
-    <p>Скрипт <code>scripts/make_icons.py</code> берёт Фина из <code>www/img/fin/hello.png</code>, ставит на фон, раскладывает ресурсы Android по папкам и делает версию для тематических иконок Android 13+.</p>`);
+    <p>Скрипт <code>scripts/make_icons.py</code> берёт картинку <code>resources/source/app-icon.png</code>, раскладывает ресурсы Android по папкам (обычная, круглая, адаптивная) и делает версию для тематических иконок Android 13+. Чтобы сменить иконку, подмени этот файл и запусти команду.</p>`);
 
   /* ---------- 3. Цвет ---------- */
   const COLORS = [
