@@ -32,9 +32,16 @@ jobs:
       - name: Установка зависимостей
         run: npm ci
 
+      - name: Проверка разбора фраз
+        run: npm test
+
+      - name: Подготовка web-части
+        run: node scripts/prepare.js
+
       - name: Создание Android-проекта
         run: |
           npx cap add android
+          node scripts/patch-android.js
           cp -R resources/android/res/. android/app/src/main/res/
           npx cap sync android
 

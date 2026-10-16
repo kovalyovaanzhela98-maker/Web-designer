@@ -1,0 +1,3 @@
+{
+  "providers": { "google": true, "email": true, "phone": true, "apple": false }
+}

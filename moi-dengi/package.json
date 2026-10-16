@@ -4,11 +4,16 @@
   "private": true,
   "description": "Мои деньги — личный учёт расходов и доходов",
   "scripts": {
-    "serve": "node scripts/serve.js",
-    "icons": "python3 scripts/make_icons.py"
+    "prepare:web": "node scripts/prepare.js",
+    "serve": "node scripts/prepare.js && node scripts/serve.js",
+    "test": "node tests/parser.test.js",
+    "icons": "python3 scripts/make_icons.py",
+    "brandbook": "node scripts/build-brandbook.js"
   },
   "dependencies": {
     "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor-firebase/authentication": "^7.5.0",
+    "@capacitor-firebase/firestore": "^7.5.0",
     "@capacitor/android": "^7.0.0",
     "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0"
