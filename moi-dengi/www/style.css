@@ -275,7 +275,7 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .ai-mascot .mascot{animation:bob 3.4s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-4px)}}
 .emp-m{display:grid;place-items:center;margin:0 auto 8px}
-.mic-wrap{height:120px;margin:6px 0 6px}
+.mic-wrap{height:150px;margin:0 0 4px}
 .acct{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--r-lg);background:var(--field)}
 .acct-m{flex:0 0 auto;width:46px;height:46px}
 .acct-t{flex:1;min-width:0;display:flex;flex-direction:column}
