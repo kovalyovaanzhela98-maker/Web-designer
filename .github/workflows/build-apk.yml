@@ -6,6 +6,9 @@ on:
     paths: ['moi-dengi/**', '.github/workflows/build-apk.yml']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -48,3 +51,12 @@ jobs:
           name: moi-dengi-apk
           path: moi-dengi/moi-dengi-debug.apk
           if-no-files-found: error
+
+      - name: Выкладываем APK в Releases (прямая ссылка на .apk)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Мои деньги — сборка ${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          files: moi-dengi/moi-dengi-debug.apk
