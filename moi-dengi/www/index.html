@@ -12,79 +12,109 @@
 </head>
 <body>
 <div id="app">
-  <header class="top">
-    <div class="top-row">
-      <h1 class="brand">Мои деньги</h1>
-      <button class="icon-btn" id="btnSettings" aria-label="Настройки">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-      </button>
-    </div>
-    <div class="month" role="group" aria-label="Месяц">
-      <button class="icon-btn sm" id="monthPrev" aria-label="Предыдущий месяц">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
-      </button>
-      <button class="month-label" id="monthLabel" aria-label="Перейти к текущему месяцу"></button>
-      <button class="icon-btn sm" id="monthNext" aria-label="Следующий месяц">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-    </div>
-  </header>
 
-  <main id="main" class="main">
+  <!-- ГЛАВНАЯ -->
+  <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
+    <header class="hdr">
+      <div>
+        <div class="hello">Привет!</div>
+        <div class="date" id="todayLabel"></div>
+      </div>
+      <button class="icon-btn" id="btnSettings" aria-label="Настройки"><i data-ic="gear"></i></button>
+    </header>
+
     <section class="hero" aria-labelledby="heroLabel">
       <div class="hero-deco" aria-hidden="true"></div>
-      <div class="hero-label" id="heroLabel">Общий баланс</div>
-      <div class="hero-sum" id="heroSum">0,00</div>
+      <div class="hero-top">
+        <div class="hero-label" id="heroLabel">Общий баланс</div>
+        <button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button>
+      </div>
+      <div class="hero-sum" id="heroSum"></div>
       <button class="hero-reset" id="filterReset" hidden>Показать все карты</button>
     </section>
 
+    <div class="monthbar-slot"></div>
+
     <section class="tiles" aria-label="Итоги месяца">
-      <div class="tile inc">
-        <div class="tile-ic" aria-hidden="true">↓</div>
-        <div class="tile-label">Пришло за месяц</div>
-        <div class="tile-sum" id="sumInc">0,00</div>
-      </div>
-      <div class="tile exp">
-        <div class="tile-ic" aria-hidden="true">↑</div>
-        <div class="tile-label">Потрачено за месяц</div>
-        <div class="tile-sum" id="sumExp">0,00</div>
-      </div>
+      <div class="tile inc"><div class="tile-ic" aria-hidden="true"><i data-ic="down"></i></div><div class="tile-label">Пришло</div><div class="tile-sum" id="sumInc"></div></div>
+      <div class="tile exp"><div class="tile-ic" aria-hidden="true"><i data-ic="up"></i></div><div class="tile-label">Потрачено</div><div class="tile-sum" id="sumExp"></div></div>
     </section>
 
-    <section class="block" aria-labelledby="hAi">
-      <h2 class="h2" id="hAi">Помощник</h2>
-      <div class="card ai">
-        <label class="sr" for="aiText">Опиши операции своими словами</label>
-        <textarea id="aiText" rows="2" placeholder="Напиши своими словами, что потратила или получила" maxlength="1500"></textarea>
-        <div class="ai-row">
-          <span class="ai-hint">Например: «вчера кофе 6 руб. и такси 12 с Visa»</span>
-          <button class="btn primary" id="aiGo"><span class="spin" aria-hidden="true"></span><span class="aiGoText">Разобрать</span></button>
-        </div>
-        <div class="msg err" id="aiErr" role="alert" hidden></div>
-      </div>
-    </section>
+    <div class="aibar" role="group" aria-label="Помощник">
+      <button class="aibar-main" data-go="ai"><i data-ic="spark"></i><span>Скажи или напиши, что потратила</span></button>
+      <button class="aibar-mic" id="homeMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
+    </div>
 
     <section class="block" aria-labelledby="hCards">
       <div class="h2-row"><h2 class="h2" id="hCards">Карты и счета</h2></div>
       <div class="strip" id="strip"></div>
+      <div class="note hint" id="stripHint">Нажми на карту — покажу только её. Удерживай — изменить или удалить.</div>
     </section>
 
-    <section class="block" id="catBlock" aria-labelledby="hCats">
-      <h2 class="h2" id="hCats">Расходы по категориям</h2>
-      <div class="card" id="catCard"></div>
+    <section class="block" aria-labelledby="hRecent">
+      <div class="h2-row"><h2 class="h2" id="hRecent">Последние операции</h2><button class="link" data-go="ops">Все</button></div>
+      <div id="recentList"></div>
     </section>
+  </section>
 
-    <section class="block" aria-labelledby="hTx">
-      <h2 class="h2" id="hTx">Операции</h2>
-      <div id="txList"></div>
-    </section>
-  </main>
+  <!-- ОПЕРАЦИИ -->
+  <section class="screen" id="s-ops" data-screen="ops" aria-label="Операции" hidden>
+    <header class="hdr"><h1 class="title">Операции</h1></header>
+    <div class="monthbar-slot"></div>
+    <div class="search"><i data-ic="search"></i><input id="opsSearch" type="search" placeholder="Поиск по заметке или категории" aria-label="Поиск операций" autocomplete="off"></div>
+    <div class="seg ops-seg" role="radiogroup" aria-label="Тип операций">
+      <button type="button" role="radio" class="seg-b" data-ft="all" aria-checked="true">Все</button>
+      <button type="button" role="radio" class="seg-b" data-ft="expense" aria-checked="false">Расходы</button>
+      <button type="button" role="radio" class="seg-b" data-ft="income" aria-checked="false">Доходы</button>
+    </div>
+    <div id="opsFilterChip"></div>
+    <div id="opsList"></div>
+  </section>
 
-  <button class="fab" id="fab">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-    <span>Добавить операцию</span>
-  </button>
+  <!-- СТАТИСТИКА -->
+  <section class="screen" id="s-stats" data-screen="stats" aria-label="Статистика" hidden>
+    <header class="hdr"><h1 class="title">Статистика</h1></header>
+    <div class="monthbar-slot"></div>
+    <div class="seg stats-seg" role="radiogroup" aria-label="Что показать">
+      <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
+      <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
+    </div>
+    <div class="card" id="catCard"></div>
+    <div id="insights"></div>
+    <div class="card" id="dayCard"></div>
+    <div class="card" id="catList"></div>
+  </section>
+
+  <!-- ПОМОЩНИК -->
+  <section class="screen" id="s-ai" data-screen="ai" aria-label="Помощник" hidden>
+    <header class="hdr"><h1 class="title">Помощник</h1></header>
+    <div class="card ai-card">
+      <div class="ai-lead">Скажи или напиши — разберу сама</div>
+      <div class="mic-wrap">
+        <button class="mic" id="micBtn" aria-pressed="false" aria-label="Голосовой ввод"><span class="rings" aria-hidden="true"></span><i data-ic="mic" class="mic-ic"></i><i data-ic="stop" class="stop-ic"></i></button>
+      </div>
+      <div class="mic-hint" id="micHint" role="status" aria-live="polite">Нажми на микрофон и скажи, например: «вчера кофе 6 рублей»</div>
+      <label class="sr" for="aiText">Опиши операции своими словами</label>
+      <textarea id="aiText" rows="3" placeholder="Напиши своими словами, что потратила или получила" maxlength="1500"></textarea>
+      <div class="ex" id="examples">
+        <button type="button" class="chip" data-ex="Кофе 6,5 и такси 12">Кофе 6,5 и такси 12</button>
+        <button type="button" class="chip" data-ex="Вчера продукты 48 рублей">Вчера продукты 48 ₽</button>
+        <button type="button" class="chip" data-ex="В пятницу пришла зарплата 2000">В пятницу зарплата 2000</button>
+      </div>
+      <button class="btn primary wide" id="aiGo"><span class="spin" aria-hidden="true"></span><span class="aiGoText">Разобрать</span></button>
+      <div class="msg err" id="aiErr" role="alert" hidden></div>
+    </div>
+    <p class="note ctr">Ничего не запишется, пока ты не нажмёшь «Добавить всё» в черновике.</p>
+  </section>
 </div>
+
+<nav class="nav" aria-label="Разделы">
+  <button class="nav-b" data-tab="home" aria-current="page"><i data-ic="home"></i><span>Главная</span></button>
+  <button class="nav-b" data-tab="ops"><i data-ic="list"></i><span>Операции</span></button>
+  <button class="nav-add" id="fab" aria-label="Добавить операцию"><i data-ic="plus"></i></button>
+  <button class="nav-b" data-tab="stats"><i data-ic="chart"></i><span>Статистика</span></button>
+  <button class="nav-b" data-tab="ai"><i data-ic="spark"></i><span>Помощник</span></button>
+</nav>
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
@@ -93,7 +123,7 @@
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="txTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="txTitle">Новая операция</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+    <div class="sheet-head"><h2 id="txTitle">Новая операция</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <form id="txForm" novalidate>
       <div class="seg" role="radiogroup" aria-label="Тип операции">
         <button type="button" role="radio" class="seg-b" data-type="expense" aria-checked="true">Расход</button>
@@ -103,14 +133,19 @@
       <div class="amount-wrap"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="txAmountErr"><span class="cur" id="txCur">Br</span></div>
       <div class="msg err" id="txAmountErr" hidden></div>
       <div class="fl">Категория</div>
-      <div class="chips" id="txCats" role="radiogroup" aria-label="Категория"></div>
+      <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
       <div class="fl">Карта</div>
-      <div class="chips" id="txAccs" role="radiogroup" aria-label="Карта"></div>
-      <div class="two">
-        <div><label class="fl" for="txDate">Дата</label><input id="txDate" type="date"></div>
-        <div><label class="fl" for="txNote">Заметка</label><input id="txNote" type="text" maxlength="80" placeholder="Необязательно" autocomplete="off"></div>
+      <div class="chips scroll" id="txAccs" role="radiogroup" aria-label="Карта"></div>
+      <div class="fl">Дата</div>
+      <div class="date-row">
+        <button type="button" class="chip" id="dToday">Сегодня</button>
+        <button type="button" class="chip" id="dYest">Вчера</button>
+        <input id="txDate" type="date" aria-label="Дата">
       </div>
+      <label class="fl" for="txNote">Заметка</label>
+      <input id="txNote" type="text" maxlength="80" placeholder="Необязательно" autocomplete="off">
       <button class="btn primary wide" type="submit">Сохранить</button>
+      <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить операцию</button>
     </form>
   </div>
 </div>
@@ -120,8 +155,9 @@
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="accTitle">Новая карта</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+    <div class="sheet-head"><h2 id="accTitle">Новая карта</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <form id="accForm" novalidate>
+      <div class="acc-preview" id="accPreview" aria-hidden="true"><div><div class="acc-name" id="pvName">Название</div><div class="acc-num" id="pvNum">&nbsp;</div></div><div class="acc-bal" id="pvBal"></div></div>
       <label class="fl" for="accName">Название</label>
       <input id="accName" type="text" maxlength="24" placeholder="Например, Зарплатная" autocomplete="off">
       <div class="msg err" id="accNameErr" hidden></div>
@@ -145,7 +181,7 @@
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="draftTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="draftTitle">Проверь черновик</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+    <div class="sheet-head"><h2 id="draftTitle">Проверь черновик</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <p class="note top0">Записи появятся в учёте только после кнопки «Добавить всё». Лишнее можно убрать.</p>
     <div id="draftList"></div>
     <div class="draft-sum" id="draftSum"></div>
@@ -159,7 +195,7 @@
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="setTitle">Настройки</h2><button class="icon-btn sm" data-close aria-label="Закрыть">✕</button></div>
+    <div class="sheet-head"><h2 id="setTitle">Настройки</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
 
     <div class="fl top0">Валюта</div>
     <div class="chips" id="setCur" role="radiogroup" aria-label="Валюта"></div>
@@ -170,7 +206,7 @@
       <input id="setKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-…">
       <button class="btn ghost" type="button" id="keyShow" aria-pressed="false">Показать</button>
     </div>
-    <div class="note">Нужен для ИИ-помощника. Хранится только на этом телефоне и уходит только в Anthropic.</div>
+    <div class="note">Нужен для помощника. Хранится только на этом телефоне и уходит только в Anthropic.</div>
     <button class="btn soft wide" type="button" id="keySave">Сохранить ключ</button>
 
     <div class="fl">Резервная копия</div>
