@@ -11,7 +11,7 @@
   const GOOGLE = '<svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
   const APPLE = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>';
 
-  let step = 'menu', mode = 'in', busy = false, pose = 'hello', error = '', info = '', phone = '', timer = null, cooldown = 0, draft = { email: '', pw: '' };
+  let step = 'menu', mode = 'in', busy = false, pose = 'hello', error = '', info = '', phone = '', timer = null, cooldown = 0, draft = { email: '', pw: '', id: '' };
 
   function friendly(e) {
     const l = (((e && e.code) || '') + ' ' + ((e && e.message) || '')).toLowerCase();
@@ -33,16 +33,24 @@
   function fail(e) { const m = friendly(e); error = m || ''; pose = m ? 'oops' : 'hello'; busy = false; render(); }
 
   function menu() {
-    const p = cloud.providers;
-    return `<div class="auth-hero">${MD.mascot(pose === 'hello' ? 'hero' : pose, 190)}<h1>Мои деньги</h1><p>Войди, чтобы твои траты и доходы были на любом устройстве и никогда не потерялись.</p></div>
-    <div class="auth-btns">
-      ${p.google ? `<button class="abtn light" data-act="google">${GOOGLE}<span>Продолжить с Google</span></button>` : ''}
-      ${p.apple ? `<button class="abtn dark" data-act="apple">${APPLE}<span>Продолжить с Apple</span></button>` : ''}
-      ${p.phone ? `<button class="abtn" data-act="to-phone">${MD.icon('sms')}<span>По номеру телефона</span></button>` : ''}
-      ${p.email ? `<button class="abtn" data-act="to-email">${MD.icon('mail')}<span>По почте</span></button>` : ''}
-    </div>
-    ${error ? `<div class="msg err" role="alert">${esc(error)}</div>` : ''}
-    <p class="auth-foot">Данные хранятся в твоём личном облачном хранилище. Они видны только тебе.</p>`;
+    const p = cloud.providers, hasId = p.phone || p.email;
+    const ph = p.phone && p.email ? 'Телефон или почта' : p.phone ? 'Номер телефона' : 'Почта';
+    return `<div class="auth-art" style="background-image:url(img/onboard/2.jpg)" aria-hidden="true"></div>
+    <div class="auth-panel">
+      <h1>Вход</h1>
+      <p class="auth-lead">Один раз войди, и твои деньги будут на любом телефоне.</p>
+      <div class="auth-btns">
+        ${p.google ? `<button class="abtn light" data-act="google">${GOOGLE}<span>Продолжить с Google</span></button>` : ''}
+        ${p.apple ? `<button class="abtn dark" data-act="apple">${APPLE}<span>Продолжить с Apple</span></button>` : ''}
+      </div>
+      ${hasId ? `<div class="auth-or"><span>или</span></div>
+      <form id="idForm" class="id-form" novalidate>
+        <input id="aId" type="text" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="${ph}" aria-label="${ph}" value="${esc(draft.id || '')}">
+        <button class="id-go" type="submit" aria-label="Продолжить">${MD.icon('right')}</button>
+      </form>` : ''}
+      ${error ? `<div class="msg err" role="alert">${esc(error)}</div>` : ''}
+      <p class="auth-foot">Данные хранятся в твоём личном облаке и видны только тебе.</p>
+    </div>`;
   }
 
   function head(title, sub) { return `<button class="auth-back" data-act="back" aria-label="Назад">${MD.icon('left')}</button><div class="auth-mini">${MD.mascot(pose, 84)}<h2>${esc(title)}</h2>${sub ? `<p>${esc(sub)}</p>` : ''}</div>`; }
@@ -91,7 +99,8 @@
 
   function render() {
     const h = { menu, email, phone: phoneStep, code: codeStep }[step]();
-    host.innerHTML = `<div class="auth-in">${h}</div>`;
+    host.classList.toggle('auth--menu', step === 'menu');
+    host.innerHTML = step === 'menu' ? h : `<div class="auth-in">${h}</div>`;
     const f = host.querySelector('input'); if (f && step !== 'menu') setTimeout(() => f.focus({ preventScroll: true }), 50);
   }
 
@@ -131,6 +140,21 @@
   host.addEventListener('submit', e => {
     e.preventDefault();
     if (busy) return;
+    if (e.target.id === 'idForm') {
+      const v = host.querySelector('#aId').value.trim(); draft.id = v;
+      if (!v) { error = 'Введи номер телефона или почту.'; render(); return; }
+      if (v.includes('@')) {
+        if (!cloud.providers.email) { error = 'Вход по почте пока не включён. Выбери другой способ.'; render(); return; }
+        if (!validEmail(v)) { error = 'Проверь почту, в адресе опечатка.'; render(); return; }
+        draft.email = v; mode = 'in'; go('email'); return;
+      }
+      const n = normPhone(v);
+      if (!cloud.providers.phone) { error = 'Вход по номеру пока не включён. Введи почту или выбери другой способ.'; render(); return; }
+      if (!n) { error = 'Номер не подошёл. Введи его с кодом страны, например +375291234567.'; render(); return; }
+      phone = n; draft.phone = n;
+      run(() => cloud.phoneSend(n), () => { startCooldown(); go('code', 'listen'); });
+      return;
+    }
     if (e.target.id === 'emailForm') {
       const em = host.querySelector('#aEmail').value.trim(), pw = host.querySelector('#aPw').value;
       draft = { email: em, pw };
@@ -157,6 +181,6 @@
 
   MD.authUI = {
     show() { step = 'menu'; mode = 'in'; error = ''; info = ''; busy = false; pose = 'hello'; host.hidden = false; render(); },
-    hide() { host.hidden = true; clearInterval(timer); draft = { email: '', pw: '' }; }
+    hide() { host.hidden = true; clearInterval(timer); draft = { email: '', pw: '', id: '' }; }
   };
 })(window);

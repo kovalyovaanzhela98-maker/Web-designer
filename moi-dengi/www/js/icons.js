@@ -21,6 +21,7 @@ const IC = {
   left: '<path class="s" d="M14.5 5.5 8 12l6.5 6.5" style="stroke-width:2.6"/>',
   right: '<path class="s" d="M9.5 5.5 16 12l-6.5 6.5" style="stroke-width:2.6"/>',
   check: '<path class="s" d="M5.5 12.5l4.2 4.2L18.5 8" style="stroke-width:2.8"/>',
+  goal: '<circle class="a" cx="12" cy="12" r="9.6"/><circle class="s" cx="12" cy="12" r="5.8"/><circle cx="12" cy="12" r="2.2"/>',
   dots: '<circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/>',
   /* аккаунт и синхронизация */
   mail: '<rect class="a" x="3" y="5.5" width="18" height="13" rx="3"/><path class="s" d="M4.8 8.4 12 13.4l7.2-5"/>',

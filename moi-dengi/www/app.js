@@ -56,7 +56,7 @@ const moneyH = n => hide ? MASK : `${esc(fmt(n))}<small>${esc(sym())}</small>`;
 const maskT = s => (hide ? MASK : s);
 
 /* ---------- Хранилище ---------- */
-let state = { currency: 'BYN', accounts: [], tx: [] };
+let state = { currency: 'BYN', accounts: [], goals: [], tx: [] };
 let hide = false;
 function load() {
   try {
@@ -81,26 +81,24 @@ function pushCloud() {
   synced = cloud.snapshotOf(state);
   Promise.resolve(cloud.write(cloudUid, ops)).catch(() => { synced = prev; toast('Не получилось отправить в облако — повторю при следующем изменении'); });
 }
-const canon = st => JSON.stringify([st.currency, st.accounts, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
+const canon = st => JSON.stringify([st.currency, st.accounts, st.goals, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
 function applyRemote(r) {
   if (!r.exists) {                               // новый аккаунт: заливаем то, что уже есть на телефоне
     synced = { meta: '', tx: new Map() };
     pushCloud();
     return;
   }
-  const st = sanitize({ currency: r.currency, accounts: r.accounts, tx: r.tx });
+  const st = sanitize({ currency: r.currency, accounts: r.accounts, goals: r.goals, tx: r.tx });
   if (!st) return;
   st.tx.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0)));
   synced = cloud.snapshotOf(st);
   if (canon(st) === canon(state)) return;
   state = st;
-  if (editAcc) editAcc = accById(editAcc.id) || editAcc;
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (_) {}
   render();
 }
 function wipeLocal() {
-  state = { currency: 'BYN', accounts: [], tx: [] };
-  filterAcc = null;
+  state = { currency: 'BYN', accounts: [], goals: [], tx: [] };
   try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(UID_KEY); } catch (_) {}
 }
 function gate(signedIn) {
@@ -155,13 +153,24 @@ function sanitize(o) {
       note: typeof t.note === 'string' ? t.note.slice(0, 120) : '', ts: Number(t.ts) || 0
     });
   }
-  return { currency, accounts, tx };
+  const goals = [];
+  for (const g of (Array.isArray(o.goals) ? o.goals : [])) {
+    if (!g || typeof g.name !== 'string' || !g.name.trim()) continue;
+    const target = parseAmount(g.target); if (!(target > 0)) continue;
+    const sv = parseAmount(g.saved, true), months = Math.max(1, Math.min(600, Math.round(Number(g.months)) || 1));
+    goals.push({
+      id: typeof g.id === 'string' && g.id ? g.id : uid(), name: g.name.trim().slice(0, 40), target: round2(target),
+      saved: Number.isFinite(sv) && sv > 0 ? round2(sv) : 0, months,
+      deadline: parseYmd(g.deadline) ? g.deadline : MD.goals.ymdOf(MD.goals.addMonths(new Date(), months)),
+      created: parseYmd(g.created) ? g.created : today()
+    });
+  }
+  return { currency, accounts, goals, tx };
 }
 
 /* ---------- UI-состояние ---------- */
 const now0 = new Date();
 let ym = { y: now0.getFullYear(), m: now0.getMonth() };
-const hintSeen = () => { try { return localStorage.getItem('moidengi_hint') === '1'; } catch (_) { return false; } };
 let filterAcc = null, tab = 'home', opsType = 'all', opsQuery = '', statType = 'expense';
 let draft = [];
 const catInfo = (type, name) => CATS[type].find(c => c[0] === name) || CATS[type][CATS[type].length - 1];
@@ -169,6 +178,7 @@ const accById = id => state.accounts.find(a => a.id === id);
 const colorOf = hex => COLORS.find(c => c.bg === hex) || COLORS[0];
 const monthKey = (y = ym.y, m = ym.m) => `${y}-${pad(m + 1)}`;
 
+const totalBalance = () => round2(state.accounts.reduce((s, a) => s + accBalance(a), 0));
 function accBalance(a) {
   let b = a.balance;
   for (const t of state.tx) if (t.acc === a.id) b += t.type === 'income' ? t.amount : -t.amount;
@@ -179,6 +189,11 @@ function monthTx(y = ym.y, m = ym.m) {
   return state.tx.filter(t => t.date.startsWith(mk) && (!fa || t.acc === fa.id));
 }
 const sumOf = (list, type) => round2(list.filter(t => t.type === type).reduce((s, t) => s + t.amount, 0));
+
+/* Счёт у человека один, общий. Внутри он по-прежнему лежит как единственная «карта», но экранов для неё нет. */
+function ensureAccount() {
+  if (!state.accounts.length) state.accounts.push({ id: 'main', name: 'Мой счёт', last4: '', balance: 0, color: COLORS[0].bg });
+}
 
 /* ---------- Отрисовка ---------- */
 function setNum(el, html, value) {
@@ -198,12 +213,12 @@ function setNum(el, html, value) {
 /* Фин комментирует месяц: первая реплика самая важная, по касанию листаем дальше */
 let sayIdx = 0;
 function finTips() {
-  if (!state.accounts.length) return [{ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Добавь первую карту, и начнём считать вместе.</small>' }];
   const cur = monthTx(now0.getFullYear(), now0.getMonth());
   const inc = sumOf(cur, 'income'), exp = sumOf(cur, 'expense');
   const tips = [];
   const todayExp = round2(state.tx.filter(t => t.type === 'expense' && t.date === today()).reduce((s, t) => s + t.amount, 0));
-  if (!cur.length) tips.push({ pose: 'sleepy', t: 'В этом месяце пока тихо<small>Скажи, на что ушли деньги или что пришло, я запишу.</small>' });
+  if (!state.tx.length && !round2(state.accounts.reduce((a, x) => a + x.balance, 0))) tips.push({ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Скажи, сколько денег у тебя сейчас: это можно указать в «Аккаунте». Потом просто записывай траты.</small>' });
+  else if (!cur.length) tips.push({ pose: 'sleepy', t: 'В этом месяце пока тихо<small>Скажи, на что ушли деньги или что пришло, я запишу.</small>' });
   else {
     tips.push(todayExp ? { pose: 'hello', t: `Сегодня ушло <em>${esc(maskT(money(todayExp)))}</em><small>Всё записано, ничего не потерялось.</small>` } : { pose: 'joy', t: 'Сегодня без трат<small>Так держать!</small>' });
     if (inc > 0 && exp > inc) tips.push({ pose: 'think', t: 'Расходы обгоняют доходы<small>Загляни в статистику, там видно, на что уходит больше всего.</small>' });
@@ -216,6 +231,8 @@ function finTips() {
       else if (pct >= 15) tips.push({ pose: 'think', t: `На ${pct}% больше, чем в прошлом месяце<small>Бывает. Посмотри, что изменилось.</small>` });
     }
   }
+  const gl = state.goals.filter(g => g.saved < g.target).sort((a, b) => goalPct(b) - goalPct(a))[0];
+  if (gl) tips.push({ pose: 'love', t: `Цель «${esc(gl.name)}»: уже ${goalPct(gl)}%<small>Загляни в «Цели», чтобы пополнить.</small>` });
   tips.push({ pose: 'notify', t: 'Можно просто сказать голосом<small>Нажми микрофон: «вчера кофе 6 рублей».</small>' });
   return tips;
 }
@@ -229,7 +246,7 @@ function renderSay(pop) {
 $('#homeSay').addEventListener('click', () => { sayIdx++; renderSay(true); buzz(8); });
 
 function render() {
-  if (filterAcc && !accById(filterAcc)) filterAcc = null;
+  ensureAccount();
   const d = new Date();
   const hr = d.getHours();
   $('#hello').textContent = hr < 5 ? 'Доброй ночи' : hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
@@ -240,6 +257,8 @@ function render() {
   renderSay();
   if (tab === 'ops') renderOps();
   if (tab === 'stats') renderStats();
+  if (tab === 'goals') renderGoals();
+  if (tab === 'acc') renderAcc();
 }
 
 function renderMonthBars() {
@@ -248,11 +267,8 @@ function renderMonthBars() {
 }
 
 function renderHome() {
-  const fa = filterAcc && accById(filterAcc);
-  const total = fa ? accBalance(fa) : round2(state.accounts.reduce((s, a) => s + accBalance(a), 0));
-  $('#heroLabel').textContent = fa ? `На карте «${fa.name}»` : 'Всего денег';
+  const total = totalBalance();
   setNum($('#heroSum'), moneyH, total);
-  $('#filterReset').hidden = !fa;
   $('#btnEye').innerHTML = icon(hide ? 'eyeoff' : 'eye');
   $('#btnEye').setAttribute('aria-pressed', String(hide));
   $('#btnEye').setAttribute('aria-label', hide ? 'Показать суммы' : 'Скрыть суммы');
@@ -262,7 +278,6 @@ function renderHome() {
   $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
   $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
 
-  renderStrip();
   const recent = list.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
     ? `<div class="recent">${recent.map(txRow).join('')}</div>`
@@ -270,23 +285,6 @@ function renderHome() {
 }
 
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
-
-function renderStrip() {
-  const el = $('#strip');
-  $('#stripHint').hidden = state.accounts.length < 2 || hintSeen();
-  if (!state.accounts.length) {
-    el.innerHTML = `<button class="acc-add big" data-add-acc>${icon('plus')}<span>Добавить первую карту или счёт</span></button>`;
-    return;
-  }
-  el.innerHTML = state.accounts.map(a => {
-    const c = colorOf(a.color), sel = a.id === filterAcc;
-    return `<div class="acc ${sel ? 'sel' : ''}" data-acc="${esc(a.id)}" role="button" tabindex="0" aria-pressed="${sel}" aria-label="${esc(a.name)}, на карте ${esc(hide ? 'сумма скрыта' : money(accBalance(a)))}. Нажми, чтобы увидеть только её операции">
-      <span class="acc-dot" style="background:${c.bg}"></span>
-      <span class="acc-txt"><span class="acc-name">${esc(a.name)}${a.last4 ? `<em>·${esc(a.last4)}</em>` : ''}</span><span class="acc-bal">${moneyH(accBalance(a))}</span></span>
-      <button class="acc-more" data-edit="${esc(a.id)}" aria-label="Изменить карту ${esc(a.name)}">${icon('dots')}</button>
-    </div>`;
-  }).join('') + `<button class="acc-add" data-add-acc aria-label="Добавить карту">${icon('plus')}</button>`;
-}
 
 function dayTitle(s) {
   const d = parseYmd(s), t = parseYmd(today());
@@ -405,7 +403,8 @@ let tabPushed = false;
 function showTab(name, fromPop) {
   tab = name;
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
-  $$('.nav-b').forEach(b => { if (b.dataset.tab === name) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  const navName = name === 'ops' ? 'home' : name;
+  $$('.nav-b').forEach(b => { if (b.dataset.tab === navName) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
     else if (name === 'home' && tabPushed) { ignorePops++; history.back(); tabPushed = false; }
@@ -415,6 +414,7 @@ function showTab(name, fromPop) {
 }
 $$('.nav-b').forEach(b => b.addEventListener('click', () => { buzz(8); showTab(b.dataset.tab); }));
 document.addEventListener('click', e => {
+  if (e.target.closest('[data-back]')) { showTab('home'); return; }
   const g = e.target.closest('[data-go]');
   if (g) showTab(g.dataset.go);
   const ms = e.target.closest('[data-mshift]');
@@ -424,7 +424,6 @@ document.addEventListener('click', e => {
 $('#s-ops').addEventListener('click', e => {
   const f = e.target.closest('[data-ft]');
   if (f) { opsType = f.dataset.ft; renderOps(); }
-  if (e.target.closest('#chipX')) { filterAcc = null; render(); }
 });
 $('#opsSearch').addEventListener('input', e => { opsQuery = e.target.value; renderOps(); });
 $('#s-stats').addEventListener('click', e => {
@@ -441,6 +440,7 @@ $('#btnEye').addEventListener('click', () => {
 const layers = [];
 let ignorePops = 0;
 function openLayer(el) {
+  $('#toast').hidden = true;
   el.hidden = false;
   layers.push(el);
   history.pushState({ layer: layers.length }, '');
@@ -504,8 +504,6 @@ function renderTxForm() {
   $('#txCur').textContent = sym();
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
     `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="--c:${c[2]}" aria-hidden="true">${cIcon(c)}</span><span>${esc(c[0])}</span></button>`).join('');
-  $('#txAccs').innerHTML = state.accounts.map(a =>
-    `<button type="button" role="radio" class="chip" data-acc-pick="${esc(a.id)}" aria-checked="${a.id === tx.acc}"><span class="dot" style="background:${colorOf(a.color).bg}"></span>${esc(a.name)}${a.last4 ? ' ·' + esc(a.last4) : ''}</button>`).join('');
   syncDateChips();
 }
 function syncDateChips() {
@@ -514,12 +512,12 @@ function syncDateChips() {
   $('#dYest').setAttribute('aria-checked', String(v === ymd(y)));
 }
 function openTx(id) {
-  if (!state.accounts.length) { toast('Сначала добавь хотя бы одну карту'); openAcc(null); return; }
+  ensureAccount();
   const t = id && state.tx.find(x => x.id === id);
   tx.editId = t ? t.id : null;
   tx.type = t ? t.type : 'expense';
   tx.cat = t ? t.cat : CATS.expense[0][0];
-  tx.acc = t ? t.acc : ((filterAcc && accById(filterAcc)) ? filterAcc : state.accounts[0].id);
+  tx.acc = t ? t.acc : state.accounts[0].id;
   $('#txTitle').textContent = t ? 'Изменить операцию' : 'Новая операция';
   $('#txAmount').value = t ? String(t.amount).replace('.', ',') : '';
   $('#txNote').value = t ? t.note : '';
@@ -531,11 +529,10 @@ function openTx(id) {
   if (t) $('#txAmount').removeAttribute('data-autofocus'); else $('#txAmount').setAttribute('data-autofocus', '');
 }
 $('#lyTx').addEventListener('click', e => {
-  const t = e.target.closest('[data-type],[data-cat],[data-acc-pick]');
+  const t = e.target.closest('[data-type],[data-cat]');
   if (!t) return;
   if (t.dataset.type) { tx.type = t.dataset.type; if (!CATS[tx.type].some(c => c[0] === tx.cat)) tx.cat = CATS[tx.type][0][0]; else if (tx.type === 'income' && tx.cat === 'Подарки') tx.cat = 'Подарок'; }
   if (t.dataset.cat) tx.cat = t.dataset.cat;
-  if (t.dataset.accPick) tx.acc = t.dataset.accPick;
   buzz(6);
   renderTxForm();
 });
@@ -606,111 +603,263 @@ function deleteTx(id) {
   document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.swipe .tx')) { e.preventDefault(); openTx(e.target.dataset.tx); } });
 })();
 
-/* ---------- Карты ---------- */
-let editAcc = null, accColor = COLORS[0].bg;
-function renderSwatches() {
-  $('#accColors').innerHTML = COLORS.map(c =>
-    `<button type="button" role="radio" class="sw" data-color="${c.bg}" style="--c:${c.bg};--fg:${c.fg}" aria-checked="${c.bg === accColor}" aria-label="${c.name}">${c.bg === accColor ? icon('check') : ''}</button>`).join('');
-  syncPreview();
+/* ---------- Цели ---------- */
+const G = MD.goals;
+const goalPct = g => Math.min(100, Math.round(g.saved / g.target * 100));
+const goalLeft = g => {
+  if (g.saved >= g.target) return 'Цель достигнута';
+  const ml = G.monthsLeft(g.deadline, new Date());
+  if (!ml) return 'Срок вышел';
+  return `${G.termLabel(ml)} · по ${maskT(money(Math.ceil((g.target - g.saved) / ml)))}`;
+};
+function renderGoals() {
+  const el = $('#goalsBody'), list = state.goals;
+  if (!list.length) {
+    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 170)}</span><h2>Пока ни одной цели</h2><p>Отпуск, подушка безопасности, новая техника. Расскажи Фину, чего хочешь, и он посчитает, сколько откладывать каждый месяц.</p><button class="btn primary wide" data-newgoal>Поставить цель</button></div>`;
+    return;
+  }
+  const sum = round2(list.reduce((s, g) => s + g.saved, 0));
+  el.innerHTML = `<div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>Целей в работе: ${list.filter(g => g.saved < g.target).length}</small>`, 84)}</div>` +
+    list.map(g => `<button class="goal" data-goal="${esc(g.id)}">
+      <span class="goal-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span>
+      <span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span>
+      <span class="goal-sub"><span>${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</span><span>${esc(goalLeft(g))}</span></span>
+    </button>`).join('');
 }
-function syncPreview() {
-  const c = colorOf(accColor), p = $('#accPreview');
-  $('.acc-dot', p).style.background = c.bg;
-  const name = $('#accName').value.trim() || 'Название';
-  const l4 = $('#accLast4').value.trim();
-  $('#pvName').innerHTML = esc(name) + (/^\d{1,4}$/.test(l4) ? `<em>·${esc(l4)}</em>` : '');
-  const b = parseAmount($('#accBal').value.trim() || '0', true);
-  $('#pvBal').textContent = Number.isFinite(b) ? money(b) : '';
+let openGoalId = null;
+function openGoal(id) {
+  const g = state.goals.find(x => x.id === id); if (!g) return;
+  openGoalId = id;
+  $('#goalTitle').textContent = g.name;
+  const done = g.saved >= g.target, pct = goalPct(g);
+  const say = done ? ['joy', 'Цель достигнута! Можно собираться']
+    : pct >= 50 ? ['happy', `Больше половины пути, осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
+      : pct > 0 ? ['hello', `Начало положено. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
+        : ['think', 'Пока пусто. Отложи первую сумму'];
+  $('#goalDetail').innerHTML = `${MD.say(say[0], say[1], 84)}
+    <div class="goal big"><span class="goal-top"><b>${esc(maskT(money(g.saved)))}</b><span class="goal-pct">${pct}%</span></span>
+    <span class="goal-bar"><i style="width:${pct}%"></i></span>
+    <span class="goal-sub"><span>Цель: ${esc(maskT(money(g.target)))}</span><span>${esc(goalLeft(g))}</span></span></div>
+    <form id="goalAdd" novalidate>
+      <label class="fl" for="goalAmt">Отложить</label>
+      <div class="bal-row"><div class="amount-wrap sm"><input id="goalAmt" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"><span class="cur">${esc(sym())}</span></div><button class="btn primary" type="submit">Добавить</button></div>
+      <div class="msg err" id="goalErr" hidden></div>
+    </form>
+    <button class="btn danger wide" type="button" id="goalDel">Удалить цель</button>`;
+  openLayer($('#lyGoal'));
 }
-function openAcc(id) {
-  editAcc = id ? accById(id) : null;
-  $('#accTitle').textContent = editAcc ? 'Изменить карту' : 'Новая карта';
-  $('#accName').value = editAcc ? editAcc.name : '';
-  $('#accLast4').value = editAcc ? editAcc.last4 : '';
-  $('#accBal').value = editAcc ? String(editAcc.balance).replace('.', ',') : '';
-  $$('#lyAcc .curAcc').forEach(c => { c.textContent = sym(); });
-  accColor = editAcc ? editAcc.color : COLORS[state.accounts.length % COLORS.length].bg;
-  ['#accNameErr', '#accLast4Err', '#accBalErr'].forEach(s => hideErr($(s)));
-  $('#accDelete').hidden = !editAcc;
-  renderSwatches();
-  $('#accName').setAttribute('data-autofocus', '');
-  openLayer($('#lyAcc'));
-}
-$('#accColors').addEventListener('click', e => {
-  const b = e.target.closest('[data-color]');
-  if (b) { accColor = b.dataset.color; renderSwatches(); }
+$('#goalsBody').addEventListener('click', e => {
+  const g = e.target.closest('[data-goal]');
+  if (g) openGoal(g.dataset.goal);
+  if (e.target.closest('[data-newgoal]')) openQuiz();
 });
-$('#accLast4').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); syncPreview(); });
-$('#accName').addEventListener('input', syncPreview);
-$('#accBal').addEventListener('input', syncPreview);
-$('#accForm').addEventListener('submit', e => {
+$('#goalNew').addEventListener('click', () => openQuiz());
+$('#goalDetail').addEventListener('submit', e => {
   e.preventDefault();
-  const name = $('#accName').value.trim(), l4 = $('#accLast4').value.trim(), balRaw = $('#accBal').value.trim();
-  let ok = true;
-  hideErr($('#accNameErr')); hideErr($('#accLast4Err')); hideErr($('#accBalErr'));
-  if (!name) { showErr($('#accNameErr'), 'Как назвать карту?'); ok = false; }
-  if (l4 && !/^\d{4}$/.test(l4)) { showErr($('#accLast4Err'), 'Здесь ровно 4 цифры — или оставь пустым'); ok = false; }
-  const bal = balRaw === '' ? 0 : parseAmount(balRaw, true);
-  if (!Number.isFinite(bal)) { showErr($('#accBalErr'), 'Введи сумму, например 250,00'); ok = false; }
-  if (!ok) return;
-  if (editAcc) Object.assign(editAcc, { name, last4: l4, balance: round2(bal), color: accColor });
-  else state.accounts.push({ id: uid(), name, last4: l4, balance: round2(bal), color: accColor });
-  save();
-  closeLayer($('#lyAcc'));
-  render();
+  const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
+  const v = parseAmount($('#goalAmt').value), err = $('#goalErr');
+  if (!(v > 0)) { showErr(err, 'Введи сумму больше нуля, например 150.'); return; }
+  const was = g.saved >= g.target;
+  g.saved = round2(g.saved + v); save(); render(); buzz(15);
+  closeLayer($('#lyGoal'));
+  toast(!was && g.saved >= g.target ? 'Цель достигнута, поздравляю!' : 'Отложено', null, null, !was && g.saved >= g.target ? 'joy' : 'happy');
 });
-$('#accDelete').addEventListener('click', async () => {
-  const a = editAcc; if (!a) return;
-  const n = state.tx.filter(t => t.acc === a.id).length;
-  const yes = await confirmDlg(`Удалить «${a.name}»?`, n ? `Вместе с картой удалятся её операции (${n}). Это нельзя отменить.` : 'Это нельзя отменить.');
+$('#goalDetail').addEventListener('click', async e => {
+  if (!e.target.closest('#goalDel')) return;
+  const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
+  const yes = await confirmDlg('Удалить цель?', `Цель «${g.name}» и отложенная сумма в ней исчезнут из приложения.`, 'Удалить');
   if (!yes) return;
-  state.accounts = state.accounts.filter(x => x.id !== a.id);
-  state.tx = state.tx.filter(t => t.acc !== a.id);
-  if (filterAcc === a.id) filterAcc = null;
-  save();
-  closeLayer($('#lyAcc'));
-  render();
-  toast('Карта удалена');
+  state.goals = state.goals.filter(x => x.id !== g.id); save(); render();
+  closeLayer($('#lyGoal'));
+  toast('Цель удалена', null, null, 'think');
 });
 
-// Лента карт: тап — фильтр, долгое нажатие — редактирование
-(() => {
-  const strip = $('#strip');
-  strip.addEventListener('click', () => { try { localStorage.setItem('moidengi_hint', '1'); } catch (_) {} $('#stripHint').hidden = true; });
-  let timer = null, fired = false, sx = 0, sy = 0;
-  const stop = () => { clearTimeout(timer); timer = null; };
-  strip.addEventListener('pointerdown', e => {
-    const c = e.target.closest('[data-acc]');
-    if (!c || e.target.closest('[data-edit]')) return;
-    fired = false; sx = e.clientX; sy = e.clientY;
-    stop();
-    timer = setTimeout(() => { fired = true; buzz(20); openAcc(c.dataset.acc); }, 520);
-  });
-  strip.addEventListener('pointermove', e => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) stop(); });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => strip.addEventListener(n, stop));
-  strip.addEventListener('contextmenu', e => e.preventDefault());
-  strip.addEventListener('click', e => {
-    if (e.target.closest('[data-add-acc]')) { openAcc(null); return; }
-    const ed = e.target.closest('[data-edit]');
-    if (ed) { openAcc(ed.dataset.edit); return; }
-    const c = e.target.closest('[data-acc]');
-    if (!c) return;
-    if (fired) { fired = false; return; }
-    filterAcc = filterAcc === c.dataset.acc ? null : c.dataset.acc;
-    buzz(8);
-    render();
-  });
-  strip.addEventListener('keydown', e => {
-    const c = e.target.closest('[data-acc]');
-    if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); c.click(); }
-  });
-})();
-$('#filterReset').addEventListener('click', () => { filterAcc = null; render(); });
+/* Разговор с Фином: вопросы, план, согласие или уточнения */
+const KINDS = [['Отпуск', 'Куда-нибудь, где тепло'], ['Подушка безопасности', 'На непредвиденное'], ['Техника', 'Телефон, ноутбук'], ['Ремонт', 'Или переезд'], ['Подарок', 'Себе или близким'], ['Своя цель', 'Назову сам']];
+const STEP_NO = { kind: 1, custom: 1, target: 2, saved: 3, term: 4, free: 5, think: 5, plan: 6, tune: 6, tuneMonthly: 6, tuneTerm: 6, tuneTarget: 6, tuneIncome: 6 };
+let quiz = null;
+function openQuiz() {
+  quiz = { step: 'kind', stack: [], name: '', target: 0, saved: 0, months: 0, free: G.freeMoney(state.tx, new Date()), extra: 0, hadFree: false };
+  quiz.hadFree = quiz.free !== null;
+  renderQuiz();
+  openLayer($('#lyQuiz'));
+}
+const qGo = step => { quiz.stack.push(quiz.step); quiz.step = step; renderQuiz(); };
+const qIn = (id, ph, unit) => `<div class="amount-wrap"><input id="${id}" type="text" inputmode="decimal" autocomplete="off" placeholder="${ph}">${unit ? `<span class="cur">${esc(unit)}</span>` : ''}</div><div class="msg err" id="qErr" hidden></div>`;
+const qBtn = (act, label, cls = 'primary') => `<button class="btn ${cls} wide" type="button" data-qa="${act}">${esc(label)}</button>`;
+function planOf() { return G.plan({ target: quiz.target, saved: quiz.saved, months: quiz.months, free: quiz.free }); }
+function renderQuiz() {
+  const q = quiz, body = $('#quizBody');
+  $('#quizBar').style.width = (STEP_NO[q.step] || 1) / 6 * 100 + '%';
+  const back = q.stack.length ? `<button class="quiz-back" type="button" data-qa="back">${icon('left')}<span>Назад</span></button>` : '';
+  const nm = esc(q.name);
+  let say, html = '';
+  switch (q.step) {
+    case 'kind':
+      say = ['hello', 'Давай поставим цель. Что хочешь накопить?'];
+      html = `<div class="kind-grid">${KINDS.map(k => `<button type="button" class="kind" data-kind="${esc(k[0])}"><b>${esc(k[0])}</b><small>${esc(k[1])}</small></button>`).join('')}</div>`;
+      break;
+    case 'custom':
+      say = ['hello', 'Как назовём цель?'];
+      html = `<input id="qText" type="text" maxlength="40" autocomplete="off" placeholder="Например, Велосипед"><div class="msg err" id="qErr" hidden></div>${qBtn('custom', 'Дальше')}`;
+      break;
+    case 'target':
+      say = ['think', `Сколько нужно на «${nm}»?`];
+      html = qIn('qNum', '0', sym()) + qBtn('target', 'Дальше');
+      break;
+    case 'saved':
+      say = ['hello', 'Сколько уже отложено на эту цель?'];
+      html = qIn('qNum', '0', sym()) + qBtn('saved', 'Дальше') + qBtn('saved0', 'Пока ничего', 'soft');
+      break;
+    case 'term':
+      say = ['notify', 'К какому сроку хочешь накопить?'];
+      html = `<div class="term-grid">${[[3, '3 месяца'], [6, '6 месяцев'], [12, '1 год'], [24, '2 года']].map(t => `<button type="button" class="kind term" data-term="${t[0]}"><b>${t[1]}</b></button>`).join('')}</div>
+        <label class="fl sm" for="qNum">Или свой срок, в месяцах</label>${qIn('qNum', 'Например, 9')}${qBtn('term', 'Дальше', 'soft')}`;
+      break;
+    case 'free':
+      say = ['think', 'Я пока не вижу твоих доходов и трат. Сколько денег остаётся свободными за месяц?'];
+      html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('free', 'Дальше') + qBtn('free0', 'Не знаю', 'soft');
+      break;
+    case 'think':
+      say = ['think', 'Считаю…'];
+      html = '<div class="dots-load" aria-hidden="true"><i></i><i></i><i></i></div>';
+      break;
+    case 'plan': {
+      const p = planOf(), cur = sym();
+      const until = G.addMonths(new Date(), p.months), untilTxt = `${MONTHS[until.getMonth()].toLowerCase()} ${until.getFullYear()}`;
+      const T = G.termLabel(p.months);
+      const txt = {
+        easy: ['joy', `Это посильно. Откладывая по <em>${esc(money(p.monthly))}</em> в месяц, на «${nm}» накопишь за ${T}.<small>Хватит и останется запас.</small>`],
+        ok: ['happy', `Вполне реально. Нужно откладывать по <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Почти всё свободное уйдёт в цель, так что придётся себя держать.</small>`],
+        hard: ['think', `Тяжеловато: нужно по <em>${esc(money(p.monthly))}</em> в месяц, а свободно в среднем ${p.free > 0 ? esc(money(p.free)) : 'меньше нуля'}.${p.altMonths ? `<small>Если откладывать по ${esc(money(p.free))}, цель получится за ${G.termLabel(p.altMonths)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
+        unknown: ['hello', `Вот план: по <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Твоих доходов я не знаю, поэтому не могу сказать, посильно ли это.</small>`],
+        done: ['joy', 'Нужная сумма уже есть!<small>Сохрани цель, чтобы следить за ней.</small>']
+      }[p.verdict];
+      say = txt;
+      html = `<div class="plan">
+        <div><span>Цель</span><b>${nm}</b></div>
+        <div><span>Нужно</span><b>${esc(money(q.target))}</b></div>
+        <div><span>Уже есть</span><b>${esc(money(q.saved))}</b></div>
+        <div class="hl"><span>Откладывать</span><b>${esc(money(p.monthly))} в месяц</b></div>
+        <div><span>Срок</span><b>${T}, до ${untilTxt}</b></div>
+        ${p.free !== null ? `<div><span>Свободно в среднем</span><b>${esc(money(p.free))} в месяц</b></div>` : ''}
+      </div>` + qBtn('accept', 'Согласен, сохранить цель') +
+        (p.verdict === 'hard' && p.altMonths ? qBtn('alt', `Принять срок: ${G.termLabel(p.altMonths)}`, 'soft') : '') +
+        qBtn('reject', 'Не подходит', 'ghost');
+      void cur;
+      break;
+    }
+    case 'tune':
+      say = ['think', 'Понял, подберём иначе. Что не так?'];
+      html = `<div class="opts">
+        <button type="button" data-qa="tuneMonthly">Откладывать столько каждый месяц тяжело</button>
+        <button type="button" data-qa="tuneTerm">Хочу накопить быстрее</button>
+        <button type="button" data-qa="tuneTarget">Сумма получилась слишком большой</button>
+        <button type="button" data-qa="tuneIncome">Есть доход, которого ты не видишь</button>
+        <button type="button" data-qa="restart">Начать сначала</button></div>`;
+      break;
+    case 'tuneMonthly':
+      say = ['think', 'Сколько в месяц тебе комфортно откладывать?'];
+      html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('doMonthly', 'Пересчитать');
+      break;
+    case 'tuneTerm':
+      say = ['notify', 'За сколько месяцев хочешь накопить?'];
+      html = qIn('qNum', 'Например, 5') + qBtn('doTerm', 'Пересчитать');
+      break;
+    case 'tuneTarget':
+      say = ['think', `Какая сумма на «${nm}» подойдёт?`];
+      html = qIn('qNum', '0', sym()) + qBtn('doTarget', 'Пересчитать');
+      break;
+    case 'tuneIncome':
+      say = ['think', 'Сколько ещё поступает в месяц сверх того, что записано в приложении?'];
+      html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('doIncome', 'Пересчитать');
+      break;
+  }
+  body.innerHTML = `${back}${MD.say(say[0], say[1], 84)}<div class="quiz-in">${html}</div>`;
+  const f = body.querySelector('input'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 80);
+}
+function quizNum(allowZero) {
+  const v = parseAmount(($('#qNum') || {}).value, allowZero), err = $('#qErr');
+  hideErr(err);
+  return { v, fail: m => { showErr(err, m); return null; } };
+}
+$('#quizBody').addEventListener('click', e => {
+  const q = quiz; if (!q) return;
+  const k = e.target.closest('[data-kind]');
+  if (k) { q.name = k.dataset.kind === 'Своя цель' ? '' : k.dataset.kind; buzz(6); qGo(q.name ? 'target' : 'custom'); return; }
+  const tm = e.target.closest('[data-term]');
+  if (tm) { q.months = Number(tm.dataset.term); buzz(6); toPlan(); return; }
+  const b = e.target.closest('[data-qa]'); if (!b) return;
+  const a = b.dataset.qa;
+  if (a === 'back') { q.step = q.stack.pop(); renderQuiz(); return; }
+  if (a === 'custom') {
+    const v = ($('#qText').value || '').trim();
+    if (!v) { showErr($('#qErr'), 'Напиши, на что копим.'); return; }
+    q.name = v.slice(0, 40); qGo('target'); return;
+  }
+  if (a === 'target' || a === 'doTarget') {
+    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму больше нуля, например 3000.');
+    q.target = n.v; if (a === 'doTarget') { if (q.saved > q.target) q.saved = q.target; toPlan(true); } else qGo('saved'); return;
+  }
+  if (a === 'saved' || a === 'saved0') {
+    if (a === 'saved0') q.saved = 0;
+    else { const n = quizNum(true); if (!Number.isFinite(n.v) || n.v < 0) return n.fail('Введи сумму, например 500, или нажми «Пока ничего».'); q.saved = n.v; }
+    qGo('term'); return;
+  }
+  if (a === 'term' || a === 'doTerm') {
+    const n = quizNum(false); const m = Math.round(n.v);
+    if (!(m >= 1 && m <= 600)) return n.fail('Введи срок в месяцах, от 1 до 600.');
+    q.months = m; toPlan(a === 'doTerm'); return;
+  }
+  if (a === 'free' || a === 'free0') {
+    if (a === 'free0') q.free = null;
+    else { const n = quizNum(true); if (!Number.isFinite(n.v)) return n.fail('Введи сумму или нажми «Не знаю».'); q.free = n.v; q.hadFree = true; }
+    toPlan(); return;
+  }
+  if (a === 'accept') { saveGoal(); return; }
+  if (a === 'alt') { q.months = planOf().altMonths; q.stack.push(q.step); thinkThen(); return; }
+  if (a === 'reject') { qGo('tune'); return; }
+  if (a === 'restart') { q.stack = []; q.step = 'kind'; renderQuiz(); return; }
+  if (a === 'tuneMonthly' || a === 'tuneTerm' || a === 'tuneTarget' || a === 'tuneIncome') { qGo(a); return; }
+  if (a === 'doMonthly') {
+    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму больше нуля, например 200.');
+    const need = Math.max(q.target - q.saved, 0), m = Math.max(1, Math.ceil(need / n.v));
+    if (m > 600) return n.fail('Так получится больше 50 лет. Давай откладывать побольше.');
+    q.months = m; toPlan(true); return;
+  }
+  if (a === 'doIncome') {
+    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму больше нуля, например 300.');
+    q.extra += n.v; q.free = round2((q.free || 0) + n.v); toPlan(true); return;
+  }
+});
+$('#quizBody').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+  e.preventDefault();
+  const b = $('#quizBody [data-qa]:not(.ghost):not(.soft):not([data-qa=back])'); if (b) b.click();
+});
+function toPlan(replace) {
+  if (quiz.free === null && !quiz.hadFree && quiz.step !== 'free' && !replace) { qGo('free'); return; }
+  if (replace) quiz.stack.push(quiz.step);
+  thinkThen();
+}
+function thinkThen() {
+  quiz.step = 'think'; renderQuiz();
+  const q = quiz;
+  setTimeout(() => { if (quiz !== q || q.step !== 'think') return; q.step = 'plan'; q.stack = q.stack.filter(s => s !== 'think'); renderQuiz(); buzz(10); }, 900);
+}
+function saveGoal() {
+  const q = quiz, p = planOf();
+  state.goals.push({ id: uid(), name: q.name, target: round2(q.target), saved: round2(q.saved), months: p.months, deadline: G.ymdOf(G.addMonths(new Date(), p.months)), created: today() });
+  save(); closeLayer($('#lyQuiz')); quiz = null; buzz(20);
+  showTab('goals');
+  toast('Цель добавлена', null, null, 'joy');
+}
+
 $('#fab').addEventListener('click', () => { buzz(10); openTx(); });
 
 /* ---------- Помощник ---------- */
-const AI_SAY = { hello: 'Расскажи, что с деньгами', listen: 'Слушаю тебя…', think: 'Пока пусто. Скажи или напиши, что записать', happy: 'Готово! Проверь, всё ли я понял верно', oops: 'Что-то пошло не так. Попробуем ещё раз?' };
-const setAiPose = p => { $('#aiMascot').innerHTML = MD.say(p === 'listen' ? 'notify' : p, esc(AI_SAY[p] || AI_SAY.hello), 112); };
+const AI_SAY = { hello: 'Скажи или напиши, что записать', listen: 'Слушаю тебя…', think: 'Пока пусто. Скажи или напиши, что записать', happy: 'Готово! Проверь, всё ли понял верно', oops: 'Не вышло. Попробуем ещё раз?' };
+const setAiPose = p => { $('#aiMascot').innerHTML = MD.say(p === 'listen' ? 'notify' : p, esc(AI_SAY[p] || AI_SAY.hello), 76); };
 function normalizeItems(items) {
   const res = [];
   for (const it of items.slice(0, 30)) {
@@ -732,7 +881,7 @@ function runAI() {
   const err = $('#aiErr'), text = $('#aiText').value.trim();
   hideErr(err);
   if (!text) { showErr(err, 'Пока пусто. Скажи или напиши, например: «вчера кофе 6 рублей».'); setAiPose('think'); $('#aiText').focus(); return; }
-  if (!state.accounts.length) { showErr(err, 'Чтобы записывать, нужна хотя бы одна карта. Добавь её на главной.'); setAiPose('oops'); return; }
+  ensureAccount();
   const items = normalizeItems(MD.parseNotes(text, { today: new Date(), accounts: state.accounts }));
   if (!items.length) { showErr(err, 'Не нашлось трат и доходов. Назови, что куплено или получено и на какую сумму.'); setAiPose('oops'); return; }
   setAiPose('happy'); buzz(15);
@@ -795,8 +944,8 @@ function setMic(on, hint, live) {
   h.classList.toggle('live', !!live);
   setAiPose(on ? 'listen' : 'hello');
 }
-const HINT_IDLE = 'Нажми и говори: «вчера кофе 6 рублей»';
-function voiceFail(msg) { setMic(false, msg); showErr($('#aiErr'), msg); setAiPose('oops'); }
+const HINT_IDLE = 'Нажми на микрофон и говори';
+function voiceFail(msg) { setMic(false, HINT_IDLE); showErr($('#aiErr'), msg); setAiPose('oops'); }
 function voiceText(t) {
   voice.text = t;
   $('#aiText').value = (voice.base ? voice.base + ' ' : '') + t;
@@ -821,7 +970,7 @@ async function startVoice() {
       await P.removeAllListeners();
       await P.addListener('partialResults', d => { if (d && d.matches && d.matches[0]) voiceText(d.matches[0]); });
       await P.addListener('listeningState', d => { if (d && d.status === 'stopped') finishVoice(); });
-      setMic(true, 'Слушаю. Когда договоришь — нажми ещё раз.', true);
+      setMic(true, 'Слушаю. Договоришь — нажми ещё раз', true);
       buzz(15);
       await P.start({ language: 'ru-RU', maxResults: 1, partialResults: true, popup: false });
     } catch (e) { voiceFail('Микрофон не включился. Попробуй ещё раз или продиктуй через клавиатуру.'); }
@@ -841,7 +990,7 @@ async function startVoice() {
   };
   r.onend = () => { if (voice.web) { voice.web = null; finishVoice(); } };
   voice.web = r;
-  setMic(true, 'Слушаю. Когда договоришь — нажми ещё раз.', true);
+  setMic(true, 'Слушаю. Договоришь — нажми ещё раз', true);
   buzz(15);
   try { r.start(); } catch (e) { voice.web = null; voiceFail('Микрофон не включился.'); }
 }
@@ -851,18 +1000,29 @@ async function stopVoice() {
   else if (voice.web) { try { voice.web.stop(); } catch (_) {} }
 }
 $('#micBtn').addEventListener('click', () => { voice.on ? stopVoice() : startVoice(); });
+$('#txVoice').addEventListener('click', () => { closeLayer($('#lyTx')); showTab('ai'); setTimeout(startVoice, 200); });
 $('#homeMic').addEventListener('click', () => { showTab('ai'); setTimeout(startVoice, 120); });
 
-/* ---------- Настройки ---------- */
+/* ---------- Аккаунт ---------- */
 function renderSettings() {
   $('#setCur').innerHTML = Object.keys(CURRENCIES).map(c =>
     `<button type="button" role="radio" class="chip" data-cur="${c}" aria-checked="${c === state.currency}">${c} ${CURRENCIES[c]}</button>`).join('');
 }
-$('#btnSettings').addEventListener('click', () => {
+function renderAcc() {
   renderSettings();
   renderAccount();
-  $('#bkText').value = ''; hideErr($('#bkErr'));
-  openLayer($('#lySet'));
+  $$('#s-acc .curAcc').forEach(c => { c.textContent = sym(); });
+  const bn = $('#balNow');
+  if (document.activeElement !== bn) bn.value = totalBalance().toFixed(2).replace('.', ',');
+}
+$('#balSave').addEventListener('click', () => {
+  const err = $('#balErr'); hideErr(err);
+  const v = parseAmount($('#balNow').value, true);
+  if (!Number.isFinite(v)) { showErr(err, 'Введи сумму цифрами, например 1250,50.'); return; }
+  ensureAccount();
+  state.accounts[0].balance = round2(state.accounts[0].balance + (v - totalBalance()));
+  save(); render(); buzz(12);
+  toast('Баланс обновлён', null, null, 'happy');
 });
 $('#setCur').addEventListener('click', e => {
   const b = e.target.closest('[data-cur]');
@@ -885,7 +1045,6 @@ function renderAccount() {
 $('#btnSignOut').addEventListener('click', async () => {
   const yes = await confirmDlg('Выйти из аккаунта?', 'Данные останутся в облаке. Войдёшь снова — и всё вернётся.', 'Выйти');
   if (!yes) return;
-  closeLayer($('#lySet'));
   setTimeout(() => cloud.signOut(), 200);
 });
 $('#bkCopy').addEventListener('click', async () => {
@@ -907,10 +1066,9 @@ $('#bkRestore').addEventListener('click', async () => {
   let s = null;
   try { s = sanitize(JSON.parse(raw)); } catch (_) {}
   if (!s) { showErr(err, 'Не похоже на копию из этого приложения. Скопируй её заново целиком.'); return; }
-  const yes = await confirmDlg('Заменить все данные?', `Всё, что сейчас в приложении, заменится копией: карт — ${s.accounts.length}, операций — ${s.tx.length}.`, 'Заменить');
+  const yes = await confirmDlg('Заменить все данные?', `Всё, что сейчас в приложении, заменится копией: операций — ${s.tx.length}, целей — ${s.goals.length}.`, 'Заменить');
   if (!yes) return;
-  state = s; filterAcc = null; save();
-  closeLayer($('#lySet'));
+  state = s; save();
   render();
   toast('Всё восстановлено', null, null, 'happy');
 });
