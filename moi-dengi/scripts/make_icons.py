@@ -1,60 +1,55 @@
-"""Рисует иконку «Мои деньги» и кладёт mipmap-ресурсы в resources/android/res.
-Минимализм: глубокий синий градиент, белая наклонная карта, жёлтая монета-акцент."""
-from PIL import Image, ImageDraw, ImageFilter, ImageChops
-import os, math
+"""Иконка «Мои деньги»: буква «м» из двух арок, правая ножка заканчивается жёлтой монетой.
+Рисуется в 4x и уменьшается — края гладкие. Ресурсы кладутся в resources/android/res."""
+from PIL import Image, ImageDraw, ImageFilter
+import os
 OUT=os.path.join(os.path.dirname(__file__),'..','resources','android','res')
-S=1024
+K=4; S=1024*K
 def lerp(a,b,t): return tuple(int(a[i]+(b[i]-a[i])*t) for i in range(3))
-def gradient(size):
-    im=Image.new('RGB',(size,size)); px=im.load()
-    c1,c2,c3=(78,108,222),(47,74,168),(28,40,112)
-    for y in range(size):
-        for x in range(size):
-            t=(x*0.35+y*0.65)/size
-            px[x,y]=lerp(c1,c2,t/0.5) if t<0.5 else lerp(c2,c3,(t-0.5)/0.5)
-    return im.convert('RGBA')
+def background():
+    """Диагональный градиент индиго + мягкий свет в верхнем левом углу."""
+    n=256; g=Image.new('RGB',(n,n)); px=g.load()
+    c1,c2,c3=(70,98,214),(38,60,160),(20,30,92)
+    for y in range(n):
+        for x in range(n):
+            t=(x*0.4+y*0.6)/n
+            px[x,y]=lerp(c1,c2,t/0.55) if t<0.55 else lerp(c2,c3,(t-0.55)/0.45)
+    g=g.resize((1024,1024),Image.BICUBIC).convert('RGBA')
+    glow=Image.new('RGBA',(1024,1024),(0,0,0,0)); d=ImageDraw.Draw(glow)
+    d.ellipse([-380,-420,620,580],fill=(255,255,255,26))
+    return Image.alpha_composite(g,glow.filter(ImageFilter.GaussianBlur(150)))
 def glyph(mono=False):
-    """Передний план 1024x1024 (карта + монета) на прозрачном фоне, в безопасной зоне 66%."""
-    W,H=560,352
-    card=Image.new('RGBA',(W,H),(0,0,0,0)); d=ImageDraw.Draw(card)
-    fill=(255,255,255,255)
-    d.rounded_rectangle([0,0,W-1,H-1],radius=58,fill=fill)
+    im=Image.new('RGBA',(S,S),(0,0,0,0)); d=ImageDraw.Draw(im)
+    w=118*K; r=w//2; white=(255,255,255,255)
+    xs=[322*K,512*K,702*K]            # три ножки буквы «м»
+    base=700*K; top=384*K             # низ ножек / центр дуг
+    rad=(xs[1]-xs[0])//2              # радиус арки
+    def cap(x,y): d.ellipse([x-r,y-r,x+r,y+r],fill=white)
+    # левая ножка и дуги
+    d.line([(xs[0],top),(xs[0],base)],fill=white,width=w); cap(xs[0],base)
+    for i in range(2):
+        cx=(xs[i]+xs[i+1])//2; cy=top
+        ro=rad+r; d.arc([cx-ro,cy-ro,cx+ro,cy+ro],180,360,fill=white,width=w)
+    d.line([(xs[1],top),(xs[1],base)],fill=white,width=w); cap(xs[1],base)
+    # правая ножка короче — под ней монета
+    d.line([(xs[2],top),(xs[2],base-150*K)],fill=white,width=w); cap(xs[2],base-150*K)
+    mr=92*K; cx,cy=xs[2],base+40*K
     if mono:
-        d.rectangle([0,92,W,168],fill=(0,0,0,0))
-        d.rounded_rectangle([48,226,190,274],radius=14,fill=(0,0,0,0))
+        d.ellipse([cx-mr,cy-mr,cx+mr,cy+mr],fill=white)
     else:
-        d.rectangle([0,92,W,168],fill=(47,74,168,255))
-        d.rounded_rectangle([48,226,190,274],radius=14,fill=(242,194,48,255))
-        d.rounded_rectangle([48,296,280,318],radius=11,fill=(190,200,235,255))
-    card=card.rotate(12,resample=Image.BICUBIC,expand=True)
-    im=Image.new('RGBA',(S,S),(0,0,0,0))
-    cx,cy=S//2-10,S//2+6
-    if not mono:
-        sh=Image.new('RGBA',(S,S),(0,0,0,0))
-        a=card.split()[3].point(lambda v:int(v*0.35))
-        sh.paste((10,18,70,255),(cx-card.width//2,cy-card.height//2+26),a)
-        im=Image.alpha_composite(im,sh.filter(ImageFilter.GaussianBlur(22)))
-    im.alpha_composite(card,(cx-card.width//2,cy-card.height//2))
-    # монета
-    r=96; mx,my=cx+card.width//2-70,cy+card.height//2-70
-    coin=Image.new('RGBA',(S,S),(0,0,0,0)); cd=ImageDraw.Draw(coin)
-    if mono:
-        cd.ellipse([mx-r,my-r,mx+r,my+r],fill=(255,255,255,255)); cd.ellipse([mx-r+34,my-r+34,mx+r-34,my+r-34],fill=(0,0,0,0))
-    else:
-        cd.ellipse([mx-r-12,my-r-12,mx+r+12,my+r+12],fill=(34,53,138,255))
-        cd.ellipse([mx-r,my-r,mx+r,my+r],fill=(242,194,48,255))
-        cd.ellipse([mx-r+30,my-r+30,mx+r-30,my+r-30],outline=(255,226,120,255),width=10)
-    im=Image.alpha_composite(im,coin)
-    return im
-def squircle_mask(size,round_=False,radius=0.23):
-    m=Image.new('L',(size*2,size*2),0); d=ImageDraw.Draw(m)
-    if round_: d.ellipse([0,0,size*2-1,size*2-1],fill=255)
-    else: d.rounded_rectangle([0,0,size*2-1,size*2-1],radius=int(size*2*radius),fill=255)
-    return m.resize((size,size),Image.LANCZOS)
-bg=gradient(S); fg=glyph(); mono=glyph(True)
+        d.ellipse([cx-mr,cy-mr,cx+mr,cy+mr],fill=(255,200,40,255))
+        d.ellipse([cx-mr+26*K,cy-mr+26*K,cx+mr-26*K,cy+mr-26*K],outline=(255,236,160,255),width=9*K)
+    # центрируем по видимой области
+    bb=im.getbbox(); ox=(S-(bb[0]+bb[2]))//2; oy=(S-(bb[1]+bb[3]))//2
+    out=Image.new('RGBA',(S,S),(0,0,0,0)); out.alpha_composite(im,(ox,oy))
+    return out.resize((1024,1024),Image.LANCZOS)
+def mask(round_=False,radius=0.235):
+    m=Image.new('L',(2048,2048),0); d=ImageDraw.Draw(m)
+    if round_: d.ellipse([0,0,2047,2047],fill=255)
+    else: d.rounded_rectangle([0,0,2047,2047],radius=int(2048*radius),fill=255)
+    return m.resize((1024,1024),Image.LANCZOS)
+bg=background(); fg=glyph(); mono=glyph(True)
 def legacy(round_):
-    im=bg.copy(); im.alpha_composite(fg)
-    im.putalpha(squircle_mask(S,round_)); return im
+    im=bg.copy(); im.alpha_composite(fg); im.putalpha(mask(round_)); return im
 dens={'mdpi':(48,108),'hdpi':(72,162),'xhdpi':(96,216),'xxhdpi':(144,324),'xxxhdpi':(192,432)}
 L,R=legacy(False),legacy(True)
 for k,(l,f) in dens.items():
@@ -74,6 +69,13 @@ xml='''<?xml version="1.0" encoding="utf-8"?>
 '''
 for n in ('ic_launcher.xml','ic_launcher_round.xml'): open(os.path.join(v,n),'w').write(xml)
 vals=os.path.join(OUT,'values'); os.makedirs(vals,exist_ok=True)
-open(os.path.join(vals,'ic_launcher_background.xml'),'w').write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#2F4AA8</color>\n</resources>\n')
+open(os.path.join(vals,'ic_launcher_background.xml'),'w').write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#263CA0</color>\n</resources>\n')
 L.resize((512,512),Image.LANCZOS).save(os.path.join(os.path.dirname(__file__),'..','www','icon.png'))
 L.save('/tmp/claude-0/icon_big.png')
+# превью: как выглядит на экране телефона (круг, скруглённый квадрат)
+pv=Image.new('RGB',(900,320),(238,241,245))
+pv.paste(L.resize((256,256),Image.LANCZOS),(30,30),L.resize((256,256),Image.LANCZOS))
+pv.paste(R.resize((256,256),Image.LANCZOS),(330,30),R.resize((256,256),Image.LANCZOS))
+sm=L.resize((96,96),Image.LANCZOS); pv.paste(sm,(650,30),sm)
+sm=L.resize((56,56),Image.LANCZOS); pv.paste(sm,(650,160),sm)
+pv.save('/tmp/claude-0/icon_preview.png')

@@ -10,14 +10,14 @@ const MODEL = 'claude-haiku-5-5';
 
 const CATS = {
   expense: [
-    ['Продукты', '🛒', '#3B82F6'], ['Кафе', '☕', '#F59E0B'], ['Транспорт', '🚌', '#14B8A6'],
-    ['Дом', '🏠', '#8B5CF6'], ['Здоровье', '💊', '#EF4444'], ['Одежда', '👕', '#EC4899'],
-    ['Связь', '📱', '#06B6D4'], ['Подписки', '🔁', '#6366F1'], ['Подарки', '🎁', '#F97316'],
-    ['Развлечения', '🎬', '#EAB308'], ['Другое', '📦', '#94A3B8']
+    ['Продукты', 'cart', '#3B82F6'], ['Кафе', 'cup', '#F59E0B'], ['Транспорт', 'bus', '#14B8A6'],
+    ['Дом', 'sofa', '#8B5CF6'], ['Здоровье', 'heart', '#EF4444'], ['Одежда', 'shirt', '#EC4899'],
+    ['Связь', 'phone', '#06B6D4'], ['Подписки', 'repeat', '#6366F1'], ['Подарки', 'gift', '#F97316'],
+    ['Развлечения', 'ticket', '#EAB308'], ['Другое', 'grid', '#94A3B8']
   ],
   income: [
-    ['Зарплата', '💼', '#1F8A5B'], ['Подработка', '🧰', '#14B8A6'], ['Подарок', '🎁', '#F97316'],
-    ['Возврат', '↩️', '#3B82F6'], ['Другое', '📦', '#94A3B8']
+    ['Зарплата', 'cash', '#1F8A5B'], ['Подработка', 'case', '#14B8A6'], ['Подарок', 'gift', '#F97316'],
+    ['Возврат', 'undo', '#3B82F6'], ['Другое', 'grid', '#94A3B8']
   ]
 };
 const COLORS = [
@@ -36,25 +36,43 @@ const WD = ['воскресенье', 'понедельник', 'вторник'
 const WD_S = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
 const IC = {
-  home: '<path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
-  list: '<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r=".8"/><circle cx="4" cy="12" r=".8"/><circle cx="4" cy="18" r=".8"/>',
-  chart: '<path d="M5 20V10M12 20V4M19 20v-7"/>',
-  spark: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.7 1.8L21.5 18.5l-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/>',
-  plus: '<path d="M12 5v14M5 12h14"/>',
-  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
-  stop: '<rect x="7" y="7" width="10" height="10" rx="2.5" fill="currentColor"/>',
-  gear: '<circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
-  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
-  eyeoff: '<path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.4-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
-  down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
-  up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
-  close: '<path d="M6 6l12 12M18 6L6 18"/>',
-  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
-  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',
-  left: '<path d="M15 6l-6 6 6 6"/>',
-  right: '<path d="M9 6l6 6-6 6"/>'
+  home: '<path class="a" d="M5 11.2V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7.8L12 5.6z"/><path d="M12 3.1 2.9 10.9a1.1 1.1 0 0 0 1.4 1.7L12 6l7.7 6.6a1.1 1.1 0 0 0 1.4-1.7z"/><path d="M9.6 21v-4.2a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2V21z"/>',
+  list: '<rect x="3.5" y="5" width="17" height="3.4" rx="1.7"/><rect class="a" x="3.5" y="10.3" width="11" height="3.4" rx="1.7"/><rect x="3.5" y="15.6" width="14" height="3.4" rx="1.7"/>',
+  chart: '<rect class="a" x="3.8" y="12" width="4.4" height="8" rx="1.6"/><rect x="9.8" y="4" width="4.4" height="16" rx="1.6"/><rect class="a" x="15.8" y="8.5" width="4.4" height="11.5" rx="1.6"/>',
+  spark: '<circle class="a" cx="12" cy="12" r="9.6"/><path d="M12 5.6l1.6 4.2 4.2 1.6-4.2 1.6L12 17.2l-1.6-4.2L6.2 11.4l4.2-1.6z"/>',
+  plus: '<rect x="10.8" y="4.5" width="2.4" height="15" rx="1.2"/><rect x="4.5" y="10.8" width="15" height="2.4" rx="1.2"/>',
+  mic: '<rect x="8.8" y="2.8" width="6.4" height="12" rx="3.2"/><path class="a" d="M4.8 11h2.2a5 5 0 0 0 10 0h2.2a7.2 7.2 0 0 1-6.1 7.1V21h-2.4v-2.9A7.2 7.2 0 0 1 4.8 11z"/>',
+  stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="3"/>',
+  gear: '<rect class="a" x="3" y="6" width="18" height="2.4" rx="1.2"/><circle cx="8.5" cy="7.2" r="3.1"/><rect class="a" x="3" y="15.6" width="18" height="2.4" rx="1.2"/><circle cx="15.5" cy="16.8" r="3.1"/>',
+  eye: '<path class="a" d="M12 5c5 0 8.6 4.1 9.7 6.2a1.6 1.6 0 0 1 0 1.6C20.6 14.9 17 19 12 19S3.4 14.9 2.3 12.8a1.6 1.6 0 0 1 0-1.6C3.4 9.1 7 5 12 5z"/><circle cx="12" cy="12" r="3.3"/>',
+  eyeoff: '<path class="a" d="M12 5c5 0 8.6 4.1 9.7 6.2a1.6 1.6 0 0 1 0 1.6C20.6 14.9 17 19 12 19S3.4 14.9 2.3 12.8a1.6 1.6 0 0 1 0-1.6C3.4 9.1 7 5 12 5z"/><circle cx="12" cy="12" r="3.3"/><path class="s" d="M4.5 4.5l15 15" style="stroke-width:2.6"/>',
+  down: '<path d="M12 20.5l-7.2-7.6h4.7V4h5v8.9h4.7z"/>',
+  up: '<path d="M12 3.5l7.2 7.6h-4.7V20h-5v-8.9H4.8z"/>',
+  close: '<path class="s" d="M6.5 6.5l11 11M17.5 6.5l-11 11" style="stroke-width:2.4"/>',
+  search: '<circle class="a" cx="10.5" cy="10.5" r="6.5"/><circle class="s" cx="10.5" cy="10.5" r="6.5"/><path class="s" d="M15.5 15.5 20 20"/>',
+  trash: '<path class="a" d="M6 8.4h12l-.9 10.7a2 2 0 0 1-2 1.8H8.9a2 2 0 0 1-2-1.8z"/><path d="M4 6.4a1 1 0 0 1 1-1h3.4l.7-1.4h5.8l.7 1.4H19a1 1 0 0 1 0 2H5a1 1 0 0 1-1-1z"/>',
+  left: '<path class="s" d="M14.5 5.5 8 12l6.5 6.5" style="stroke-width:2.6"/>',
+  right: '<path class="s" d="M9.5 5.5 16 12l-6.5 6.5" style="stroke-width:2.6"/>',
+  check: '<path class="s" d="M5.5 12.5l4.2 4.2L18.5 8" style="stroke-width:2.8"/>',
+  dots: '<circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/>',
+  /* категории */
+  cart: '<path class="a" d="M5.6 8.2h14a1 1 0 0 1 1 1.25l-1.5 6a2 2 0 0 1-1.95 1.5H9.1a2 2 0 0 1-1.95-1.55z"/><path class="s" d="M2.8 4.2h2.1l1.5 10.2"/><circle cx="9.4" cy="19.7" r="1.7"/><circle cx="16.6" cy="19.7" r="1.7"/>',
+  cup: '<path d="M4.2 9.5h11.6v5.3A5.2 5.2 0 0 1 10.6 20H9.4a5.2 5.2 0 0 1-5.2-5.2z"/><path class="s" d="M15.8 11h1.2a2.6 2.6 0 0 1 0 5.2h-1.2"/><path class="s a" d="M8 3.2v3M12 3.2v3"/>',
+  bus: '<path fill-rule="evenodd" d="M5 5.5A3.2 3.2 0 0 1 8.2 2.3h7.6A3.2 3.2 0 0 1 19 5.5V16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2zM7.6 5.4v5h8.8v-5zM7.4 14.2a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 0 0-2.2 0zm7 0a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 0 0-2.2 0z"/><rect x="5.8" y="18.6" width="3" height="2.6" rx="1.1"/><rect x="15.2" y="18.6" width="3" height="2.6" rx="1.1"/>',
+  sofa: '<path class="a" d="M6 8.2A3 3 0 0 1 9 5.2h6a3 3 0 0 1 3 3V12H6z"/><path d="M3 12.8a2 2 0 0 1 4 0V14h10v-1.2a2 2 0 0 1 4 0V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z"/><rect x="5" y="19.4" width="1.8" height="2" rx=".9"/><rect x="17.2" y="19.4" width="1.8" height="2" rx=".9"/>',
+  heart: '<path fill-rule="evenodd" d="M12 20.6S3 15.2 3 9A4.9 4.9 0 0 1 12 6.4 4.9 4.9 0 0 1 21 9c0 6.2-9 11.6-9 11.6zM11 9.6v1.9H9.1v2H11v1.9h2v-1.9h1.9v-2H13V9.6z"/>',
+  shirt: '<path d="M8.6 3.4 3 6.1l1.9 4.6 2.6-1V20a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9.7l2.6 1L21 6.1l-5.6-2.7a3.5 3.5 0 0 1-6.8 0z"/>',
+  phone: '<path fill-rule="evenodd" d="M9.8 2.5h4.4a2.8 2.8 0 0 1 2.8 2.8v13.4a2.8 2.8 0 0 1-2.8 2.8H9.8A2.8 2.8 0 0 1 7 18.7V5.3a2.8 2.8 0 0 1 2.8-2.8zM9.2 5.2v10.4h5.6V5.2zm2.8 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>',
+  repeat: '<path class="s" d="M5 11.5a7 7 0 0 1 11.7-4.7M19 12.5a7 7 0 0 1-11.7 4.7"/><path d="M18.6 3.2v4.8h-4.8zM5.4 20.8V16h4.8z"/>',
+  gift: '<path d="M4 11h6.8v10H6.2A2.2 2.2 0 0 1 4 18.8zM13.2 11H20v7.8a2.2 2.2 0 0 1-2.2 2.2h-4.6z"/><path class="a" d="M3 7.6A1.6 1.6 0 0 1 4.6 6h6.2v3.6H3zM13.2 6h6.2A1.6 1.6 0 0 1 21 7.6v2H13.2z"/><path class="s" d="M12 6C10.4 2.8 7.2 3.2 7.6 5.2c.3 1.2 2.6.8 4.4.8zM12 6c1.6-3.2 4.8-2.8 4.4-.8-.3 1.2-2.6.8-4.4.8z" style="stroke-width:1.8"/>',
+  ticket: '<path fill-rule="evenodd" d="M3 8.2A2.2 2.2 0 0 1 5.2 6h13.6A2.2 2.2 0 0 1 21 8.2v1.9a1.9 1.9 0 0 1 0 3.8v1.9a2.2 2.2 0 0 1-2.2 2.2H5.2A2.2 2.2 0 0 1 3 15.8v-1.9a1.9 1.9 0 0 1 0-3.8zM10.2 9v6l5-3z"/>',
+  grid: '<rect x="3.8" y="3.8" width="7.4" height="7.4" rx="2.2"/><rect class="a" x="12.8" y="3.8" width="7.4" height="7.4" rx="2.2"/><rect class="a" x="3.8" y="12.8" width="7.4" height="7.4" rx="2.2"/><rect x="12.8" y="12.8" width="7.4" height="7.4" rx="2.2"/>',
+  cash: '<path fill-rule="evenodd" d="M5.2 5.5h13.6A2.2 2.2 0 0 1 21 7.7v8.6a2.2 2.2 0 0 1-2.2 2.2H5.2A2.2 2.2 0 0 1 3 16.3V7.7a2.2 2.2 0 0 1 2.2-2.2zM12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zM5.9 11.1a1 1 0 1 0 0 1.8 1 1 0 0 0 0-1.8zM18.1 11.1a1 1 0 1 0 0 1.8 1 1 0 0 0 0-1.8z"/>',
+  case: '<path fill-rule="evenodd" d="M3 9.2A2.2 2.2 0 0 1 5.2 7h13.6A2.2 2.2 0 0 1 21 9.2v8.6a2.2 2.2 0 0 1-2.2 2.2H5.2A2.2 2.2 0 0 1 3 17.8zM10.6 12v2h2.8v-2z"/><path class="s" d="M9 7V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1"/>',
+  undo: '<path class="s" d="M8.5 5.5 4 10l4.5 4.5"/><path class="s" d="M4.6 10h9.4a5.2 5.2 0 0 1 0 10.4H10.5"/>'
 };
 const icon = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+const cIcon = ci => icon(ci[1]);
 function paintIcons(root = document) { $$('i[data-ic]', root).forEach(i => { i.innerHTML = icon(i.dataset.ic); }); }
 
 /* ---------- Утилиты ---------- */
@@ -179,6 +197,8 @@ function setNum(el, html, value) {
 function render() {
   if (filterAcc && !accById(filterAcc)) filterAcc = null;
   const d = new Date();
+  const hr = d.getHours();
+  $('#hello').textContent = hr < 5 ? 'Доброй ночи' : hr < 12 ? 'Доброе утро' : hr < 18 ? 'Добрый день' : 'Добрый вечер';
   const wd = WD[d.getDay()];
   $('#todayLabel').textContent = `${wd[0].toUpperCase()}${wd.slice(1)}, ${d.getDate()} ${MONTHS_G[d.getMonth()]}`;
   renderMonthBars();
@@ -195,7 +215,7 @@ function renderMonthBars() {
 function renderHome() {
   const fa = filterAcc && accById(filterAcc);
   const total = fa ? accBalance(fa) : round2(state.accounts.reduce((s, a) => s + accBalance(a), 0));
-  $('#heroLabel').textContent = fa ? `Баланс · ${fa.name}` : 'Общий баланс';
+  $('#heroLabel').textContent = fa ? `На карте «${fa.name}»` : 'Всего денег';
   setNum($('#heroSum'), moneyH, total);
   $('#filterReset').hidden = !fa;
   $('#btnEye').innerHTML = icon(hide ? 'eyeoff' : 'eye');
@@ -211,26 +231,26 @@ function renderHome() {
   const recent = list.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
     ? `<div class="recent">${recent.map(txRow).join('')}</div>`
-    : `<div class="empty"><span class="big" aria-hidden="true">🧾</span><b>Операций пока нет</b>Нажми «+» внизу или скажи помощнику, что потратила</div>`;
+    : `<div class="empty"><span class="big" aria-hidden="true">${icon('list')}</span><b>Здесь будут твои траты и доходы</b>Добавь первую — кнопка «+» внизу</div>`;
 }
 
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
 
 function renderStrip() {
   const el = $('#strip');
-  $('#stripHint').hidden = !state.accounts.length;
+  $('#stripHint').hidden = state.accounts.length < 2;
   if (!state.accounts.length) {
-    el.innerHTML = `<button class="acc-add big" data-add-acc><b>+</b><span>Добавить первую карту или счёт</span></button>`;
+    el.innerHTML = `<button class="acc-add big" data-add-acc>${icon('plus')}<span>Добавить первую карту или счёт</span></button>`;
     return;
   }
   el.innerHTML = state.accounts.map(a => {
     const c = colorOf(a.color), sel = a.id === filterAcc;
-    return `<div class="acc ${sel ? 'sel' : ''} ${filterAcc && !sel ? 'dim' : ''}" data-acc="${esc(a.id)}" style="--bg-c:${c.bg};--fg:${c.fg}" role="button" tabindex="0" aria-pressed="${sel}" aria-label="${esc(a.name)}, баланс ${esc(hide ? 'скрыт' : money(accBalance(a)))}. Нажми, чтобы показать только эту карту">
-      <button class="acc-more" data-edit="${esc(a.id)}" aria-label="Изменить карту ${esc(a.name)}">⋯</button>
-      <div><div class="acc-name">${esc(a.name)}</div><div class="acc-num">${a.last4 ? '•••• ' + esc(a.last4) : '&nbsp;'}</div></div>
-      <div class="acc-bal">${moneyH(accBalance(a))}</div>
+    return `<div class="acc ${sel ? 'sel' : ''}" data-acc="${esc(a.id)}" role="button" tabindex="0" aria-pressed="${sel}" aria-label="${esc(a.name)}, на карте ${esc(hide ? 'сумма скрыта' : money(accBalance(a)))}. Нажми, чтобы увидеть только её операции">
+      <span class="acc-dot" style="background:${c.bg}"></span>
+      <span class="acc-txt"><span class="acc-name">${esc(a.name)}${a.last4 ? `<em>·${esc(a.last4)}</em>` : ''}</span><span class="acc-bal">${moneyH(accBalance(a))}</span></span>
+      <button class="acc-more" data-edit="${esc(a.id)}" aria-label="Изменить карту ${esc(a.name)}">${icon('dots')}</button>
     </div>`;
-  }).join('') + `<button class="acc-add" data-add-acc><b>+</b><span>Добавить</span></button>`;
+  }).join('') + `<button class="acc-add" data-add-acc aria-label="Добавить карту">${icon('plus')}</button>`;
 }
 
 function dayTitle(s) {
@@ -246,7 +266,7 @@ function txRow(t) {
   const ci = catInfo(t.type, t.cat), a = accById(t.acc);
   return `<div class="swipe" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}</div>
     <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.note || t.cat)}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить или удалить">
-      <div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${ci[1]}</div>
+      <div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</div>
       <div class="tx-body"><div class="tx-t">${esc(t.note || t.cat)}</div><div class="tx-s">${esc(t.cat)} · ${esc(a ? a.name : '—')}</div></div>
       <div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${esc(signed(t.amount, t.type))}</div>
     </div></div>`;
@@ -261,7 +281,7 @@ function renderOps() {
     (!q || t.cat.toLowerCase().includes(q) || t.note.toLowerCase().includes(q)));
   const el = $('#opsList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><span class="big" aria-hidden="true">${q ? '🔎' : '🧾'}</span><b>${q ? 'Ничего не найдено' : 'Операций нет'}</b>${q ? 'Попробуй другое слово' : `В ${MONTHS_P[ym.m]} здесь пока пусто`}</div>`;
+    el.innerHTML = `<div class="empty"><span class="big" aria-hidden="true">${icon(q ? 'search' : 'list')}</span><b>${q ? 'Ничего не нашлось' : `В ${MONTHS_P[ym.m]} пока тихо`}</b>${q ? 'Попробуй другое слово или часть названия' : 'Добавь операцию — и она появится здесь'}</div>`;
     return;
   }
   const days = {};
@@ -279,7 +299,7 @@ function renderStats() {
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = `<div class="empty" style="border:0"><span class="big" aria-hidden="true">📊</span><b>${statType === 'expense' ? 'Расходов' : 'Доходов'} пока нет</b>В ${MONTHS_P[ym.m]} ничего не записано</div>`;
+    card.innerHTML = `<div class="empty" style="border:0"><span class="big" aria-hidden="true">${icon('chart')}</span><b>${statType === 'expense' ? 'Трат' : 'Доходов'} в ${MONTHS_P[ym.m]} нет</b>Когда появятся — здесь будет разбивка по категориям</div>`;
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true;
     return;
   }
@@ -300,7 +320,7 @@ function renderStats() {
         <svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--field)" stroke-width="20"/>${segs}</svg>
         <div class="donut-c"><b>${esc(maskT(fmt(total)))}</b><span>${esc(sym())} всего</span></div>
       </div>
-      <div class="top-cat">${statType === 'expense' ? 'Больше всего ушло на' : 'Основной источник'}<b>${catInfo(statType, rows[0][0])[1]} ${esc(rows[0][0])}</b>${Math.round(rows[0][1] / total * 100)}% ${word}</div>
+      <div class="top-cat">${statType === 'expense' ? 'Больше всего ушло на' : 'Главный источник'}<b>${esc(rows[0][0])}</b>${Math.round(rows[0][1] / total * 100)}% ${word}</div>
     </div>`;
 
   // Сравнение, среднее, максимум
@@ -314,9 +334,9 @@ function renderStats() {
   if (prev > 0) {
     const pct = Math.round((total - prev) / prev * 100);
     const better = statType === 'expense' ? pct <= 0 : pct >= 0;
-    cmp = `<div class="wide"><small>К прошлому месяцу</small><b class="${better ? 'good' : 'bad'}">${pct === 0 ? 'Столько же, сколько в прошлом месяце' : `${Math.abs(pct)}% ${pct < 0 ? 'меньше' : 'больше'}, чем в прошлом месяце`}</b></div>`;
+    cmp = `<div class="wide"><small>Сравнение с ${MONTHS[pm.getMonth()].toLowerCase().replace(/ь$/, 'я').replace(/т$/, 'та').replace(/й$/, 'я')}</small><b class="${better ? 'good' : 'bad'}">${pct === 0 ? `Столько же, сколько в ${MONTHS_P[pm.getMonth()]}` : `На ${Math.abs(pct)}% ${pct < 0 ? 'меньше' : 'больше'}, чем в ${MONTHS_P[pm.getMonth()]}`}</b></div>`;
   }
-  insEl.innerHTML = `<div class="ins">${cmp}<div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / daysN))))}</b></div><div><small>Самая крупная</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
+  insEl.innerHTML = `<div class="ins">${cmp}<div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / daysN))))}</b></div><div><small>${statType === 'expense' ? 'Самая крупная трата' : 'Самый крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
 
   // Столбики по дням
   const perDay = Array(dim).fill(0);
@@ -331,7 +351,7 @@ function renderStats() {
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = catInfo(statType, name), pc = sum / total * 100;
-    return `<li><div class="cat-top"><span class="dot" style="background:${ci[2]}"></span><span class="nm">${ci[1]} ${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span><span class="am">${esc(maskT(fmt(sum)))}</span></div><div class="bar"><i style="--c:${ci[2]};width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
+    return `<li><div class="cat-top"><span class="dot" style="background:${ci[2]}"></span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span><span class="am">${esc(maskT(fmt(sum)))}</span></div><div class="bar"><i style="--c:${ci[2]};width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
   }).join('')}</ul>`;
 }
 
@@ -438,7 +458,7 @@ function renderTxForm() {
   $$('#lyTx .seg-b').forEach(b => b.setAttribute('aria-checked', String(b.dataset.type === tx.type)));
   $('#txCur').textContent = sym();
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
-    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="--c:${c[2]}" aria-hidden="true">${c[1]}</span><span>${esc(c[0])}</span></button>`).join('');
+    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="--c:${c[2]}" aria-hidden="true">${cIcon(c)}</span><span>${esc(c[0])}</span></button>`).join('');
   $('#txAccs').innerHTML = state.accounts.map(a =>
     `<button type="button" role="radio" class="chip" data-acc-pick="${esc(a.id)}" aria-checked="${a.id === tx.acc}"><span class="dot" style="background:${colorOf(a.color).bg}"></span>${esc(a.name)}${a.last4 ? ' ·' + esc(a.last4) : ''}</button>`).join('');
   syncDateChips();
@@ -449,7 +469,7 @@ function syncDateChips() {
   $('#dYest').setAttribute('aria-checked', String(v === ymd(y)));
 }
 function openTx(id) {
-  if (!state.accounts.length) { toast('Сначала добавь карту или счёт'); openAcc(null); return; }
+  if (!state.accounts.length) { toast('Сначала добавь хотя бы одну карту'); openAcc(null); return; }
   const t = id && state.tx.find(x => x.id === id);
   tx.editId = t ? t.id : null;
   tx.type = t ? t.type : 'expense';
@@ -481,7 +501,7 @@ $('#txForm').addEventListener('submit', e => {
   e.preventDefault();
   const amt = parseAmount($('#txAmount').value);
   const err = $('#txAmountErr');
-  if (!(amt > 0)) { showErr(err, 'Введи сумму больше нуля, например 12,50'); $('#txAmount').focus(); return; }
+  if (!(amt > 0)) { showErr(err, 'Введи сумму, например 12,50'); $('#txAmount').focus(); return; }
   hideErr(err);
   const date = parseYmd($('#txDate').value) ? $('#txDate').value : today();
   const rec = { type: tx.type, amount: round2(amt), cat: tx.cat, acc: tx.acc, date, note: $('#txNote').value.trim().slice(0, 80) };
@@ -492,7 +512,7 @@ $('#txForm').addEventListener('submit', e => {
   closeLayer($('#lyTx'));
   buzz(15);
   render();
-  toast(ex ? 'Изменения сохранены' : 'Операция добавлена');
+  toast(ex ? 'Сохранено' : 'Готово, записано');
 });
 $('#txDelete').addEventListener('click', () => {
   const id = tx.editId;
@@ -505,7 +525,7 @@ function deleteTx(id) {
   if (i < 0) { render(); return; }
   const [t] = state.tx.splice(i, 1);
   save(); render(); buzz(15);
-  toast('Операция удалена', 'Отменить', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); });
+  toast('Удалено', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); });
 }
 
 // Тап — правка, свайп влево — удаление
@@ -545,15 +565,15 @@ function deleteTx(id) {
 let editAcc = null, accColor = COLORS[0].bg;
 function renderSwatches() {
   $('#accColors').innerHTML = COLORS.map(c =>
-    `<button type="button" role="radio" class="sw" data-color="${c.bg}" style="--c:${c.bg};--fg:${c.fg}" aria-checked="${c.bg === accColor}" aria-label="${c.name}">${c.bg === accColor ? '✓' : ''}</button>`).join('');
+    `<button type="button" role="radio" class="sw" data-color="${c.bg}" style="--c:${c.bg};--fg:${c.fg}" aria-checked="${c.bg === accColor}" aria-label="${c.name}">${c.bg === accColor ? icon('check') : ''}</button>`).join('');
   syncPreview();
 }
 function syncPreview() {
   const c = colorOf(accColor), p = $('#accPreview');
-  p.style.setProperty('--bg-c', c.bg); p.style.setProperty('--fg', c.fg);
-  $('#pvName').textContent = $('#accName').value.trim() || 'Название';
+  $('.acc-dot', p).style.background = c.bg;
+  const name = $('#accName').value.trim() || 'Название';
   const l4 = $('#accLast4').value.trim();
-  $('#pvNum').innerHTML = /^\d{1,4}$/.test(l4) ? '•••• ' + esc(l4) : '&nbsp;';
+  $('#pvName').innerHTML = esc(name) + (/^\d{1,4}$/.test(l4) ? `<em>·${esc(l4)}</em>` : '');
   const b = parseAmount($('#accBal').value.trim() || '0', true);
   $('#pvBal').textContent = Number.isFinite(b) ? money(b) : '';
 }
@@ -583,10 +603,10 @@ $('#accForm').addEventListener('submit', e => {
   const name = $('#accName').value.trim(), l4 = $('#accLast4').value.trim(), balRaw = $('#accBal').value.trim();
   let ok = true;
   hideErr($('#accNameErr')); hideErr($('#accLast4Err')); hideErr($('#accBalErr'));
-  if (!name) { showErr($('#accNameErr'), 'Введи название карты'); ok = false; }
-  if (l4 && !/^\d{4}$/.test(l4)) { showErr($('#accLast4Err'), 'Нужно ровно 4 цифры или оставь поле пустым'); ok = false; }
+  if (!name) { showErr($('#accNameErr'), 'Как назвать карту?'); ok = false; }
+  if (l4 && !/^\d{4}$/.test(l4)) { showErr($('#accLast4Err'), 'Здесь ровно 4 цифры — или оставь пустым'); ok = false; }
   const bal = balRaw === '' ? 0 : parseAmount(balRaw, true);
-  if (!Number.isFinite(bal)) { showErr($('#accBalErr'), 'Введи число, например 250,00'); ok = false; }
+  if (!Number.isFinite(bal)) { showErr($('#accBalErr'), 'Введи сумму, например 250,00'); ok = false; }
   if (!ok) return;
   if (editAcc) Object.assign(editAcc, { name, last4: l4, balance: round2(bal), color: accColor });
   else state.accounts.push({ id: uid(), name, last4: l4, balance: round2(bal), color: accColor });
@@ -660,13 +680,13 @@ ${lines.join('\n')}
 }
 function aiError(e) {
   if (e && e.kind) return e.msg;
-  if (e && e.name === 'AbortError') return 'ИИ слишком долго отвечает. Проверь интернет и попробуй ещё раз.';
-  if (!navigator.onLine) return 'Нет подключения к интернету. Подключись и попробуй снова.';
-  return 'Не удалось связаться с сервером ИИ. Проверь интернет и попробуй снова.';
+  if (e && e.name === 'AbortError') return 'Помощник слишком долго думает. Проверь интернет и попробуй ещё раз.';
+  if (!navigator.onLine) return 'Нет интернета. Подключись к сети и попробуй ещё раз.';
+  return 'Не получилось связаться с помощником. Проверь интернет и попробуй ещё раз.';
 }
 async function askAI(text) {
   const key = getKey();
-  if (!key) throw { kind: 1, msg: 'Сначала добавь API-ключ: шестерёнка на главной → «API-ключ Anthropic».' };
+  if (!key) throw { kind: 1, msg: 'Помощнику нужен ключ Anthropic. Вставь его в настройках — значок справа вверху на главной.' };
   const ctl = new AbortController();
   const to = setTimeout(() => ctl.abort(), 30000);
   let res;
@@ -679,11 +699,11 @@ async function askAI(text) {
   } finally { clearTimeout(to); }
   if (!res.ok) {
     let m = ''; try { m = ((await res.json()).error || {}).message || ''; } catch (_) {}
-    if (res.status === 401 || res.status === 403) throw { kind: 1, msg: 'Неверный API-ключ. Проверь его в настройках (шестерёнка).' };
-    if (res.status === 429) throw { kind: 1, msg: 'Слишком много запросов или исчерпан лимит. Подожди минуту и повтори.' };
-    if (res.status === 400 && /credit|balance/i.test(m)) throw { kind: 1, msg: 'На счёте Anthropic не хватает средств. Пополни баланс в консоли Anthropic.' };
-    if (res.status >= 500) throw { kind: 1, msg: 'Сервис ИИ сейчас перегружен. Попробуй через минуту.' };
-    throw { kind: 1, msg: `Запрос не удался (код ${res.status}). Попробуй ещё раз.` };
+    if (res.status === 401 || res.status === 403) throw { kind: 1, msg: 'Ключ не подошёл. Проверь в настройках, что он вставлен целиком.' };
+    if (res.status === 429) throw { kind: 1, msg: 'Слишком много запросов за короткое время. Подожди минутку и повтори.' };
+    if (res.status === 400 && /credit|balance/i.test(m)) throw { kind: 1, msg: 'На счёте Anthropic закончились средства. Пополни его в консоли Anthropic.' };
+    if (res.status >= 500) throw { kind: 1, msg: 'Помощник сейчас перегружен. Попробуй через минуту.' };
+    throw { kind: 1, msg: `Что-то пошло не так (код ${res.status}). Попробуй ещё раз.` };
   }
   const data = await res.json();
   return parseItems((data.content || []).filter(b => b.type === 'text').map(b => b.text).join(''));
@@ -691,7 +711,7 @@ async function askAI(text) {
 function parseItems(out) {
   const a = out.indexOf('{'), b = out.lastIndexOf('}');
   let obj;
-  try { obj = JSON.parse(out.slice(a, b + 1)); } catch (e) { throw { kind: 1, msg: 'Не получилось разобрать ответ ИИ. Переформулируй фразу и попробуй снова.' }; }
+  try { obj = JSON.parse(out.slice(a, b + 1)); } catch (e) { throw { kind: 1, msg: 'Не получилось понять ответ. Скажи то же самое другими словами.' }; }
   return normalizeItems(Array.isArray(obj && obj.items) ? obj.items : []);
 }
 function normalizeItems(items) {
@@ -714,12 +734,12 @@ function normalizeItems(items) {
 async function runAI() {
   const err = $('#aiErr'), btn = $('#aiGo'), text = $('#aiText').value.trim();
   hideErr(err);
-  if (!text) { showErr(err, 'Напиши или скажи, что потратила или получила — например: «вчера кофе 6 руб.»'); $('#aiText').focus(); return; }
-  if (!state.accounts.length) { showErr(err, 'Сначала добавь карту или счёт — туда помощник запишет операции.'); return; }
+  if (!text) { showErr(err, 'Пока пусто. Скажи или напиши, например: «вчера кофе 6 рублей».'); $('#aiText').focus(); return; }
+  if (!state.accounts.length) { showErr(err, 'Чтобы записывать, нужна хотя бы одна карта. Добавь её на главной.'); return; }
   btn.disabled = true; btn.classList.add('loading'); $('.aiGoText', btn).textContent = 'Думаю…';
   try {
     const items = await askAI(text);
-    if (!items.length) { showErr(err, 'Не нашла в тексте операций. Укажи, что и на какую сумму.'); return; }
+    if (!items.length) { showErr(err, 'Не нашлось трат и доходов. Назови, что куплено или получено и на какую сумму.'); return; }
     draft = items; renderDraft(); openLayer($('#lyDraft'));
   } catch (e) { showErr(err, aiError(e)); }
   finally { btn.disabled = false; btn.classList.remove('loading'); $('.aiGoText', btn).textContent = 'Разобрать'; }
@@ -733,7 +753,7 @@ $('#examples').addEventListener('click', e => {
 function renderDraft() {
   $('#draftList').innerHTML = draft.map((d, i) => {
     const ci = catInfo(d.type, d.cat), a = accById(d.acc);
-    return `<div class="dr"><div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${ci[1]}</div>
+    return `<div class="dr"><div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</div>
       <div class="dr-b"><div class="dr-t">${esc(d.note || d.cat)}</div><div class="dr-s">${esc(d.cat)} · ${esc(a.name)} · ${esc(dayTitle(d.date))}</div></div>
       <div class="tx-a ${d.type === 'income' ? 'inc' : 'exp'}">${esc(signed(d.amount, d.type))}</div>
       <button class="dr-x" data-drop="${i}" aria-label="Убрать строку: ${esc(d.note || d.cat)}">${icon('close')}</button></div>`;
@@ -762,7 +782,7 @@ $('#draftOk').addEventListener('click', () => {
   closeLayer($('#lyDraft'));
   buzz(20);
   showTab('home');
-  toast(`Добавлено записей: ${n}`);
+  toast(`Добавлено: ${n}`);
 });
 
 /* ---------- Голосовой ввод ---------- */
@@ -780,7 +800,7 @@ function setMic(on, hint, live) {
   h.textContent = hint;
   h.classList.toggle('live', !!live);
 }
-const HINT_IDLE = 'Нажми на микрофон и скажи, например: «вчера кофе 6 рублей»';
+const HINT_IDLE = 'Нажми и говори: «вчера кофе 6 рублей»';
 function voiceFail(msg) { setMic(false, msg); showErr($('#aiErr'), msg); }
 function voiceText(t) {
   voice.text = t;
@@ -790,7 +810,7 @@ async function finishVoice() {
   if (!voice.on) return;
   setMic(false, HINT_IDLE);
   if (voice.text.trim()) { buzz(15); runAI(); }
-  else voiceFail('Речь не распознана. Попробуй ещё раз, говори чуть ближе к микрофону.');
+  else voiceFail('Не расслышалось. Поднеси телефон поближе и попробуй ещё раз.');
 }
 async function startVoice() {
   hideErr($('#aiErr'));
@@ -799,36 +819,36 @@ async function startVoice() {
   if (P) {
     try {
       const av = await P.available();
-      if (!av.available) return voiceFail('На этом телефоне нет службы распознавания речи. Включи диктовку на клавиатуре (значок микрофона) и продиктуй в поле ниже.');
+      if (!av.available) return voiceFail('На этом телефоне нет распознавания речи. Нажми на поле ниже и продиктуй через значок микрофона на клавиатуре.');
       let perm = await P.checkPermissions();
       if (perm.speechRecognition !== 'granted') perm = await P.requestPermissions();
-      if (perm.speechRecognition !== 'granted') return voiceFail('Нет доступа к микрофону. Разреши его: Настройки телефона → Приложения → Мои деньги → Разрешения.');
+      if (perm.speechRecognition !== 'granted') return voiceFail('Нет доступа к микрофону. Разреши его в настройках телефона: Приложения → Мои деньги → Разрешения.');
       await P.removeAllListeners();
       await P.addListener('partialResults', d => { if (d && d.matches && d.matches[0]) voiceText(d.matches[0]); });
       await P.addListener('listeningState', d => { if (d && d.status === 'stopped') finishVoice(); });
-      setMic(true, 'Слушаю… говори. Нажми ещё раз, когда закончишь.', true);
+      setMic(true, 'Слушаю. Когда договоришь — нажми ещё раз.', true);
       buzz(15);
       await P.start({ language: 'ru-RU', maxResults: 1, partialResults: true, popup: false });
-    } catch (e) { voiceFail('Не удалось включить микрофон. Попробуй ещё раз или продиктуй через клавиатуру.'); }
+    } catch (e) { voiceFail('Микрофон не включился. Попробуй ещё раз или продиктуй через клавиатуру.'); }
     return;
   }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return voiceFail('Голосовой ввод здесь недоступен. Нажми на поле и используй значок микрофона на клавиатуре.');
+  if (!SR) return voiceFail('Голосовой ввод здесь не работает. Нажми на поле и продиктуй через микрофон на клавиатуре.');
   const r = new SR();
   r.lang = 'ru-RU'; r.interimResults = true; r.continuous = false;
   r.onresult = ev => { let s = ''; for (const x of ev.results) s += x[0].transcript; voiceText(s.trim()); };
   r.onerror = ev => {
     if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') voiceFail('Нет доступа к микрофону. Разреши его в настройках браузера.');
-    else if (ev.error === 'no-speech') voiceFail('Речь не распознана. Попробуй ещё раз.');
-    else if (ev.error === 'network') voiceFail('Нет подключения к интернету для распознавания речи.');
-    else if (ev.error !== 'aborted') voiceFail('Не удалось распознать речь. Попробуй ещё раз.');
+    else if (ev.error === 'no-speech') voiceFail('Не расслышалось. Попробуй ещё раз.');
+    else if (ev.error === 'network') voiceFail('Для распознавания речи нужен интернет.');
+    else if (ev.error !== 'aborted') voiceFail('Не получилось распознать речь. Попробуй ещё раз.');
     voice.web = null;
   };
   r.onend = () => { if (voice.web) { voice.web = null; finishVoice(); } };
   voice.web = r;
-  setMic(true, 'Слушаю… говори. Нажми ещё раз, когда закончишь.', true);
+  setMic(true, 'Слушаю. Когда договоришь — нажми ещё раз.', true);
   buzz(15);
-  try { r.start(); } catch (e) { voice.web = null; voiceFail('Не удалось включить микрофон.'); }
+  try { r.start(); } catch (e) { voice.web = null; voiceFail('Микрофон не включился.'); }
 }
 async function stopVoice() {
   const P = capPlugin();
@@ -874,21 +894,21 @@ $('#bkCopy').addEventListener('click', async () => {
     if (!ok) { toast('Скопируй текст из поля ниже вручную'); return; }
     ta.value = '';
   }
-  toast('Копия в буфере обмена');
+  toast('Копия скопирована');
 });
 $('#bkRestore').addEventListener('click', async () => {
   const err = $('#bkErr'); hideErr(err);
   const raw = $('#bkText').value.trim();
-  if (!raw) { showErr(err, 'Вставь в поле текст резервной копии.'); return; }
+  if (!raw) { showErr(err, 'Вставь в поле скопированный текст.'); return; }
   let s = null;
   try { s = sanitize(JSON.parse(raw)); } catch (_) {}
-  if (!s) { showErr(err, 'Это не похоже на резервную копию «Мои деньги». Скопируй её заново целиком.'); return; }
-  const yes = await confirmDlg('Заменить все данные?', `Текущие данные будут заменены копией: карт — ${s.accounts.length}, операций — ${s.tx.length}.`, 'Заменить');
+  if (!s) { showErr(err, 'Не похоже на копию из этого приложения. Скопируй её заново целиком.'); return; }
+  const yes = await confirmDlg('Заменить все данные?', `Всё, что сейчас в приложении, заменится копией: карт — ${s.accounts.length}, операций — ${s.tx.length}.`, 'Заменить');
   if (!yes) return;
   state = s; filterAcc = null; save();
   closeLayer($('#lySet'));
   render();
-  toast('Данные восстановлены');
+  toast('Всё восстановлено');
 });
 
 /* ---------- Старт ---------- */
