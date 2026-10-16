@@ -17,15 +17,15 @@
 
 :root{
   /* Цвет: поверхности и текст */
-  --bg:#EEF1F5;--surface:#FFFFFF;--text:#1D2433;--muted:#6A7386;--line:#DCE1E9;--field:#F3F5F9;
+  --bg:#F3F0E3;--surface:#FFFDF8;--text:#1F2B20;--muted:#6A7563;--line:#E2DDC9;--field:#F0ECDC;
   /* Цвет: смысл */
-  --inc:#1F8A5B;--inc-bg:#E2F3EA;--inc-t:#19774E;
-  --exp:#C2364B;--exp-bg:#F8E4E7;--exp-t:#B02F44;
-  /* Цвет: бренд (индиго + монета) */
-  --primary:#2F4AA8;--primary-2:#4864C9;--on-primary:#FFFFFF;
+  --inc:#238A5B;--inc-bg:#DDF0E1;--inc-t:#1B7449;
+  --exp:#C2413F;--exp-bg:#FAE3DD;--exp-t:#AE3533;
+  /* Цвет: бренд (лист Фина + монета) */
+  --primary:#4F6F34;--primary-2:#6B8F46;--on-primary:#FFFFFF;
   --fin-cream:#F6EBCB;--fin-leaf:#9DB45A;--fin-leaf-deep:#5F7F38;--fin-blush:#F4B3AA;--fin-ink:#1B2A1F;
-  --coin:#F2C230;--coin-deep:#F2B900;--ink:#1D2433;
-  --focus:#2F4AA8;--scrim:rgba(20,26,40,.45);--glass:rgba(255,255,255,.82);
+  --coin:#F2C230;--coin-deep:#F2B900;--ink:#1F2B20;
+  --focus:#4F6F34;--scrim:rgba(20,30,18,.45);--glass:rgba(255,253,248,.84);
   /* Шрифты: заголовки и суммы — Wix Madefor Display; текст интерфейса — Golos Text */
   --font-display:"Wix Madefor Display","Golos Text",system-ui,sans-serif;
   --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -34,7 +34,7 @@
   /* Отступы (шаг 4) */
   --s-1:4px;--s-2:8px;--s-3:12px;--s-4:16px;--s-5:20px;--s-6:24px;--s-8:32px;
   /* Тени и движение */
-  --shadow:0 10px 30px rgba(31,45,110,.14);
+  --shadow:0 10px 30px rgba(52,72,34,.14);
   --ease:cubic-bezier(.2,.8,.2,1);--dur-1:.12s;--dur-2:.28s;
   /* Размеры */
   --nav-h:68px;
@@ -44,21 +44,21 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0F1420;--surface:#181E2C;--text:#E8ECF4;--muted:#9AA3B5;--line:#2A3245;--field:#202738;
-    --inc:#3DBE87;--inc-bg:#16372B;--inc-t:#5BD39B;
-    --exp:#E5677B;--exp-bg:#3E1D26;--exp-t:#FF8FA0;
-    --primary:#4864C9;--primary-2:#6580E6;
-    --focus:#8FA5FF;--scrim:rgba(0,0,0,.6);--glass:rgba(24,30,44,.82);
+    --bg:#111A13;--surface:#1A251C;--text:#EBF1E4;--muted:#9AA894;--line:#2B392D;--field:#222E24;
+    --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
+    --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
+    --primary:#5C8240;--primary-2:#7BA356;
+    --focus:#B2D283;--scrim:rgba(0,0,0,.6);--glass:rgba(26,37,28,.84);
     --shadow:0 10px 30px rgba(0,0,0,.45);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-    --bg:#0F1420;--surface:#181E2C;--text:#E8ECF4;--muted:#9AA3B5;--line:#2A3245;--field:#202738;
-    --inc:#3DBE87;--inc-bg:#16372B;--inc-t:#5BD39B;
-    --exp:#E5677B;--exp-bg:#3E1D26;--exp-t:#FF8FA0;
-    --primary:#4864C9;--primary-2:#6580E6;
-    --focus:#8FA5FF;--scrim:rgba(0,0,0,.6);--glass:rgba(24,30,44,.82);
+    --bg:#111A13;--surface:#1A251C;--text:#EBF1E4;--muted:#9AA894;--line:#2B392D;--field:#222E24;
+    --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
+    --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
+    --primary:#5C8240;--primary-2:#7BA356;
+    --focus:#B2D283;--scrim:rgba(0,0,0,.6);--glass:rgba(26,37,28,.84);
     --shadow:0 10px 30px rgba(0,0,0,.45);
     color-scheme:dark;
   }
@@ -101,10 +101,9 @@ svg.ic{width:24px;height:24px;fill:currentColor;flex:0 0 auto}
 .monthbar .mlabel{flex:1;font-weight:800;font-size:15px}
 
 /* Hero */
-.hero{position:relative;overflow:hidden;border-radius:28px;padding:20px;color:var(--on-primary);background:linear-gradient(140deg,#3F5CCB 0%,#2F4AA8 48%,#22358A 100%);margin-top:6px}
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:20px;color:var(--on-primary);background:linear-gradient(140deg,#7A9D4F 0%,#587A38 46%,#3B5629 100%);margin-top:6px}
 .hero-deco{position:absolute;inset:0;pointer-events:none;background:
-  radial-gradient(circle at 106% 108%,transparent 0 56px,rgba(160,110,0,.5) 57px 60px,transparent 61px),
-  radial-gradient(circle at 106% 108%,#F2C230 0 74px,transparent 75px),
+  radial-gradient(circle at 100% 100%,rgba(246,235,203,.22) 0 84px,transparent 85px),
   radial-gradient(circle at 70% -40%,rgba(255,255,255,.16) 0 110px,transparent 111px),
   radial-gradient(circle at 0% 100%,rgba(255,255,255,.08) 0 70px,transparent 71px)}
 .hero-top{position:relative;display:flex;align-items:center;justify-content:space-between}
@@ -245,14 +244,14 @@ svg.ic{width:24px;height:24px;fill:currentColor;flex:0 0 auto}
 .ai-card{text-align:center;padding:20px 16px 18px}
 .ai-lead{font-weight:800;font-size:18px;letter-spacing:-.01em}
 .mic-wrap{display:grid;place-items:center;margin:14px 0 10px;height:150px}
-.mic{position:relative;width:84px;height:84px;border-radius:50%;background:linear-gradient(140deg,var(--primary-2),var(--primary));color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(47,74,168,.4)}
+.mic{position:relative;width:84px;height:84px;border-radius:50%;background:linear-gradient(140deg,var(--primary-2),var(--primary));color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(79,111,52,.4)}
 .mic svg{width:34px;height:34px}
 .mic .stop-ic{display:none}
 .mic .rings{position:absolute;inset:0;border-radius:50%;border:2px solid var(--primary);opacity:0;pointer-events:none}
-.mic[aria-pressed=true]{background:linear-gradient(140deg,#E5677B,#C2364B)}
+.mic[aria-pressed=true]{background:linear-gradient(140deg,#EC7770,#C2413F)}
 .mic[aria-pressed=true] .mic-ic{display:none}
 .mic[aria-pressed=true] .stop-ic{display:inline-flex}
-.mic[aria-pressed=true] .rings{border-color:#C2364B;animation:ring 1.4s ease-out infinite}
+.mic[aria-pressed=true] .rings{border-color:#C2413F;animation:ring 1.4s ease-out infinite}
 @keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.9);opacity:0}}
 .mic-hint{min-height:40px;font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:12px}
 .mic-hint.live{color:var(--exp-t)}
@@ -350,7 +349,7 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .acct .btn{min-height:40px;padding:0 14px}
 
 /* ---------- Вход ---------- */
-.auth{position:fixed;inset:0;z-index:90;overflow-y:auto;background:radial-gradient(circle at 85% -10%,rgba(242,194,48,.28) 0 180px,transparent 181px),radial-gradient(circle at -10% 110%,rgba(47,74,168,.16) 0 200px,transparent 201px),var(--bg);padding:calc(var(--sat) + 20px) 20px calc(var(--sab) + 24px)}
+.auth{position:fixed;inset:0;z-index:90;overflow-y:auto;background:radial-gradient(circle at 85% -10%,rgba(242,194,48,.28) 0 180px,transparent 181px),radial-gradient(circle at -10% 110%,rgba(111,143,70,.2) 0 200px,transparent 201px),var(--bg);padding:calc(var(--sat) + 20px) 20px calc(var(--sab) + 24px)}
 .auth-in{max-width:420px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:12px;position:relative}
 .auth-hero{text-align:center;margin-bottom:8px}
 .auth-hero .mascot{margin:0 auto 4px;animation:bob 3.4s ease-in-out infinite}
@@ -374,6 +373,10 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .auth input.code{text-align:center;font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:.35em;min-height:64px}
 .msg.ok{background:var(--inc-bg);color:var(--inc-t)}
 .auth .msg{margin:12px 0 0}
+
+.hero-fin{position:absolute;right:10px;bottom:-6px;width:82px;height:82px;pointer-events:none;transition:transform var(--dur-2) var(--ease)}
+.hero-fin .mascot{width:100%;height:100%}
+.hero.hide .hero-fin{transform:translateY(8px) scale(.94)}
 
 /* Оболочка брендбука. Все цвета, шрифты и радиусы — из ../www/tokens.css */
 .bb{background:var(--bg);color:var(--text);font-family:var(--font-text);line-height:1.55;font-size:16px}
@@ -610,12 +613,13 @@ const CATS = {
   ]
 };
 const COLORS = [
+  { bg: '#4F6F34', fg: '#FFFFFF', name: 'Лист' },
   { bg: '#2F4AA8', fg: '#FFFFFF', name: 'Синий' },
-  { bg: '#1F8A5B', fg: '#FFFFFF', name: 'Зелёный' },
+  { bg: '#1F8A5B', fg: '#FFFFFF', name: 'Изумруд' },
   { bg: '#C2364B', fg: '#FFFFFF', name: 'Красный' },
   { bg: '#7A4FD0', fg: '#FFFFFF', name: 'Фиолетовый' },
   { bg: '#D9560F', fg: '#FFFFFF', name: 'Оранжевый' },
-  { bg: '#F2C230', fg: '#1D2433', name: 'Жёлтый' },
+  { bg: '#F2C230', fg: '#1F2B20', name: 'Жёлтый' },
   { bg: '#2B3345', fg: '#FFFFFF', name: 'Графитовый' }
 ];
   root.MD = root.MD || {};
@@ -692,7 +696,7 @@ const COLORS = [
 
   /* ---------- 3. Цвет ---------- */
   const COLORS = [
-    ['--primary', 'Индиго', 'Главный цвет бренда: кнопки, активные элементы, шапка баланса.', '--surface'],
+    ['--primary', 'Лист', 'Главный цвет бренда, зелёный лист на макушке Фина: кнопки, активные элементы, шапка баланса.', '--surface'],
     ['--coin', 'Монета', 'Золото монеты. Акцент: центральная кнопка, блик в шапке, звёздочки. Не для текста.', '--bg'],
     ['--ink', 'Чернила', 'Текст на золоте и глаза Фина.', '--coin'],
     ['--bg', 'Фон', 'Подложка экранов.', '--text'],
@@ -704,7 +708,7 @@ const COLORS = [
   function swatches() {
     return `<div class="bb-grid c4">${COLORS.map(([t, n, d, on]) => {
       const v = tok(t), o = tok(on), r = ratio(v, o);
-      const fg = ratio(v, '#FFFFFF') > ratio(v, '#1D2433') ? '#fff' : '#1D2433';
+      const fg = ratio(v, '#FFFFFF') > ratio(v, '#1F2B20') ? '#fff' : '#1F2B20';
       return `<div class="swc"><div class="swc-c" style="background:var(${t});color:${fg}">${n}</div><div class="swc-b"><b>${n}</b><small>${d}</small><button type="button" data-copy="${v}" aria-label="Скопировать ${v}">${v.toUpperCase()}</button><small>Контраст с фоном ${r.toFixed(1)}:1 · ${badge(r)}</small></div></div>`;
     }).join('')}</div>`;
   }
@@ -726,9 +730,9 @@ const COLORS = [
     <h3>Цвета карт</h3>
     <div class="bb-demo row">${MD.COLORS.map(c => `<span class="sw" style="--c:${c.bg};--fg:${c.fg};display:grid" role="img" aria-label="${c.name}"></span>`).join('')}</div>
     <h3>Светлая и тёмная темы</h3>
-    <p>Тёмная тема не инверсия: фон глубокого синего, поверхности чуть светлее, индиго и смысловые цвета осветлены, чтобы читаться на тёмном. Переключатель вверху страницы показывает оба набора. Меняй значения в <code>www/tokens.css</code>, там обе темы рядом.</p>`;
+    <p>Тёмная тема не инверсия: фон глубокого лесного зелёного, поверхности чуть светлее, лист и смысловые цвета осветлены, чтобы читаться на тёмном. Переключатель вверху страницы показывает оба набора. Меняй значения в <code>www/tokens.css</code>, там обе темы рядом.</p>`;
   }
-  sec('color', 'Цвет', 'Индиго держит интерфейс, золото монеты добавляет тепло. Больше цветов не нужно: остальное служит смыслу.', '<div id="colorBody"></div>');
+  sec('color', 'Цвет', 'Зелёный лист Фина держит интерфейс, кремовый фон делает его мягким, золото монеты добавляет тепло. Больше цветов не нужно: остальное служит смыслу.', '<div id="colorBody"></div>');
 
   /* ---------- 4. Шрифты ---------- */
   sec('type', 'Шрифты', 'Две гарнитуры, обе с кириллицей и лежат в приложении офлайн.',
@@ -784,7 +788,7 @@ moto: '&lt;path d="M…"/&gt;&lt;circle class="a" cx="12" cy="12" r="4"/&gt;',</
     <div class="bb-demo"><section class="hero"><div class="hero-deco"></div><div class="hero-top"><div class="hero-label">Всего денег</div></div><div class="hero-sum">6 545,10<small>Br</small></div></section>
     <div class="tiles"><div class="tile inc"><div class="tile-ic">${MD.icon('down')}</div><div class="tile-label">Пришло</div><div class="tile-sum">+2 800,00<small>Br</small></div></div><div class="tile exp"><div class="tile-ic">${MD.icon('up')}</div><div class="tile-label">Потрачено</div><div class="tile-sum">−595,40<small>Br</small></div></div></div></div>
     <h3>Карты</h3>
-    <div class="bb-demo"><div class="strip"><div class="acc sel"><span class="acc-dot" style="background:#2F4AA8"></span><span class="acc-txt"><span class="acc-name">Visa<em>·4417</em></span><span class="acc-bal">954,10<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc"><span class="acc-dot" style="background:#F2C230"></span><span class="acc-txt"><span class="acc-name">Наличные</span><span class="acc-bal">200,00<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc-add">${MD.icon('plus')}</div></div></div>
+    <div class="bb-demo"><div class="strip"><div class="acc sel"><span class="acc-dot" style="background:#4F6F34"></span><span class="acc-txt"><span class="acc-name">Visa<em>·4417</em></span><span class="acc-bal">954,10<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc"><span class="acc-dot" style="background:#F2C230"></span><span class="acc-txt"><span class="acc-name">Наличные</span><span class="acc-bal">200,00<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc-add">${MD.icon('plus')}</div></div></div>
     <h3>Операции: примечание под заголовком</h3>
     <p>Заголовок строки — категория. Сразу под ним примечание: на что потрачено или откуда пришло. Карта стоит справа под суммой. Длинное примечание переносится на две строки.</p>
     <div class="bb-demo"><div class="recent">

@@ -66,7 +66,7 @@
 
   /* ---------- 3. Цвет ---------- */
   const COLORS = [
-    ['--primary', 'Индиго', 'Главный цвет бренда: кнопки, активные элементы, шапка баланса.', '--surface'],
+    ['--primary', 'Лист', 'Главный цвет бренда, зелёный лист на макушке Фина: кнопки, активные элементы, шапка баланса.', '--surface'],
     ['--coin', 'Монета', 'Золото монеты. Акцент: центральная кнопка, блик в шапке, звёздочки. Не для текста.', '--bg'],
     ['--ink', 'Чернила', 'Текст на золоте и глаза Фина.', '--coin'],
     ['--bg', 'Фон', 'Подложка экранов.', '--text'],
@@ -78,7 +78,7 @@
   function swatches() {
     return `<div class="bb-grid c4">${COLORS.map(([t, n, d, on]) => {
       const v = tok(t), o = tok(on), r = ratio(v, o);
-      const fg = ratio(v, '#FFFFFF') > ratio(v, '#1D2433') ? '#fff' : '#1D2433';
+      const fg = ratio(v, '#FFFFFF') > ratio(v, '#1F2B20') ? '#fff' : '#1F2B20';
       return `<div class="swc"><div class="swc-c" style="background:var(${t});color:${fg}">${n}</div><div class="swc-b"><b>${n}</b><small>${d}</small><button type="button" data-copy="${v}" aria-label="Скопировать ${v}">${v.toUpperCase()}</button><small>Контраст с фоном ${r.toFixed(1)}:1 · ${badge(r)}</small></div></div>`;
     }).join('')}</div>`;
   }
@@ -100,9 +100,9 @@
     <h3>Цвета карт</h3>
     <div class="bb-demo row">${MD.COLORS.map(c => `<span class="sw" style="--c:${c.bg};--fg:${c.fg};display:grid" role="img" aria-label="${c.name}"></span>`).join('')}</div>
     <h3>Светлая и тёмная темы</h3>
-    <p>Тёмная тема не инверсия: фон глубокого синего, поверхности чуть светлее, индиго и смысловые цвета осветлены, чтобы читаться на тёмном. Переключатель вверху страницы показывает оба набора. Меняй значения в <code>www/tokens.css</code>, там обе темы рядом.</p>`;
+    <p>Тёмная тема не инверсия: фон глубокого лесного зелёного, поверхности чуть светлее, лист и смысловые цвета осветлены, чтобы читаться на тёмном. Переключатель вверху страницы показывает оба набора. Меняй значения в <code>www/tokens.css</code>, там обе темы рядом.</p>`;
   }
-  sec('color', 'Цвет', 'Индиго держит интерфейс, золото монеты добавляет тепло. Больше цветов не нужно: остальное служит смыслу.', '<div id="colorBody"></div>');
+  sec('color', 'Цвет', 'Зелёный лист Фина держит интерфейс, кремовый фон делает его мягким, золото монеты добавляет тепло. Больше цветов не нужно: остальное служит смыслу.', '<div id="colorBody"></div>');
 
   /* ---------- 4. Шрифты ---------- */
   sec('type', 'Шрифты', 'Две гарнитуры, обе с кириллицей и лежат в приложении офлайн.',
@@ -158,7 +158,7 @@ moto: '&lt;path d="M…"/&gt;&lt;circle class="a" cx="12" cy="12" r="4"/&gt;',</
     <div class="bb-demo"><section class="hero"><div class="hero-deco"></div><div class="hero-top"><div class="hero-label">Всего денег</div></div><div class="hero-sum">6 545,10<small>Br</small></div></section>
     <div class="tiles"><div class="tile inc"><div class="tile-ic">${MD.icon('down')}</div><div class="tile-label">Пришло</div><div class="tile-sum">+2 800,00<small>Br</small></div></div><div class="tile exp"><div class="tile-ic">${MD.icon('up')}</div><div class="tile-label">Потрачено</div><div class="tile-sum">−595,40<small>Br</small></div></div></div></div>
     <h3>Карты</h3>
-    <div class="bb-demo"><div class="strip"><div class="acc sel"><span class="acc-dot" style="background:#2F4AA8"></span><span class="acc-txt"><span class="acc-name">Visa<em>·4417</em></span><span class="acc-bal">954,10<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc"><span class="acc-dot" style="background:#F2C230"></span><span class="acc-txt"><span class="acc-name">Наличные</span><span class="acc-bal">200,00<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc-add">${MD.icon('plus')}</div></div></div>
+    <div class="bb-demo"><div class="strip"><div class="acc sel"><span class="acc-dot" style="background:#4F6F34"></span><span class="acc-txt"><span class="acc-name">Visa<em>·4417</em></span><span class="acc-bal">954,10<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc"><span class="acc-dot" style="background:#F2C230"></span><span class="acc-txt"><span class="acc-name">Наличные</span><span class="acc-bal">200,00<small>Br</small></span></span><span class="acc-more">${MD.icon('dots')}</span></div><div class="acc-add">${MD.icon('plus')}</div></div></div>
     <h3>Операции: примечание под заголовком</h3>
     <p>Заголовок строки — категория. Сразу под ним примечание: на что потрачено или откуда пришло. Карта стоит справа под суммой. Длинное примечание переносится на две строки.</p>
     <div class="bb-demo"><div class="recent">

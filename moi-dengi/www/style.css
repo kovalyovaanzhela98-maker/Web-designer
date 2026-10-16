@@ -36,10 +36,9 @@ svg.ic{width:24px;height:24px;fill:currentColor;flex:0 0 auto}
 .monthbar .mlabel{flex:1;font-weight:800;font-size:15px}
 
 /* Hero */
-.hero{position:relative;overflow:hidden;border-radius:28px;padding:20px;color:var(--on-primary);background:linear-gradient(140deg,#3F5CCB 0%,#2F4AA8 48%,#22358A 100%);margin-top:6px}
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:20px;color:var(--on-primary);background:linear-gradient(140deg,#7A9D4F 0%,#587A38 46%,#3B5629 100%);margin-top:6px}
 .hero-deco{position:absolute;inset:0;pointer-events:none;background:
-  radial-gradient(circle at 106% 108%,transparent 0 56px,rgba(160,110,0,.5) 57px 60px,transparent 61px),
-  radial-gradient(circle at 106% 108%,#F2C230 0 74px,transparent 75px),
+  radial-gradient(circle at 100% 100%,rgba(246,235,203,.22) 0 84px,transparent 85px),
   radial-gradient(circle at 70% -40%,rgba(255,255,255,.16) 0 110px,transparent 111px),
   radial-gradient(circle at 0% 100%,rgba(255,255,255,.08) 0 70px,transparent 71px)}
 .hero-top{position:relative;display:flex;align-items:center;justify-content:space-between}
@@ -180,14 +179,14 @@ svg.ic{width:24px;height:24px;fill:currentColor;flex:0 0 auto}
 .ai-card{text-align:center;padding:20px 16px 18px}
 .ai-lead{font-weight:800;font-size:18px;letter-spacing:-.01em}
 .mic-wrap{display:grid;place-items:center;margin:14px 0 10px;height:150px}
-.mic{position:relative;width:84px;height:84px;border-radius:50%;background:linear-gradient(140deg,var(--primary-2),var(--primary));color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(47,74,168,.4)}
+.mic{position:relative;width:84px;height:84px;border-radius:50%;background:linear-gradient(140deg,var(--primary-2),var(--primary));color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(79,111,52,.4)}
 .mic svg{width:34px;height:34px}
 .mic .stop-ic{display:none}
 .mic .rings{position:absolute;inset:0;border-radius:50%;border:2px solid var(--primary);opacity:0;pointer-events:none}
-.mic[aria-pressed=true]{background:linear-gradient(140deg,#E5677B,#C2364B)}
+.mic[aria-pressed=true]{background:linear-gradient(140deg,#EC7770,#C2413F)}
 .mic[aria-pressed=true] .mic-ic{display:none}
 .mic[aria-pressed=true] .stop-ic{display:inline-flex}
-.mic[aria-pressed=true] .rings{border-color:#C2364B;animation:ring 1.4s ease-out infinite}
+.mic[aria-pressed=true] .rings{border-color:#C2413F;animation:ring 1.4s ease-out infinite}
 @keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.9);opacity:0}}
 .mic-hint{min-height:40px;font-size:13.5px;font-weight:700;color:var(--muted);margin-bottom:12px}
 .mic-hint.live{color:var(--exp-t)}
@@ -285,7 +284,7 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .acct .btn{min-height:40px;padding:0 14px}
 
 /* ---------- Вход ---------- */
-.auth{position:fixed;inset:0;z-index:90;overflow-y:auto;background:radial-gradient(circle at 85% -10%,rgba(242,194,48,.28) 0 180px,transparent 181px),radial-gradient(circle at -10% 110%,rgba(47,74,168,.16) 0 200px,transparent 201px),var(--bg);padding:calc(var(--sat) + 20px) 20px calc(var(--sab) + 24px)}
+.auth{position:fixed;inset:0;z-index:90;overflow-y:auto;background:radial-gradient(circle at 85% -10%,rgba(242,194,48,.28) 0 180px,transparent 181px),radial-gradient(circle at -10% 110%,rgba(111,143,70,.2) 0 200px,transparent 201px),var(--bg);padding:calc(var(--sat) + 20px) 20px calc(var(--sab) + 24px)}
 .auth-in{max-width:420px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:12px;position:relative}
 .auth-hero{text-align:center;margin-bottom:8px}
 .auth-hero .mascot{margin:0 auto 4px;animation:bob 3.4s ease-in-out infinite}
@@ -309,3 +308,7 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .auth input.code{text-align:center;font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:.35em;min-height:64px}
 .msg.ok{background:var(--inc-bg);color:var(--inc-t)}
 .auth .msg{margin:12px 0 0}
+
+.hero-fin{position:absolute;right:10px;bottom:-6px;width:82px;height:82px;pointer-events:none;transition:transform var(--dur-2) var(--ease)}
+.hero-fin .mascot{width:100%;height:100%}
+.hero.hide .hero-fin{transform:translateY(8px) scale(.94)}

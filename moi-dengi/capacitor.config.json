@@ -3,7 +3,7 @@
   "appName": "Мои деньги",
   "webDir": "www",
   "android": {
-    "backgroundColor": "#EEF1F5"
+    "backgroundColor": "#F3F0E3"
   },
   "plugins": {
     "FirebaseAuthentication": {

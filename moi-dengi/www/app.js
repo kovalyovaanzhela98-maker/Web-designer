@@ -161,6 +161,7 @@ function sanitize(o) {
 /* ---------- UI-состояние ---------- */
 const now0 = new Date();
 let ym = { y: now0.getFullYear(), m: now0.getMonth() };
+const hintSeen = () => { try { return localStorage.getItem('moidengi_hint') === '1'; } catch (_) { return false; } };
 let filterAcc = null, tab = 'home', opsType = 'all', opsQuery = '', statType = 'expense';
 let draft = [];
 const catInfo = (type, name) => CATS[type].find(c => c[0] === name) || CATS[type][CATS[type].length - 1];
@@ -238,7 +239,7 @@ const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
 
 function renderStrip() {
   const el = $('#strip');
-  $('#stripHint').hidden = state.accounts.length < 2;
+  $('#stripHint').hidden = state.accounts.length < 2 || hintSeen();
   if (!state.accounts.length) {
     el.innerHTML = `<button class="acc-add big" data-add-acc>${icon('plus')}<span>Добавить первую карту или счёт</span></button>`;
     return;
@@ -631,6 +632,7 @@ $('#accDelete').addEventListener('click', async () => {
 // Лента карт: тап — фильтр, долгое нажатие — редактирование
 (() => {
   const strip = $('#strip');
+  strip.addEventListener('click', () => { try { localStorage.setItem('moidengi_hint', '1'); } catch (_) {} $('#stripHint').hidden = true; });
   let timer = null, fired = false, sx = 0, sy = 0;
   const stop = () => { clearTimeout(timer); timer = null; };
   strip.addEventListener('pointerdown', e => {
@@ -872,6 +874,7 @@ $('#bkRestore').addEventListener('click', async () => {
 load();
 paintIcons();
 $('#hdrMascot').innerHTML = MD.mascot('hello', 52);
+$('#heroFin').innerHTML = MD.mascot('happy', 96);
 setAiPose('hello');
 if (cloud.enabled) {
   gate(false);

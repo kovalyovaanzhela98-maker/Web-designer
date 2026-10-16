@@ -14,12 +14,13 @@ const CATS = {
   ]
 };
 const COLORS = [
+  { bg: '#4F6F34', fg: '#FFFFFF', name: 'Лист' },
   { bg: '#2F4AA8', fg: '#FFFFFF', name: 'Синий' },
-  { bg: '#1F8A5B', fg: '#FFFFFF', name: 'Зелёный' },
+  { bg: '#1F8A5B', fg: '#FFFFFF', name: 'Изумруд' },
   { bg: '#C2364B', fg: '#FFFFFF', name: 'Красный' },
   { bg: '#7A4FD0', fg: '#FFFFFF', name: 'Фиолетовый' },
   { bg: '#D9560F', fg: '#FFFFFF', name: 'Оранжевый' },
-  { bg: '#F2C230', fg: '#1D2433', name: 'Жёлтый' },
+  { bg: '#F2C230', fg: '#1F2B20', name: 'Жёлтый' },
   { bg: '#2B3345', fg: '#FFFFFF', name: 'Графитовый' }
 ];
   root.MD = root.MD || {};
