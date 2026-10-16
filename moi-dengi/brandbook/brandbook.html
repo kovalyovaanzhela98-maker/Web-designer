@@ -336,8 +336,7 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .hdr-who{display:flex;align-items:center;gap:12px;min-width:0}
 .hdr-mascot{flex:0 0 auto;display:grid;place-items:center;width:56px;height:56px;margin-left:-4px}
 .hdr-mascot .mascot{filter:drop-shadow(0 2px 3px rgba(27,42,31,.18))}
-.ai-mascot{display:grid;place-items:center;height:112px;margin:-4px 0 4px}
-.ai-mascot .mascot{animation:bob 3.4s ease-in-out infinite}
+.ai-mascot{margin:0 0 6px;text-align:left}
 @keyframes bob{50%{transform:translateY(-4px)}}
 .emp-m{display:grid;place-items:center;margin:0 auto 8px}
 .mic-wrap{height:150px;margin:0 0 4px}
@@ -377,6 +376,35 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .hero-fin{position:absolute;right:10px;bottom:-6px;width:82px;height:82px;pointer-events:none;transition:transform var(--dur-2) var(--ease)}
 .hero-fin .mascot{width:100%;height:100%}
 .hero.hide .hero-fin{transform:translateY(8px) scale(.94)}
+
+/* ---------- Фин говорит ---------- */
+.say-btn{display:block;width:100%;text-align:left;padding:0;margin-top:-2px;-webkit-tap-highlight-color:transparent}
+.say-wrap{display:block}.say-wrap:empty{display:none}
+.fin-say{display:flex;align-items:flex-end;gap:4px}
+.fin-say-m{flex:0 0 auto;display:grid;place-items:end center;margin-left:-6px}
+.fin-say-m .mascot{transform-origin:50% 100%;animation:bob 3.6s ease-in-out infinite}
+.fin-say-m.pop .mascot{animation:pop .55s var(--ease)}
+@keyframes pop{30%{transform:scale(1.14) rotate(-5deg)}65%{transform:scale(.97) rotate(2deg)}}
+.bubble{position:relative;flex:1;min-width:0;background:var(--surface);border-radius:22px 22px 22px 6px;padding:13px 16px;margin-bottom:16px;font-family:var(--font-display);font-weight:700;font-size:16px;line-height:1.3;letter-spacing:-.01em;box-shadow:0 8px 22px rgba(52,72,34,.10)}
+.bubble::before{content:"";position:absolute;left:-8px;bottom:0;width:16px;height:16px;background:var(--surface);clip-path:polygon(100% 0,100% 100%,0 100%)}
+.bubble em{font-style:normal;color:var(--primary)}
+.bubble small{display:block;margin-top:3px;font-family:var(--font-text);font-weight:500;font-size:13px;letter-spacing:0;color:var(--muted)}
+.ai-card .bubble{text-align:left;background:var(--field);box-shadow:none}
+.ai-card .bubble::before{background:var(--field)}
+.empty .emp-m .mascot{animation:bob 3.6s ease-in-out infinite}
+.toast-m{flex:0 0 auto;display:grid;margin:-10px 0 -10px -8px}
+/* ---------- Знакомство ---------- */
+.intro{position:fixed;inset:0;z-index:95;display:flex;flex-direction:column;padding:calc(var(--sat) + 16px) 24px calc(var(--sab) + 24px);background:radial-gradient(circle at 105% -4%,rgba(242,194,48,.22) 0 130px,transparent 131px),radial-gradient(circle at -8% 106%,rgba(111,143,70,.16) 0 150px,transparent 151px),var(--bg)}
+.intro-skip{align-self:flex-end;min-height:44px;padding:0 8px;font-weight:700;color:var(--muted)}
+.intro-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;max-width:380px;margin:0 auto}
+.intro-body .mascot{animation:bob 3.4s ease-in-out infinite;margin-bottom:8px}
+.intro-body h1{margin:0;font-size:30px;line-height:1.1;font-weight:800}
+.intro-body p{margin:0;color:var(--muted);font-weight:500;font-size:16px;line-height:1.45}
+.intro-slide{display:flex;flex-direction:column;align-items:center;gap:10px;animation:introIn .45s var(--ease)}
+@keyframes introIn{from{opacity:0;transform:translateX(24px)}}
+.intro-dots{display:flex;justify-content:center;gap:8px;margin:14px 0 18px}
+.intro-dots i{width:8px;height:8px;border-radius:99px;background:var(--line);transition:width var(--dur-2) var(--ease),background var(--dur-2)}
+.intro-dots i.on{width:26px;background:var(--primary)}
 
 /* Оболочка брендбука. Все цвета, шрифты и радиусы — из ../www/tokens.css */
 .bb{background:var(--bg);color:var(--text);font-family:var(--font-text);line-height:1.55;font-size:16px}
@@ -588,7 +616,12 @@ const IC = {
     const alt = label ? `alt="${label}"` : 'alt="" aria-hidden="true"';
     return `<img class="mascot mascot-${key}" src="${(root.FIN_DATA && root.FIN_DATA[key]) || BASE + key + '.png'}" width="${size}" height="${size}" style="object-fit:contain" ${alt} decoding="async" draggable="false">`;
   }
+  /* Фин говорит: персонаж и облачко с репликой (text — готовый HTML, строки экранируй сам) */
+  function say(pose, text, size = 88) {
+    return `<div class="fin-say"><span class="fin-say-m">${mascot(pose, size)}</span><div class="bubble">${text}</div></div>`;
+  }
   root.MD = root.MD || {};
+  root.MD.say = say;
   root.MD.mascot = mascot;
   root.MD.MASCOT_POSES = Object.keys(POSES);
   root.MD.MASCOT_INFO = POSES;
@@ -663,6 +696,9 @@ const COLORS = [
     <h3>Виды</h3>
     <div class="bb-demo row" style="justify-content:space-around">${['hello', 'think', 'joy', 'sleepy'].map(k => fin(k, 120)).join('')}</div>
     <p class="bb-cap">Одна и та же форма в разных настроениях: новые позы рисуй с теми же пропорциями, ушками и листом.</p>
+    <h3>Фин говорит</h3>
+    <div class="bb-demo">${MD.say('think', 'На 17% больше, чем в прошлом месяце<small>Чаще всего: «Одежда». Посмотри, можно ли там сэкономить.</small>', 84)}</div>
+    <p class="bb-cap">Фин комментирует деньги репликой в облачке: главная, статистика, помощник. Заголовок реплики короткий, пояснение под ним мелким. Поза подбирается под смысл: радость, раздумье, удивление. Код: <code>MD.say(поза, текст, размер)</code>. Тосты тоже с Фином: <code>toast(текст, null, null, поза)</code>.</p>
     <h3>Из чего он состоит</h3>
     <div class="bb-grid c2">
       <div class="bb-card"><h4>Тельце</h4><p>Мягкий кремовый шарик с едва заметным пушком по краю. Без острых углов и жёстких контуров.</p></div>

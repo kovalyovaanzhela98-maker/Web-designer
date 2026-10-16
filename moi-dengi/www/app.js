@@ -67,7 +67,7 @@ function load() {
 }
 function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-  catch (e) { toast('Не удалось сохранить данные на устройстве'); }
+  catch (e) { toast('Не удалось сохранить данные на устройстве', null, null, 'oops'); }
   pushCloud();
 }
 
@@ -195,6 +195,39 @@ function setNum(el, html, value) {
   el._raf = requestAnimationFrame(step);
 }
 
+/* Фин комментирует месяц: первая реплика самая важная, по касанию листаем дальше */
+let sayIdx = 0;
+function finTips() {
+  if (!state.accounts.length) return [{ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Добавь первую карту, и начнём считать вместе.</small>' }];
+  const cur = monthTx(now0.getFullYear(), now0.getMonth());
+  const inc = sumOf(cur, 'income'), exp = sumOf(cur, 'expense');
+  const tips = [];
+  const todayExp = round2(state.tx.filter(t => t.type === 'expense' && t.date === today()).reduce((s, t) => s + t.amount, 0));
+  if (!cur.length) tips.push({ pose: 'sleepy', t: 'В этом месяце пока тихо<small>Скажи, на что ушли деньги или что пришло, я запишу.</small>' });
+  else {
+    tips.push(todayExp ? { pose: 'hello', t: `Сегодня ушло <em>${esc(maskT(money(todayExp)))}</em><small>Всё записано, ничего не потерялось.</small>` } : { pose: 'joy', t: 'Сегодня без трат<small>Так держать!</small>' });
+    if (inc > 0 && exp > inc) tips.push({ pose: 'think', t: 'Расходы обгоняют доходы<small>Загляни в статистику, там видно, на что уходит больше всего.</small>' });
+    else if (inc > 0) tips.push({ pose: 'happy', t: `Ты в плюсе: <em>${esc(maskT(money(round2(inc - exp))))}</em><small>Столько осталось от того, что пришло в этом месяце.</small>` });
+    const pm = new Date(now0.getFullYear(), now0.getMonth() - 1, 1);
+    const prev = sumOf(monthTx(pm.getFullYear(), pm.getMonth()), 'expense');
+    if (prev > 0 && exp > 0) {
+      const pct = Math.round((exp - prev) / prev * 100);
+      if (pct <= -5) tips.push({ pose: 'joy', t: `Тратишь на ${-pct}% меньше, чем в прошлом месяце<small>Отличный темп.</small>` });
+      else if (pct >= 15) tips.push({ pose: 'think', t: `На ${pct}% больше, чем в прошлом месяце<small>Бывает. Посмотри, что изменилось.</small>` });
+    }
+  }
+  tips.push({ pose: 'notify', t: 'Можно просто сказать голосом<small>Нажми микрофон: «вчера кофе 6 рублей».</small>' });
+  return tips;
+}
+function renderSay(pop) {
+  const tips = finTips(), tip = tips[sayIdx % tips.length];
+  const el = $('#homeSay');
+  el.innerHTML = MD.say(tip.pose, tip.t, 92);
+  el.setAttribute('aria-label', 'Фин говорит. Нажми, чтобы услышать другое');
+  if (pop) { const m = $('.fin-say-m', el); m.classList.add('pop'); setTimeout(() => m.classList.remove('pop'), 600); }
+}
+$('#homeSay').addEventListener('click', () => { sayIdx++; renderSay(true); buzz(8); });
+
 function render() {
   if (filterAcc && !accById(filterAcc)) filterAcc = null;
   const d = new Date();
@@ -204,6 +237,7 @@ function render() {
   $('#todayLabel').textContent = `${wd[0].toUpperCase()}${wd.slice(1)}, ${d.getDate()} ${MONTHS_G[d.getMonth()]}`;
   renderMonthBars();
   renderHome();
+  renderSay();
   if (tab === 'ops') renderOps();
   if (tab === 'stats') renderStats();
 }
@@ -232,7 +266,7 @@ function renderHome() {
   const recent = list.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
     ? `<div class="recent">${recent.map(txRow).join('')}</div>`
-    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('rest', 104)}</span><b>Здесь будут твои траты и доходы</b>Добавь первую — кнопка «+» внизу</div>`;
+    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>Здесь будут твои траты и доходы</b>Добавь первую — кнопка «+» внизу</div>`;
 }
 
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
@@ -282,7 +316,7 @@ function renderOps() {
     (!q || t.cat.toLowerCase().includes(q) || t.note.toLowerCase().includes(q) || ((accById(t.acc) || {}).name || '').toLowerCase().includes(q)));
   const el = $('#opsList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'rest', 104)}</span><b>${q ? 'Ничего не нашлось' : `В ${MONTHS_P[ym.m]} пока тихо`}</b>${q ? 'Попробуй другое слово или часть названия' : 'Добавь операцию — и она появится здесь'}</div>`;
+    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'sleepy', 132)}</span><b>${q ? 'Ничего не нашлось' : `В ${MONTHS_P[ym.m]} пока тихо`}</b>${q ? 'Попробуй другое слово или часть названия' : 'Добавь операцию — и она появится здесь'}</div>`;
     return;
   }
   const days = {};
@@ -300,8 +334,8 @@ function renderStats() {
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('rest', 104)}</span><b>${statType === 'expense' ? 'Трат' : 'Доходов'} в ${MONTHS_P[ym.m]} нет</b>Когда появятся — здесь будет разбивка по категориям</div>`;
-    insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true;
+    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>${statType === 'expense' ? 'Трат' : 'Доходов'} в ${MONTHS_P[ym.m]} нет</b>Когда появятся — здесь будет разбивка по категориям</div>`;
+    insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
   dayCard.hidden = false; catList.hidden = false;
@@ -337,6 +371,16 @@ function renderStats() {
     const better = statType === 'expense' ? pct <= 0 : pct >= 0;
     cmp = `<div class="wide"><small>Сравнение с ${MONTHS[pm.getMonth()].toLowerCase().replace(/ь$/, 'я').replace(/т$/, 'та').replace(/й$/, 'я')}</small><b class="${better ? 'good' : 'bad'}">${pct === 0 ? `Столько же, сколько в ${MONTHS_P[pm.getMonth()]}` : `На ${Math.abs(pct)}% ${pct < 0 ? 'меньше' : 'больше'}, чем в ${MONTHS_P[pm.getMonth()]}`}</b></div>`;
   }
+  {
+    const top = esc(rows[0][0]);
+    let tip;
+    if (statType === 'income') tip = { p: 'happy', t: `Главный источник: <em>${top}</em><small>Это ${Math.round(rows[0][1] / total * 100)}% всех доходов за месяц.</small>` };
+    else if (prev > 0 && total < prev) tip = { p: 'joy', t: `На ${Math.round((prev - total) / prev * 100)}% меньше, чем в прошлом месяце<small>Больше всего ушло на «${top}».</small>` };
+    else if (prev > 0 && total > prev * 1.15) tip = { p: 'think', t: `На ${Math.round((total - prev) / prev * 100)}% больше, чем в прошлом месяце<small>Чаще всего: «${top}». Посмотри, можно ли там сэкономить.</small>` };
+    else tip = { p: 'hello', t: `Больше всего ушло на <em>${top}</em><small>${Math.round(rows[0][1] / total * 100)}% всех трат за месяц.</small>` };
+    $('#statSay').innerHTML = MD.say(tip.p, tip.t, 84);
+  }
+  cmp = '';
   insEl.innerHTML = `<div class="ins">${cmp}<div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / daysN))))}</b></div><div><small>${statType === 'expense' ? 'Самая крупная трата' : 'Самый крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
 
   // Столбики по дням
@@ -442,9 +486,9 @@ function confirmDlg(title, text, yes = 'Удалить') {
 }
 
 let toastT = null;
-function toast(msg, actionLabel, action) {
+function toast(msg, actionLabel, action, pose) {
   const t = $('#toast');
-  t.innerHTML = `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
+  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, 44)}</span>` : '') + `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
   if (actionLabel) $('button', t).onclick = () => { t.hidden = true; action(); };
   t.hidden = false;
   clearTimeout(toastT);
@@ -513,7 +557,7 @@ $('#txForm').addEventListener('submit', e => {
   closeLayer($('#lyTx'));
   buzz(15);
   render();
-  toast(ex ? 'Сохранено' : 'Готово, записано');
+  toast(ex ? 'Сохранено' : 'Готово, записано', null, null, 'joy');
 });
 $('#txDelete').addEventListener('click', () => {
   const id = tx.editId;
@@ -526,7 +570,7 @@ function deleteTx(id) {
   if (i < 0) { render(); return; }
   const [t] = state.tx.splice(i, 1);
   save(); render(); buzz(15);
-  toast('Удалено', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); });
+  toast('Удалено', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); }, 'think');
 }
 
 // Тап — правка, свайп влево — удаление
@@ -665,7 +709,8 @@ $('#filterReset').addEventListener('click', () => { filterAcc = null; render(); 
 $('#fab').addEventListener('click', () => { buzz(10); openTx(); });
 
 /* ---------- Помощник ---------- */
-const setAiPose = p => { $('#aiMascot').innerHTML = MD.mascot(p, 108); };
+const AI_SAY = { hello: 'Расскажи, что с деньгами', listen: 'Слушаю тебя…', think: 'Пока пусто. Скажи или напиши, что записать', happy: 'Готово! Проверь, всё ли я понял верно', oops: 'Что-то пошло не так. Попробуем ещё раз?' };
+const setAiPose = p => { $('#aiMascot').innerHTML = MD.say(p === 'listen' ? 'notify' : p, esc(AI_SAY[p] || AI_SAY.hello), 112); };
 function normalizeItems(items) {
   const res = [];
   for (const it of items.slice(0, 30)) {
@@ -731,7 +776,7 @@ $('#draftOk').addEventListener('click', () => {
   closeLayer($('#lyDraft'));
   buzz(20);
   showTab('home');
-  toast(`Добавлено: ${n}`);
+  toast(`Добавлено: ${n}`, null, null, 'happy');
 });
 
 /* ---------- Голосовой ввод ---------- */
@@ -867,14 +912,12 @@ $('#bkRestore').addEventListener('click', async () => {
   state = s; filterAcc = null; save();
   closeLayer($('#lySet'));
   render();
-  toast('Всё восстановлено');
+  toast('Всё восстановлено', null, null, 'happy');
 });
 
 /* ---------- Старт ---------- */
 load();
 paintIcons();
-$('#hdrMascot').innerHTML = MD.mascot('hello', 52);
-$('#heroFin').innerHTML = MD.mascot('happy', 96);
 setAiPose('hello');
 if (cloud.enabled) {
   gate(false);

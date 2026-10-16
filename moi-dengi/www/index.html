@@ -20,7 +20,6 @@
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
     <header class="hdr">
       <div class="hdr-who">
-        <span class="hdr-mascot" id="hdrMascot" aria-hidden="true"></span>
         <div>
           <div class="hello" id="hello">Привет!</div>
           <div class="date" id="todayLabel"></div>
@@ -29,9 +28,10 @@
       <button class="icon-btn" id="btnSettings" aria-label="Настройки"><i data-ic="gear"></i></button>
     </header>
 
+    <button class="say-btn" id="homeSay" aria-live="polite"></button>
+
     <section class="hero" aria-labelledby="heroLabel">
       <div class="hero-deco" aria-hidden="true"></div>
-      <span class="hero-fin" id="heroFin" aria-hidden="true"></span>
       <div class="hero-top">
         <div class="hero-label" id="heroLabel">Всего денег</div>
         <button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button>
@@ -86,6 +86,7 @@
       <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
       <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
     </div>
+    <div class="say-wrap" id="statSay"></div>
     <div class="card" id="catCard"></div>
     <div id="insights"></div>
     <div class="card" id="dayCard"></div>
@@ -97,7 +98,6 @@
     <header class="hdr"><h1 class="title">Помощник</h1></header>
     <div class="card ai-card">
       <div class="ai-mascot" id="aiMascot"></div>
-      <div class="ai-lead">Расскажи, что с деньгами</div>
       <div class="mic-wrap">
         <button class="mic" id="micBtn" aria-pressed="false" aria-label="Голосовой ввод"><span class="rings" aria-hidden="true"></span><i data-ic="mic" class="mic-ic"></i><i data-ic="stop" class="stop-ic"></i></button>
       </div>
@@ -245,6 +245,7 @@
 <script src="js/parser.js"></script>
 <script src="js/cloud.js"></script>
 <script src="js/auth-ui.js"></script>
+<script src="js/intro.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

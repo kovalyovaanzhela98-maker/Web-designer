@@ -24,7 +24,12 @@
     const alt = label ? `alt="${label}"` : 'alt="" aria-hidden="true"';
     return `<img class="mascot mascot-${key}" src="${(root.FIN_DATA && root.FIN_DATA[key]) || BASE + key + '.png'}" width="${size}" height="${size}" style="object-fit:contain" ${alt} decoding="async" draggable="false">`;
   }
+  /* Фин говорит: персонаж и облачко с репликой (text — готовый HTML, строки экранируй сам) */
+  function say(pose, text, size = 88) {
+    return `<div class="fin-say"><span class="fin-say-m">${mascot(pose, size)}</span><div class="bubble">${text}</div></div>`;
+  }
   root.MD = root.MD || {};
+  root.MD.say = say;
   root.MD.mascot = mascot;
   root.MD.MASCOT_POSES = Object.keys(POSES);
   root.MD.MASCOT_INFO = POSES;
