@@ -266,12 +266,13 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .title{font-weight:800}
 
 /* ---------- Монька ---------- */
-.mascot{display:block;overflow:visible}
+.mascot{display:block;overflow:visible;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 5px 6px rgba(27,42,31,.16))}
 .mascot .eyes{transform-box:fill-box;transform-origin:center;animation:blink 5.5s infinite}
 @keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.12)}}
 .hdr-who{display:flex;align-items:center;gap:12px;min-width:0}
-.hdr-mascot{flex:0 0 auto;display:grid;place-items:center;width:52px;height:52px;margin-left:-4px}
-.ai-mascot{display:grid;place-items:center;height:100px;margin:-4px 0 4px}
+.hdr-mascot{flex:0 0 auto;display:grid;place-items:center;width:56px;height:56px;margin-left:-4px}
+.hdr-mascot .mascot{filter:drop-shadow(0 2px 3px rgba(27,42,31,.18))}
+.ai-mascot{display:grid;place-items:center;height:112px;margin:-4px 0 4px}
 .ai-mascot .mascot{animation:bob 3.4s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-4px)}}
 .emp-m{display:grid;place-items:center;margin:0 auto 8px}

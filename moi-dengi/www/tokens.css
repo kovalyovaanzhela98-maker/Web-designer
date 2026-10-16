@@ -15,6 +15,7 @@
   --exp:#C2364B;--exp-bg:#F8E4E7;--exp-t:#B02F44;
   /* Цвет: бренд (индиго + монета) */
   --primary:#2F4AA8;--primary-2:#4864C9;--on-primary:#FFFFFF;
+  --fin-cream:#F6EBCB;--fin-leaf:#9DB45A;--fin-leaf-deep:#5F7F38;--fin-blush:#F4B3AA;--fin-ink:#1B2A1F;
   --coin:#F2C230;--coin-deep:#F2B900;--ink:#1D2433;
   --focus:#2F4AA8;--scrim:rgba(20,26,40,.45);--glass:rgba(255,255,255,.82);
   /* Шрифты: заголовки и суммы — Wix Madefor Display; текст интерфейса — Golos Text */

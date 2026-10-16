@@ -34,7 +34,7 @@
 
   function menu() {
     const p = cloud.providers;
-    return `<div class="auth-hero">${MD.mascot(pose, 150)}<h1>Мои деньги</h1><p>Войди, чтобы твои траты и доходы были на любом устройстве и никогда не потерялись.</p></div>
+    return `<div class="auth-hero">${MD.mascot(pose === 'hello' ? 'hero' : pose, 190)}<h1>Мои деньги</h1><p>Войди, чтобы твои траты и доходы были на любом устройстве и никогда не потерялись.</p></div>
     <div class="auth-btns">
       ${p.google ? `<button class="abtn light" data-act="google">${GOOGLE}<span>Продолжить с Google</span></button>` : ''}
       ${p.apple ? `<button class="abtn dark" data-act="apple">${APPLE}<span>Продолжить с Apple</span></button>` : ''}

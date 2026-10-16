@@ -231,7 +231,7 @@ function renderHome() {
   const recent = list.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
     ? `<div class="recent">${recent.map(txRow).join('')}</div>`
-    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 92)}</span><b>Здесь будут твои траты и доходы</b>Добавь первую — кнопка «+» внизу</div>`;
+    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('rest', 104)}</span><b>Здесь будут твои траты и доходы</b>Добавь первую — кнопка «+» внизу</div>`;
 }
 
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
@@ -281,7 +281,7 @@ function renderOps() {
     (!q || t.cat.toLowerCase().includes(q) || t.note.toLowerCase().includes(q) || ((accById(t.acc) || {}).name || '').toLowerCase().includes(q)));
   const el = $('#opsList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'sleepy', 92)}</span><b>${q ? 'Ничего не нашлось' : `В ${MONTHS_P[ym.m]} пока тихо`}</b>${q ? 'Попробуй другое слово или часть названия' : 'Добавь операцию — и она появится здесь'}</div>`;
+    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'rest', 104)}</span><b>${q ? 'Ничего не нашлось' : `В ${MONTHS_P[ym.m]} пока тихо`}</b>${q ? 'Попробуй другое слово или часть названия' : 'Добавь операцию — и она появится здесь'}</div>`;
     return;
   }
   const days = {};
@@ -299,7 +299,7 @@ function renderStats() {
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 92)}</span><b>${statType === 'expense' ? 'Трат' : 'Доходов'} в ${MONTHS_P[ym.m]} нет</b>Когда появятся — здесь будет разбивка по категориям</div>`;
+    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('rest', 104)}</span><b>${statType === 'expense' ? 'Трат' : 'Доходов'} в ${MONTHS_P[ym.m]} нет</b>Когда появятся — здесь будет разбивка по категориям</div>`;
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true;
     return;
   }
@@ -663,7 +663,7 @@ $('#filterReset').addEventListener('click', () => { filterAcc = null; render(); 
 $('#fab').addEventListener('click', () => { buzz(10); openTx(); });
 
 /* ---------- Помощник ---------- */
-const setAiPose = p => { $('#aiMascot').innerHTML = MD.mascot(p, 96); };
+const setAiPose = p => { $('#aiMascot').innerHTML = MD.mascot(p, 108); };
 function normalizeItems(items) {
   const res = [];
   for (const it of items.slice(0, 30)) {
@@ -871,7 +871,7 @@ $('#bkRestore').addEventListener('click', async () => {
 /* ---------- Старт ---------- */
 load();
 paintIcons();
-$('#hdrMascot').innerHTML = MD.mascot('hello', 48);
+$('#hdrMascot').innerHTML = MD.mascot('hello', 52);
 setAiPose('hello');
 if (cloud.enabled) {
   gate(false);
