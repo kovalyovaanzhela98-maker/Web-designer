@@ -30,3 +30,13 @@ if (fs.existsSync(nativeDir)) {
   }
   console.log('Нативная быстрая запись установлена');
 }
+
+/* Номер версии растёт с каждой сборкой: Android ставит новую поверх старой как обновление */
+const gradle = path.join(root, 'android/app/build.gradle');
+if (fs.existsSync(gradle)) {
+  const code = parseInt(process.env.GITHUB_RUN_NUMBER || '', 10) || 1;
+  let g = fs.readFileSync(gradle, 'utf8');
+  g = g.replace(/versionCode\s+\d+/, `versionCode ${code}`).replace(/versionName\s+"[^"]*"/, `versionName "1.0.${code}"`);
+  fs.writeFileSync(gradle, g);
+  console.log('versionCode =', code);
+}
