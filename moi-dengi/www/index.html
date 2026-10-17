@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#0F1611" media="(prefers-color-scheme: dark)">
 <title>Фин</title>
 <link rel="icon" href="icon.png">
+<script>try{var t=localStorage.getItem("fin_theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="app.css">
 </head>
@@ -131,10 +132,9 @@
       <div class="acct-t"><b id="acctName">Профиль</b><span id="acctSub"></span></div>
       <span class="badge-plus" id="acctPlus" hidden><i data-ic="check"></i>Навсегда</span>
     </div>
-    <button class="login-card" id="loginCard" type="button" hidden>
-      <span class="pc-ic" aria-hidden="true"><i data-ic="cloud"></i></span>
-      <span class="pc-t"><b>Войти</b><small>Чтобы данные были на любом телефоне</small></span>
-      <span class="pc-go">Войти</span>
+    <button class="ban" id="loginCard" type="button" hidden aria-label="Не потеряй свои данные. Привяжи номер телефона, чтобы сохранить прогресс при смене устройства">
+      <img class="ban-l" src="img/banner-light.jpg" alt="" width="1200" height="600" decoding="async">
+      <img class="ban-d" src="img/banner-dark.jpg" alt="" width="1200" height="600" decoding="async">
     </button>
 
     <div class="grp-t">Аккаунт</div>
@@ -155,6 +155,16 @@
       <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджет и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="fest" id="plFest"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>Праздники и подарки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+
+    <div class="grp-t">Оформление</div>
+    <div class="grp theme-grp">
+      <div class="theme-row"><span class="rw-t"><b>Тема</b><small id="themeNote"></small></span>
+        <div class="seg" id="themeSeg" role="radiogroup" aria-label="Тема оформления">
+          <button type="button" role="radio" class="seg-b" data-theme-pick="auto" aria-checked="true">Авто</button>
+          <button type="button" role="radio" class="seg-b" data-theme-pick="light" aria-checked="false">Светлая</button>
+          <button type="button" role="radio" class="seg-b" data-theme-pick="dark" aria-checked="false">Тёмная</button>
+        </div></div>
     </div>
 
     <div class="grp-t">Фин</div>

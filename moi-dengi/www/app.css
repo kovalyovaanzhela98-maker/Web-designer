@@ -631,3 +631,14 @@ body.kb .chat-dock{bottom:8px}
 /* Варианты в шторках лежат на сером фоне: белые с тонкой границей, чтобы было видно, где один кончается */
 .sheet .kind,.sheet .opts button{background:var(--surface);border:var(--card-b)}
 .sheet .kind[aria-checked=true]{background:var(--accent-bg);border-color:var(--accent);box-shadow:none}
+
+/* ---------- Баннер «Не потеряй свои данные» в профиле и выбор темы ---------- */
+.ban{display:block;width:100%;padding:0;border-radius:var(--r-lg);overflow:hidden;border:var(--card-b);background:var(--surface)}
+.ban img{display:block;width:100%;height:auto}
+.ban-d{display:none!important}
+:root[data-theme="dark"] .ban-d{display:block!important}
+:root[data-theme="dark"] .ban-l{display:none!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ban-d{display:block!important}:root:not([data-theme="light"]) .ban-l{display:none!important}}
+.theme-row{display:flex;flex-direction:column;gap:12px;padding:12px}
+.theme-row .rw-t b{font-family:var(--font-display);font-weight:600}
+.theme-row .seg-b{font-size:var(--fs-cap);min-height:44px;height:auto;padding:0 4px;line-height:1.2}
