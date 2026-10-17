@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F7F8F6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0F1611" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0F140D" media="(prefers-color-scheme: dark)">
 <title>Фин</title>
 <link rel="icon" href="icon.png">
 <script>try{var t=localStorage.getItem("fin_theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
@@ -19,6 +19,8 @@
 
   <!-- ГЛАВНАЯ: баланс с итогами месяца, избранные обязательные платежи, «пора отложить», одно наблюдение, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
+    <header class="greet"><h1 class="title" id="greetTitle">Привет</h1></header>
+
     <div id="nudgeBox"></div>
 
     <section class="hero" aria-labelledby="heroLabel">
@@ -31,19 +33,19 @@
       </div>
     </section>
 
-    <section class="block panel" id="paysBlock" hidden aria-labelledby="hPays">
+    <section class="block" id="paysBlock" hidden aria-labelledby="hPays">
       <div class="h2-row"><h2 class="h2" id="hPays">Обязательные платежи</h2><button class="link" data-go-pay>Все</button></div>
       <div class="pays" id="paysStrip"></div>
     </section>
 
-    <section class="block panel" id="goalsHome" aria-labelledby="hGoalsH">
+    <section class="block" id="goalsHome" aria-labelledby="hGoalsH">
       <div class="h2-row"><h2 class="h2" id="hGoalsH">Цели</h2><button class="link" data-go="goals">Все</button></div>
-      <div class="pays" id="goalsStrip"></div>
+      <div class="list-card" id="goalsStrip"></div>
     </section>
 
-    <section class="block panel" id="festHome" aria-labelledby="hFest">
+    <section class="block" id="festHome" aria-labelledby="hFest">
       <div class="h2-row"><h2 class="h2" id="hFest">Дни рождения</h2></div>
-      <div class="pays" id="festStrip"></div>
+      <div class="pillrow" id="festStrip"></div>
     </section>
 
     <div id="saveCard"></div>

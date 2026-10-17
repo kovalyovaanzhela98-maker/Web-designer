@@ -78,6 +78,9 @@ function save() {
 
 /* ---------- Облако: вход и синхронизация ---------- */
 let cloudUid = null, synced = null, stopListen = null, me = null;
+/* Предпросмотр: пока облако не подключено, профиль показан так, будто вход уже выполнен. Выключить: PREVIEW_ACCOUNT = false */
+const PREVIEW_ACCOUNT = true;
+const previewMe = () => (!cloud.enabled && PREVIEW_ACCOUNT ? { name: 'Анна', phone: '+375 29 123-45-67', phoneLinked: '+375 29 123-45-67', emailLinked: '' } : null);
 function pushCloud() {
   if (!cloudUid || !synced) return;
   const ops = cloud.diff(synced, state);
@@ -250,7 +253,7 @@ function renderPays() {
   const blk = $('#paysBlock'), el = $('#paysStrip'), T = new Date(), mk = R.mkOfDate(T), list = state.rec.list;
   blk.hidden = false;
   if (!list.length) {
-    el.innerHTML = `<button class="pcard add" type="button" data-go-pay><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>Добавить платёж</b><small>Аренда, подписка, кредит</small></button>`;
+    el.innerHTML = `<button class="pcard add" type="button" data-go-pay><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>Добавить платёж</b></button>`;
     return;
   }
   let rows = R.monthRows(list, mk, T);
@@ -262,8 +265,8 @@ function renderPays() {
     const p = r.p, ci = catInfo('expense', p.cat), d = r.date, days = Math.round((mid(d) - mid(T)) / 864e5), key = r.mk || mk;
     const sub = r.status === 'paid' ? 'Оплачено' : esc(R.whenText(days));
     return `<div class="pcard ${r.status}"><button class="pc-main" type="button" data-go-pay aria-label="${esc(cap(p.name))}, ${esc(sub)}. Все обязательные платежи">
-        <span class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span>
-        <b class="pc-n">${esc(cap(p.name))}</b><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small></button>
+        <span class="pc-top"><span class="tx-ic" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span><b class="pc-n">${esc(cap(p.name))}</b></span>
+        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small></span></button>
       ${r.status === 'late' ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${key}">Записать</button>` : ''}</div>`;
   }).join('');
 }
@@ -271,14 +274,14 @@ function renderPays() {
 /* Цели на главной: карточки в ряд, у каждой свой цвет */
 function renderGoalsHome() {
   const el = $('#goalsStrip'), list = state.goals;
-  el.innerHTML = list.map(g => `<button class="pcard gcard" type="button" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}"><span class="goal-dot" aria-hidden="true"></span><b class="pc-n">${esc(g.name)}</b><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span><small class="pc-s">${goalPct(g)}% · ${esc(maskT(money(g.saved)))}</small></button>`).join('') +
-    `<button class="pcard add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё цель' : 'Новая цель'}</b></button>`;
+  el.innerHTML = list.map(g => `<button class="grow" type="button" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}"><span class="gr-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span><small>${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</small></button>`).join('') +
+    `<button class="grow add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё цель' : 'Новая цель'}</b></button>`;
 }
-/* Дни рождения и праздники: ближайшие */
+/* Дни рождения и праздники: ближайшие, одной строкой */
 function renderFestHome() {
   const el = $('#festStrip'), ups = MD.events.upcoming(festList(), new Date()).slice(0, 6);
-  el.innerHTML = ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="pcard fcard" type="button" data-ev="${esc(u.e.id)}"><span class="tx-ic" style="--c:#CC5B7B" aria-hidden="true">${icon('gift')}</span><b class="pc-n">${esc(MD.events.whatText(u.e))}</b><small class="pc-s">${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}</small></button>`; }).join('') +
-    `<button class="pcard add" type="button" data-ev=""><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>Добавить</b></button>`;
+  el.innerHTML = ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="fpill" type="button" data-ev="${esc(u.e.id)}"><span class="fp-ic" aria-hidden="true">${icon('gift')}</span><span class="fp-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}</small></span></button>`; }).join('') +
+    `<button class="fpill add" type="button" data-ev=""><span class="fp-ic" aria-hidden="true">${icon('plus')}</span><span class="fp-t"><b>Добавить</b></span></button>`;
 }
 $('#s-home').addEventListener('click', e => {
   const g = e.target.closest('[data-goal]'); if (g) { openGoal(g.dataset.goal); return; }
@@ -301,6 +304,7 @@ function renderBanners() {
   $('#banners').innerHTML = list.map(b => `<article class="banner tone-${b.tone}"><span class="bi" aria-hidden="true">${icon(b.icon)}</span><b>${esc(b.title)}</b><p>${esc(b.text)}</p></article>`).join('');
 }
 function renderHome() {
+  { const u = me || previewMe(), n = u && u.name; $('#greetTitle').textContent = n ? `Привет, ${n}` : 'Привет'; }
   const total = totalBalance();
   setNum($('#heroSum'), moneyH, total);
   $('#btnEye').innerHTML = icon(hide ? 'eyeoff' : 'eye');
@@ -493,7 +497,7 @@ function showTab(name, fromPop) {
   tab = name;
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
   const navName = name === 'ops' ? 'home' : name === 'pay' ? payFrom : name;
-  $$('.nav-b').forEach(b => { if (b.dataset.tab === navName) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  $$('.nav-b').forEach(b => { const on = b.dataset.tab === navName; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); const i = $('i[data-ic]', b); if (i) i.innerHTML = on ? MD.iconFill(i.dataset.ic) : icon(i.dataset.ic); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
     else if (name === 'home' && tabPushed) { ignorePops++; history.back(); tabPushed = false; }
@@ -864,7 +868,7 @@ function deleteTx(id) {
 
 /* ---------- Цели ---------- */
 const G = MD.goals;
-const GCOL = ['#2F8F5B', '#4A7FA8', '#B58A45', '#8A78AE', '#B8697F', '#4B9A97'];
+const GCOL = ['#5C8A3C', '#4A7FA8', '#B58A45', '#8A78AE', '#B8697F', '#4B9A97'];
 const rampCol = i => `var(--r${Math.min(i + 1, 6)})`;
 const gCol = g => GCOL[(g.nid || 0) % GCOL.length];
 const goalPct = g => Math.min(100, Math.round(g.saved / g.target * 100));
@@ -1578,9 +1582,6 @@ function renderTheme() {
 }
 $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('[data-theme-pick]'); if (!b) return; applyTheme(b.dataset.themePick); renderTheme(); });
 function renderAcc() { renderAccount(); renderTheme(); }
-/* Предпросмотр: пока облако не подключено, профиль показан так, будто вход уже выполнен. Выключить: PREVIEW_ACCOUNT = false */
-const PREVIEW_ACCOUNT = true;
-const previewMe = () => (!cloud.enabled && PREVIEW_ACCOUNT ? { name: 'Анна', phone: '+375 29 123-45-67', phoneLinked: '+375 29 123-45-67', emailLinked: '' } : null);
 function renderAccount() {
   const u = me || previewMe(), on = loggedIn() || !!previewMe(), canLogin = cloud.enabled && !me;
   $('#setFoot').textContent = on ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';

@@ -196,7 +196,6 @@ input:focus,textarea:focus,input:focus-visible,textarea:focus-visible{border-col
 .np{display:grid;place-items:center;width:calc(100% - 8px);max-width:88px;height:40px;border-radius:14px;transition:background var(--dur) ease-out,color var(--dur) ease-out}
 .nl{line-height:1.1;max-width:100%;white-space:nowrap}
 .nav-b[aria-current=page]{color:var(--accent-t);font-weight:700}
-.nav-b[aria-current=page] .np{background:var(--accent-bg)}
 .nav-mid{display:grid;place-items:center;height:100%}
 .nav-add{width:72px;height:56px;border-radius:18px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
 .nav-add svg{width:32px;height:32px}
@@ -471,7 +470,7 @@ body.kb .chat-dock{bottom:8px}
 .cb-send{background:var(--btn);color:var(--on-btn)}
 
 /* ---------- Знакомство: картинка Фина, панель с текстом и живая демонстрация ---------- */
-.intro{position:fixed;inset:0;z-index:95;background:#1F4D33;overflow:hidden;display:flex;flex-direction:column}
+.intro{position:fixed;inset:0;z-index:95;background:#2E4420;overflow:hidden;display:flex;flex-direction:column}
 .intro-art{position:relative;flex:1 1 auto;min-height:38%;overflow:hidden}
 .intro-art i{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat;opacity:0}
 .intro-art i.on{opacity:1}
@@ -669,3 +668,38 @@ body.kb .chat-dock{bottom:8px}
 .pcard.paid .tx-ic{background:var(--accent-bg);color:var(--accent-t)}
 .pcard.late .tx-ic{color:var(--exp-t)}
 .pc-ic2{background:var(--accent-bg)}
+
+/* Приветствие и главная без обёрток: заголовок раздела на фоне, под ним содержимое */
+.greet{display:flex;align-items:center;min-height:44px}
+.greet .title{font-size:var(--fs-title)}
+#paysBlock .pays{margin:0 calc(var(--gap) * -1);padding:0 var(--gap) 2px}
+/* Правило карточек: в ряду одной высоты заголовок сверху, остальное прижато вниз; пустое место берёт авто-отступ */
+.pcard{background:var(--surface);border:var(--card-b);justify-content:space-between;align-items:stretch;gap:12px}
+.pcard.late{background:var(--exp-bg);border-color:transparent}
+.pc-main{flex:1;align-items:stretch;justify-content:space-between;gap:16px}
+.pc-top{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.pc-bot{display:flex;flex-direction:column;gap:2px;min-width:0;margin-top:auto}
+.pc-main .tx-ic{margin-bottom:0}
+.pcard.add{background:transparent;border:1px dashed var(--line);box-shadow:none;align-items:flex-start;justify-content:space-between}
+.pcard.add b{margin-top:auto}
+.pc-ic2{margin:0}
+/* Цели: один белый список со строками */
+.list-card{display:flex;flex-direction:column;background:var(--surface);border:var(--card-b);border-radius:var(--r-lg);overflow:hidden}
+.grow{display:flex;flex-direction:column;gap:8px;width:100%;padding:var(--pad);text-align:left;border-top:1px solid var(--line)}
+.grow:first-child{border-top:0}
+.gr-top{display:flex;align-items:baseline;gap:8px}
+.gr-top b{flex:1;min-width:0;font-family:var(--font-display);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grow small{color:var(--muted)}
+.grow.add{flex-direction:row;align-items:center;gap:12px;min-height:64px}
+.grow.add b{font-weight:600}
+/* Праздники: строка плашек-пилюль */
+.pillrow{display:flex;gap:8px;overflow-x:auto;margin:0 calc(var(--gap) * -1);padding:0 var(--gap);scrollbar-width:none}
+.pillrow::-webkit-scrollbar{display:none}
+.fpill{flex:0 0 auto;display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 16px 8px 8px;border-radius:var(--r-pill);background:var(--surface);border:var(--card-b);text-align:left}
+.fp-ic{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--accent-bg);color:var(--accent-t)}
+.fp-t{display:flex;flex-direction:column}
+.fp-t small{color:var(--muted)}
+.fpill.add{background:transparent;border-style:dashed}
+.ins>div{display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.goal{justify-content:space-between}
+#paysBlock .pays,.pillrow{scroll-padding:0 var(--gap)}

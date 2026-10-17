@@ -14,16 +14,16 @@
   --bg:#F8F9F7;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#F8F9F7;--text:#16241A;--muted:#566659;--ph:#6B7A6E;
   --line:#E3E7E1;--field:#EFF2EE;--outline:1px solid #D0D7CF;--card-b:1px solid #E3E7E1;
   /* Яркий акцент: свежий изумруд и лайм. Кнопки, баланс, активные элементы, прогресс, «+» */
-  --accent:#0E8A4F;--accent-d:#0A6B3D;--accent-t:#0A6B3D;--on-accent:#FFFFFF;--lime:#D5F26B;--on-lime:#16300F;
-  --btn:#0A6B3D;--on-btn:#FFFFFF;--cream:#FFF4D6;--accent-bg:#E6F6EC;
+  --accent:#4B7A34;--accent-d:#34581F;--accent-t:#34581F;--on-accent:#FFFFFF;--lime:#D9E88A;--on-lime:#24300F;
+  --btn:#3A6428;--on-btn:#FFFFFF;--cream:#FFF4D6;--accent-bg:#EAF0DF;
   /* Весёлые плоские заливки для баннеров и плиток */
-  --tone-mint:#DDEFE3;--tone-lime:#E8EFC9;--tone-peach:#F6E4D8;--tone-sky:#DCE9F4;--tone-lilac:#E7E2F3;--tone-sun:#F5EBC8;
+  --tone-mint:#E3EED8;--tone-lime:#E8EFC9;--tone-peach:#F6E4D8;--tone-sky:#DCE9F4;--tone-lilac:#E7E2F3;--tone-sun:#F5EBC8;
   --on-tone:#16241A;
-  --inc:#12905A;--inc-bg:#DDF5E5;--inc-t:#0B6E43;
+  --inc:#4B7A34;--inc-bg:#E3EED8;--inc-t:#34581F;
   --exp:#D8483F;--exp-bg:#FFE6DF;--exp-t:#B3302A;
   /* Ряд зелёных и серых для диаграмм: главное темнее, остальное светлее */
-  --r1:#0A6B3D;--r2:#2F9460;--r3:#6DBA90;--r4:#A3D3B8;--r5:#B9C4BC;--r6:#D5DBD6;
-  --focus:#0A6B3D;--scrim:rgba(14,30,20,.45);
+  --r1:#34581F;--r2:#5C8A3C;--r3:#8DB36A;--r4:#B9D0A0;--r5:#C5CCBE;--r6:#DCE0D8;
+  --focus:#3A6428;--scrim:rgba(20,28,12,.45);
   --font-display:"Wix Madefor Display","Golos Text",system-ui,sans-serif;
   --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --fs-title:28px;--fs-card:16px;--fs-cap:13px;
@@ -38,31 +38,31 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--sheet:#101912;--card-b:1px solid rgba(255,255,255,.09);--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
-    --line:rgba(255,255,255,.1);--field:#212E25;--outline:1px solid rgba(255,255,255,.17);
-    --accent:#1E9D5F;--accent-d:#3DD088;--accent-t:#5FDB9B;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
-    --btn:#3DD088;--on-btn:#05230F;--cream:#FFF4D6;--accent-bg:#1C3326;
-    --tone-mint:#1B3B2A;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
+    --bg:#0F140D;--surface:#181F15;--float:#1F281B;--sheet:#11170F;--card-b:1px solid rgba(255,255,255,.09);--text:#EEF3E6;--muted:#A9B5A0;--ph:#97A38D;
+    --line:rgba(255,255,255,.1);--field:#242E20;--outline:1px solid rgba(255,255,255,.17);
+    --accent:#7FAF4E;--accent-d:#A3CF6E;--accent-t:#B4D985;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
+    --btn:#A3CF6E;--on-btn:#1B2A0E;--cream:#FFF4D6;--accent-bg:#232E17;
+    --tone-mint:#232E17;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
     --on-tone:#EDF3E8;
-    --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
+    --inc:#8DBE5B;--inc-bg:#232E17;--inc-t:#B4D985;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --r1:#3DD088;--r2:#2FA66C;--r3:#237D52;--r4:#6F8F7C;--r5:#566A5D;--r6:#3E4F45;
-    --focus:#5FDB9B;--scrim:rgba(0,0,0,.6);
+    --r1:#A3CF6E;--r2:#7FAF4E;--r3:#5C8A3C;--r4:#6F7F5C;--r5:#566049;--r6:#3E4733;
+    --focus:#A3CF6E;--scrim:rgba(0,0,0,.6);
     --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--sheet:#101912;--card-b:1px solid rgba(255,255,255,.09);--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
-    --line:rgba(255,255,255,.1);--field:#212E25;--outline:1px solid rgba(255,255,255,.17);
-    --accent:#1E9D5F;--accent-d:#3DD088;--accent-t:#5FDB9B;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
-    --btn:#3DD088;--on-btn:#05230F;--cream:#FFF4D6;--accent-bg:#1C3326;
-    --tone-mint:#1B3B2A;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
+    --bg:#0F140D;--surface:#181F15;--float:#1F281B;--sheet:#11170F;--card-b:1px solid rgba(255,255,255,.09);--text:#EEF3E6;--muted:#A9B5A0;--ph:#97A38D;
+    --line:rgba(255,255,255,.1);--field:#242E20;--outline:1px solid rgba(255,255,255,.17);
+    --accent:#7FAF4E;--accent-d:#A3CF6E;--accent-t:#B4D985;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
+    --btn:#A3CF6E;--on-btn:#1B2A0E;--cream:#FFF4D6;--accent-bg:#232E17;
+    --tone-mint:#232E17;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
     --on-tone:#EDF3E8;
-    --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
+    --inc:#8DBE5B;--inc-bg:#232E17;--inc-t:#B4D985;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --r1:#3DD088;--r2:#2FA66C;--r3:#237D52;--r4:#6F8F7C;--r5:#566A5D;--r6:#3E4F45;
-    --focus:#5FDB9B;--scrim:rgba(0,0,0,.6);
+    --r1:#A3CF6E;--r2:#7FAF4E;--r3:#5C8A3C;--r4:#6F7F5C;--r5:#566049;--r6:#3E4733;
+    --focus:#A3CF6E;--scrim:rgba(0,0,0,.6);
     --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
     color-scheme:dark;
 }
