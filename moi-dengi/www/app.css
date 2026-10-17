@@ -27,7 +27,7 @@ svg.ic{width:24px;height:24px;flex:0 0 auto;fill:currentColor}
 .screen{display:flex;flex-direction:column;gap:var(--gap);padding-bottom:calc(var(--nav-h) + 40px + var(--sab));animation:tab var(--dur) ease-out}
 .hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}
 .title{font-size:var(--fs-title);font-weight:700;line-height:1.15}
-.hdr [data-back]{margin-left:-8px}
+.hdr [data-back]{margin-left:-10px}
 .hdr:has([data-back]) .title{flex:1}
 .hdr .pill-btn{margin-left:auto}
 .icon-btn{width:44px;height:44px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--text)}
@@ -42,7 +42,7 @@ svg.ic{width:24px;height:24px;flex:0 0 auto;fill:currentColor}
 .card h3{font-size:var(--fs-card);font-weight:700;margin-bottom:12px}
 .grp{background:var(--surface);border-radius:var(--r-lg);border:var(--card-b);overflow:hidden}
 .grp.flat{margin-top:12px}
-.grp-t{margin:8px 4px -4px;font-size:var(--fs-cap);font-weight:600;color:var(--muted)}
+.grp-t{margin:8px 0 -4px;font-size:var(--fs-cap);font-weight:600;color:var(--muted)}
 
 /* ---------- Кнопки ---------- */
 .btn{min-height:48px;border-radius:var(--r-md);padding:0 16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
