@@ -986,3 +986,7 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .pcard:not(.add),.pcard.late,.pcard.paid{background:linear-gradient(170deg,color-mix(in srgb,var(--c-pay) 20%,transparent) 0%,color-mix(in srgb,var(--c-pay) 5%,transparent) 100%),var(--surface);border:1px solid color-mix(in srgb,var(--c-pay) 22%,var(--line))}
 .pcard.late{border-color:color-mix(in srgb,var(--negative) 45%,var(--line))}
 .pcard .tx-ic,.pcard.paid .tx-ic{background:color-mix(in srgb,var(--c-pay) 22%,var(--surface))}
+
+/* Плашка с градиентом живёт без обводки. Просроченный платёж отмечен красным градиентом, не рамкой */
+.pcard:not(.add),.pcard.late,.pcard.paid{border:0}
+.pcard.late{background:linear-gradient(170deg,color-mix(in srgb,var(--negative) 20%,transparent) 0%,color-mix(in srgb,var(--negative) 5%,transparent) 100%),var(--surface)}
