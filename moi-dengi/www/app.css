@@ -1051,3 +1051,13 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .hs b,.hs b small{color:#1A1A1A}
 .hs b small{opacity:.6}
 .hs .mo{color:#4A524A}
+
+/* «Пришло» и «Потрачено»: как раньше, полупрозрачные плашки с белым текстом */
+.hs{background:rgba(255,255,255,.13)}
+.hs small{color:rgba(255,255,255,.8)}
+.hs small svg{width:16px;height:16px;stroke-width:14}
+.hs.inc small svg{color:#B8E6C8}
+.hs.exp small svg{color:#FFC9BF}
+.hs b,.hs b small{color:#fff}
+.hs b small{opacity:1;color:rgba(255,255,255,.72)}
+.hs .mo{color:rgba(255,255,255,.75)}
