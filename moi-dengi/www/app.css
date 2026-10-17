@@ -656,3 +656,16 @@ body.kb .chat-dock{bottom:8px}
 .pcard .pc-n{font-size:var(--fs-card)}
 .gcard .pc-n,.fcard .pc-n{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
 .pcard{flex-basis:148px}
+
+/* Цвет несёт смысл: зелёный акцент, красный для расходов и «пора записать». Остальное нейтральное.
+   Цвета категорий больше не раскрашивают значки: все значки одного зелёного оттенка на светлой подложке */
+.tx-ic,.ci,.dm-ci{--c:var(--accent-d)!important}
+.cat-tile[aria-checked=true] .ci{background:var(--accent);color:#fff}
+.banner .bi{background:var(--accent-bg);color:var(--accent-t)}
+.gcard{background:var(--field)}
+.goal.big{background:var(--surface);border-color:var(--line)}
+.gblock.key{border-color:var(--line)}
+.save-card.due{background:var(--accent-bg);border-color:color-mix(in srgb,var(--accent) 28%,var(--line))}
+.pcard.paid .tx-ic{background:var(--accent-bg);color:var(--accent-t)}
+.pcard.late .tx-ic{color:var(--exp-t)}
+.pc-ic2{background:var(--accent-bg)}

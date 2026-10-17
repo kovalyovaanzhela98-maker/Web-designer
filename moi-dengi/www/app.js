@@ -429,7 +429,7 @@ function renderStats() {
   let off = 0;
   const segs = rows.map(([name, sum]) => {
     const frac = sum / total, len = Math.max(frac * C - (rows.length > 1 ? 3 : 0), 0.5);
-    const sg = `<circle class="seg${statCat && statCat !== name ? ' dim' : ''}${statCat === name ? ' on' : ''}" cx="75" cy="75" r="${R}" fill="none" stroke="${catInfo(statType, name)[2]}" stroke-width="${statCat === name ? 24 : 20}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
+    const sg = `<circle class="seg${statCat && statCat !== name ? ' dim' : ''}${statCat === name ? ' on' : ''}" cx="75" cy="75" r="${R}" fill="none" stroke="${rampCol(rows.findIndex(r => r[0] === name))}" stroke-width="${statCat === name ? 24 : 20}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
     off += frac * C;
     return sg;
   }).join('');
@@ -482,7 +482,7 @@ function renderStats() {
   dayCard.innerHTML = `<h3>${per.kind === 'year' ? 'По месяцам' : P.days > 62 ? 'По неделям' : 'По дням'}</h3><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="График ${word} ${P.word}">${curve}${labels}</svg>${hi.v > 0 ? `<div class="note">Пик: ${esc(hi.l)}, ${esc(maskT(money(round2(hi.v))))}</div>` : ''}`;
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
-    const ci = catInfo(statType, name), pc = sum / total * 100;
+    const ci = [0, 0, rampCol(rows.findIndex(r => r[0] === name))], pc = sum / total * 100;
     return `<li class="${statCat === name ? 'on' : ''}" data-cat="${esc(name)}" role="button" tabindex="0" aria-pressed="${statCat === name}"><div class="cat-top"><span class="dot" style="background:${ci[2]}"></span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span><span class="am">${esc(maskT(fmt(sum)))}</span></div><div class="bar"><i style="--c:${ci[2]};width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
   }).join('')}</ul>`;
 }
@@ -864,7 +864,8 @@ function deleteTx(id) {
 
 /* ---------- Цели ---------- */
 const G = MD.goals;
-const GCOL = ['#2F8F5B', '#3F7FB5', '#D9893B', '#8B6BC0', '#CC5B7B', '#2E9E9A'];
+const GCOL = ['#2F8F5B', '#4A7FA8', '#B58A45', '#8A78AE', '#B8697F', '#4B9A97'];
+const rampCol = i => `var(--r${Math.min(i + 1, 6)})`;
 const gCol = g => GCOL[(g.nid || 0) % GCOL.length];
 const goalPct = g => Math.min(100, Math.round(g.saved / g.target * 100));
 /* Карточка цели: прогресс, остаток, взнос за период (неделя или месяц) и дедлайн */

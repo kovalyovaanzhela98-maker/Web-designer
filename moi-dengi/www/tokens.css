@@ -21,6 +21,8 @@
   --on-tone:#16241A;
   --inc:#12905A;--inc-bg:#DDF5E5;--inc-t:#0B6E43;
   --exp:#D8483F;--exp-bg:#FFE6DF;--exp-t:#B3302A;
+  /* Ряд зелёных и серых для диаграмм: главное темнее, остальное светлее */
+  --r1:#0A6B3D;--r2:#2F9460;--r3:#6DBA90;--r4:#A3D3B8;--r5:#B9C4BC;--r6:#D5DBD6;
   --focus:#0A6B3D;--scrim:rgba(14,30,20,.45);
   --font-display:"Wix Madefor Display","Golos Text",system-ui,sans-serif;
   --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -44,6 +46,7 @@
     --on-tone:#EDF3E8;
     --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
+    --r1:#3DD088;--r2:#2FA66C;--r3:#237D52;--r4:#6F8F7C;--r5:#566A5D;--r6:#3E4F45;
     --focus:#5FDB9B;--scrim:rgba(0,0,0,.6);
     --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
     color-scheme:dark;
@@ -58,6 +61,7 @@
     --on-tone:#EDF3E8;
     --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
+    --r1:#3DD088;--r2:#2FA66C;--r3:#237D52;--r4:#6F8F7C;--r5:#566A5D;--r6:#3E4F45;
     --focus:#5FDB9B;--scrim:rgba(0,0,0,.6);
     --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
     color-scheme:dark;
