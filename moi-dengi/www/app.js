@@ -610,16 +610,16 @@ $('#txForm').addEventListener('submit', e => {
 });
 $('#txDelete').addEventListener('click', () => {
   const id = tx.editId;
-  closeLayer($('#lyTx'));
-  if (id) deleteTx(id);
+  if (!id) return;
+  confirmDlg('Удалить запись?', 'Её не получится вернуть.').then(ok => { if (!ok) return; closeLayer($('#lyTx')); deleteTx(id); });
 });
 
 function deleteTx(id) {
   const i = state.tx.findIndex(t => t.id === id);
   if (i < 0) { render(); return; }
-  const [t] = state.tx.splice(i, 1);
+  state.tx.splice(i, 1);
   save(); render(); buzz(15);
-  toast('Удалено', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); }, 'think');
+  toast('Запись удалена');
 }
 
 // Тап — правка, свайп влево — удаление
@@ -645,7 +645,7 @@ function deleteTx(id) {
     if (!s.drag) return;
     s.el.style.transition = '';
     swiped = true; setTimeout(() => { swiped = false; }, 80);
-    if (s.dx < -96) { s.el.style.transform = 'translateX(-110%)'; setTimeout(() => deleteTx(s.id), 160); }
+    if (s.dx < -96) { s.el.style.transform = 'translateX(-110%)'; confirmDlg('Удалить запись?', 'Её не получится вернуть.').then(ok => { if (ok) deleteTx(s.id); else { s.el.style.transform = ''; } }); }
     else s.el.style.transform = '';
   };
   document.addEventListener('pointerup', end);
