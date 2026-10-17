@@ -220,7 +220,7 @@ function finTips() {
   const inc = sumOf(cur, 'income'), exp = sumOf(cur, 'expense');
   const tips = [], M = n => esc(maskT(money(n)));
   const todayExp = round2(state.tx.filter(t => t.type === 'expense' && t.date === today()).reduce((s, t) => s + t.amount, 0));
-  if (!state.tx.length && !round2(state.accounts.reduce((a, x) => a + x.balance, 0))) tips.push({ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Укажи в «Профиле», сколько денег у тебя сейчас. Дальше просто записывай траты.</small>' });
+  if (!state.tx.length) tips.push({ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Записывай траты и доходы: нажми «+» или скажи, например, «кофе 5».</small>' });
   else if (!cur.length) tips.push({ pose: 'sleepy', t: V(['В этом месяце пока тихо<small>Скажи, на что ушли деньги, и я запишу.</small>', 'Пока ни одной записи за месяц<small>Нажми «+» или скажи: «кофе 5».</small>']) });
   else {
     tips.push(todayExp ? { pose: 'hello', t: V([`Сегодня ушло <em>${M(todayExp)}</em><small>Всё записано.</small>`, `Сегодня потрачено <em>${M(todayExp)}</em><small>Записал, ничего не потерялось.</small>`]) } : { pose: 'joy', t: V(['Сегодня без трат<small>Так держать!</small>', 'Сегодня трат нет<small>Хороший день для копилки.</small>']) });
@@ -1022,19 +1022,7 @@ function renderSettings() {
 function renderAcc() {
   renderSettings();
   renderAccount();
-  $$('#s-acc .curAcc').forEach(c => { c.textContent = sym(); });
-  const bn = $('#balNow');
-  if (document.activeElement !== bn) bn.value = totalBalance().toFixed(2).replace('.', ',');
 }
-$('#balSave').addEventListener('click', () => {
-  const err = $('#balErr'); hideErr(err);
-  const v = parseAmount($('#balNow').value, true);
-  if (!Number.isFinite(v)) { showErr(err, 'Введи сумму цифрами, например 1250,50.'); return; }
-  ensureAccount();
-  state.accounts[0].balance = round2(state.accounts[0].balance + (v - totalBalance()));
-  save(); render(); buzz(12);
-  toast(`Баланс: ${money(v)}`, null, null, 'happy');
-});
 $('#setCur').addEventListener('click', e => {
   const b = e.target.closest('[data-cur]');
   if (!b) return;
