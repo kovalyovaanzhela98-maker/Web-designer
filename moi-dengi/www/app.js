@@ -1447,7 +1447,7 @@ function startNewPay() {
 }
 function payRowHtml(r, mk) {
   const p = r.p, ci = catInfo('expense', p.cat), d = r.date, late = r.status === 'late';
-  const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Пора записать</span>` : '<span class="st">Ожидает</span>';
+  const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Записать</span>` : '<span class="st">Ожидает</span>';
   return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</span>
     <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${d.getDate()} ${MONTHS_G[d.getMonth()]} · ${esc(p.cat)}</small></span>
     <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${st}</span></button>${late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать</button>` : ''}</div>`;
@@ -1577,26 +1577,29 @@ function renderTheme() {
 }
 $('#themeSeg').addEventListener('click', e => { const b = e.target.closest('[data-theme-pick]'); if (!b) return; applyTheme(b.dataset.themePick); renderTheme(); });
 function renderAcc() { renderAccount(); renderTheme(); }
+/* Предпросмотр: пока облако не подключено, профиль показан так, будто вход уже выполнен. Выключить: PREVIEW_ACCOUNT = false */
+const PREVIEW_ACCOUNT = true;
+const previewMe = () => (!cloud.enabled && PREVIEW_ACCOUNT ? { name: 'Анна', phone: '+375 29 123-45-67', phoneLinked: '+375 29 123-45-67', emailLinked: '' } : null);
 function renderAccount() {
-  const on = loggedIn(), canLogin = cloud.enabled && !me;
+  const u = me || previewMe(), on = loggedIn() || !!previewMe(), canLogin = cloud.enabled && !me;
   $('#setFoot').textContent = on ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';
   $('#acctMascot').innerHTML = MD.mascot('happy', 48);
   $('#btnSignOut').hidden = !on;
   $('#loginCard').hidden = !canLogin;
   if (on) {
-    $('#acctName').textContent = me.email || me.phone || me.name || 'Мой профиль';
-    $('#acctSub').textContent = 'Данные синхронизируются';
+    $('#acctName').textContent = u ? (u.name || u.email || u.phone || 'Мой профиль') : 'Мой профиль';
+    $('#acctSub').textContent = u && u.name && (u.phone || u.email) ? (u.phone || u.email) : 'Данные в облаке';
   } else {
     $('#acctName').textContent = 'Ты без входа';
     $('#acctSub').textContent = 'Данные только на этом телефоне';
   }
-  const ph = on && me.phoneLinked, em = on && me.emailLinked;
-  setPlate('#plPhone', ph ? me.phoneLinked : on ? 'Не привязан' : 'Появится после входа', ph ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', !cloud.enabled);
-  setPlate('#plEmail', em ? me.emailLinked : on ? 'Не привязана' : 'Появится после входа', em ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', !cloud.enabled);
+  const ph = on && u && u.phoneLinked, em = on && u && u.emailLinked, off = !cloud.enabled && !previewMe();
+  setPlate('#plPhone', ph ? u.phoneLinked : on ? 'Не привязан' : 'Появится после входа', ph ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', off);
+  setPlate('#plEmail', em ? u.emailLinked : on ? 'Не привязана' : 'Появится после входа', em ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', off);
   setPlate('#plBalance', maskT(money(startBal())), null, false);
   setPlate('#plCurrency', `${state.currency} ${CURRENCIES[state.currency]}`, null, false);
   const nd = R.nextDue(state.rec.list, new Date());
-  setPlate('#plPay', state.rec.list.length ? `${state.rec.list.length} ${pluralN(state.rec.list.length, 'платёж', 'платежа', 'платежей')}${nd ? (nd.late ? `, пора записать: ${nd.p.name.toLowerCase()}` : `, ближайший: ${nd.p.name.toLowerCase()} ${R.whenText(nd.days)}`) : ''}` : 'Аренда, подписка, кредит с напоминанием', null, false);
+  setPlate('#plPay', state.rec.list.length ? `${state.rec.list.length} ${pluralN(state.rec.list.length, 'платёж', 'платежа', 'платежей')}${nd ? (nd.late ? `, не записан: ${nd.p.name.toLowerCase()}` : `, ближайший: ${nd.p.name.toLowerCase()} ${R.whenText(nd.days)}`) : ''}` : 'Аренда, подписка, кредит с напоминанием', null, false);
   const rc = MD.notify.cfg();
   setPlate('#plRemind', rc.on ? `Каждый день в ${rc.times.join(', ')}` : 'Выключены', null, false);
   setPlate('#plQuick', rc.quick ? 'Кнопки на экране блокировки включены' : 'Записывай, не открывая Фин', null, false);
@@ -1840,6 +1843,7 @@ function restoreFrom(raw) {
 $('#btnSignOut').addEventListener('click', async () => {
   const yes = await confirmDlg('Выйти из аккаунта?', 'Данные останутся в облаке. Войдёшь снова, и всё вернётся.', 'Выйти');
   if (!yes) return;
+  if (!cloud.enabled) { toast('Это предпросмотр аккаунта'); return; }
   setTimeout(() => { cloud.signOut(); toast('Вы вышли'); }, 200);
 });
 

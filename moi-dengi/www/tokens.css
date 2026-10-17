@@ -26,7 +26,7 @@
   --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --fs-title:28px;--fs-card:16px;--fs-cap:13px;
   --r-sm:12px;--r-md:16px;--r-lg:22px;--r-pill:999px;
-  --gap:16px;--pad:14px;
+  --gap:16px;--pad:16px;
   --shadow:0 1px 2px rgba(20,40,25,.05);--shadow-2:0 1px 3px rgba(0,0,0,.08);
   --ease:cubic-bezier(.2,.8,.2,1);--dur:.18s;
   --nav-h:80px;
