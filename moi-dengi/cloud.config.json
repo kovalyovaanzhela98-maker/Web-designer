@@ -1,3 +1,4 @@
 {
-  "providers": { "google": true, "email": true, "phone": true, "apple": false }
+  "providers": { "google": true, "email": true, "phone": true, "apple": false },
+  "assistant": { "endpoint": "" }
 }

@@ -6,7 +6,7 @@
   "scripts": {
     "prepare:web": "node scripts/prepare.js",
     "serve": "node scripts/prepare.js && node scripts/serve.js",
-    "test": "node tests/parser.test.js && node tests/goals.test.js",
+    "test": "node tests/parser.test.js && node tests/goals.test.js && node tests/importers.test.js && node tests/brain.test.js",
     "icons": "python3 scripts/make_icons.py",
     "brandbook": "node scripts/build-brandbook.js"
   },
@@ -15,7 +15,9 @@
     "@capacitor-firebase/authentication": "^7.5.0",
     "@capacitor-firebase/firestore": "^7.5.0",
     "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.1.2",
     "@capacitor/cli": "^7.0.0",
-    "@capacitor/core": "^7.0.0"
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/local-notifications": "^7.0.7"
   }
 }

@@ -8,3 +8,25 @@ const gs = path.join(root, 'android-config/google-services.json');
 if (fs.existsSync(gs)) { fs.copyFileSync(gs, path.join(root, 'android/app/google-services.json')); console.log('google-services.json скопирован'); }
 const ks = path.join(root, 'android-config/debug.keystore');
 if (fs.existsSync(ks)) { const d = path.join(os.homedir(), '.android'); fs.mkdirSync(d, { recursive: true }); fs.copyFileSync(ks, path.join(d, 'debug.keystore')); console.log('Ключ подписи установлен (SHA-1 постоянный)'); }
+
+/* ---------- Быстрая запись: виджет, плитка шторки, закреплённое уведомление ---------- */
+const pkgDir = path.join(root, 'android/app/src/main/java/by/moidengi/app');
+const resDir = path.join(root, 'android/app/src/main/res');
+const write = (file, text) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, text); };
+const nativeDir = path.join(root, 'android-native');
+if (fs.existsSync(nativeDir)) {
+  for (const f of fs.readdirSync(path.join(nativeDir, 'java'))) fs.copyFileSync(path.join(nativeDir, 'java', f), path.join(pkgDir, f));
+  const copyTree = (from, to) => { for (const e of fs.readdirSync(from, { withFileTypes: true })) { const s = path.join(from, e.name), d = path.join(to, e.name); if (e.isDirectory()) { fs.mkdirSync(d, { recursive: true }); copyTree(s, d); } else fs.copyFileSync(s, d); } };
+  copyTree(path.join(nativeDir, 'res'), resDir);
+  const mf = path.join(root, 'android/app/src/main/AndroidManifest.xml');
+  let m = fs.readFileSync(mf, 'utf8');
+  if (!/FinWidgetProvider/.test(m)) {
+    const filter = '            <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:scheme="fin" android:host="add" />\n            </intent-filter>\n';
+    m = m.replace(/(<activity[\s\S]*?android:name="\.MainActivity"[\s\S]*?)(\n\s*<\/activity>)/, (all, a, b) => a + '\n' + filter + b.replace(/^\n/, ''));
+    const extra = fs.readFileSync(path.join(nativeDir, 'manifest-extra.xml'), 'utf8');
+    m = m.replace('</application>', extra + '\n    </application>');
+    fs.writeFileSync(mf, m);
+    console.log('Манифест: ссылка fin://add, виджет, плитка, загрузка после перезагрузки');
+  }
+  console.log('Нативная быстрая запись установлена');
+}

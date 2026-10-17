@@ -31,6 +31,8 @@
   --ease:cubic-bezier(.2,.8,.2,1);--dur-1:.12s;--dur-2:.28s;
   /* Размеры */
   --nav-h:68px;
+  /* Акценты: кремовая подсказка, золото монеты, переключатель */
+  --tip:#FBF6E6;--tip-line:#F0E6C2;--gold:#F2C230;--gold-bg:#FFF2C2;--gold-t:#6B4F00;--seg-on:#FFFFFF;
   --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
   --sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
   color-scheme:light;
@@ -43,6 +45,7 @@
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
     --primary:#4F6F34;--primary-2:#6B8F46;
     --focus:#8DB566;--scrim:rgba(0,0,0,.6);--glass:rgba(23,32,25,.9);
+    --tip:#222B1E;--tip-line:rgba(242,194,48,.2);--gold-bg:#3A3112;--gold-t:#F2D067;--seg-on:#2B3A2E;
     --shadow:none;--shadow-2:0 8px 24px rgba(0,0,0,.5);
     color-scheme:dark;
   }
@@ -54,6 +57,7 @@
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
     --primary:#4F6F34;--primary-2:#6B8F46;
     --focus:#8DB566;--scrim:rgba(0,0,0,.6);--glass:rgba(23,32,25,.9);
+    --tip:#222B1E;--tip-line:rgba(242,194,48,.2);--gold-bg:#3A3112;--gold-t:#F2D067;--seg-on:#2B3A2E;
     --shadow:none;--shadow-2:0 8px 24px rgba(0,0,0,.5);
     color-scheme:dark;
   }

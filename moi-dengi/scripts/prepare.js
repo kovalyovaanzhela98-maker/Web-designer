@@ -7,5 +7,5 @@ fs.copyFileSync(path.join(root, 'node_modules/@capacitor/core/dist/capacitor.js'
 const cfg = JSON.parse(fs.readFileSync(path.join(root, 'cloud.config.json'), 'utf8'));
 const enabled = fs.existsSync(path.join(root, 'android-config/google-services.json'));
 fs.writeFileSync(path.join(root, 'www/cloud-config.js'),
-  `/* Создаётся автоматически (scripts/prepare.js) — не править руками */\nwindow.MD_CLOUD = ${JSON.stringify({ enabled, providers: cfg.providers })};\n`);
+  `/* Создаётся автоматически (scripts/prepare.js) — не править руками */\nwindow.MD_CLOUD = ${JSON.stringify({ enabled, providers: cfg.providers })};\nwindow.MD_AI = ${JSON.stringify({ endpoint: (cfg.assistant && cfg.assistant.endpoint) || '' })};\n`);
 console.log(enabled ? 'Облако включено: найден google-services.json' : 'google-services.json не найден — приложение соберётся без входа (данные только на телефоне)');

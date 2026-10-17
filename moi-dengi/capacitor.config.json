@@ -13,6 +13,10 @@
         "apple.com",
         "phone"
       ]
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_fin",
+      "iconColor": "#4F6F34"
     }
   }
 }
