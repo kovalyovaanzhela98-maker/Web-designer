@@ -276,7 +276,7 @@ function renderPays() {
     const sub = r.status === 'paid' ? 'Оплачено' : esc(R.whenText(days));
     return `<div class="pcard ${r.status}"><button class="pc-main" type="button" data-go-pay aria-label="${esc(cap(p.name))}, ${esc(sub)}. Все обязательные платежи">
         <span class="pc-top"><span class="tx-ic" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span><b class="pc-n">${esc(cap(p.name))}</b></span>
-        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small><small class="pc-d">${esc(R.scheduleText(p, d, true))}</small></span></button>
+        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span>${sub === 'сегодня' ? '' : `<small class="pc-s">${sub}</small>`}<small class="pc-d">${esc(R.scheduleText(p, d, true))}</small></span></button>
       ${r.status === 'late' ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${key}">Записать</button>` : ''}</div>`;
   }).join('');
 }
