@@ -437,3 +437,42 @@ h1,h2,h3,.hello,.title,.ai-lead,.sheet-head h2{font-family:var(--font-display);l
 .lr-t b{font-family:var(--font-display);font-size:15px}
 .lr-t small{color:var(--muted);font-weight:600;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .link-row .btn{min-height:40px;padding:0 14px}
+
+/* ---------- Плашки профиля ---------- */
+.plates{display:flex;flex-direction:column;gap:8px}
+.plate{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:10px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--line);text-align:left}
+.plate:active:not([disabled]){background:var(--field)}
+.plate[disabled]{opacity:.6;cursor:default}
+.pl-ic{flex:0 0 40px;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--primary) 10%,var(--surface));color:var(--primary-t)}
+.pl-t{flex:1;min-width:0;display:flex;flex-direction:column}
+.pl-t b{font-family:var(--font-display);font-size:15px}
+.pl-t small{color:var(--muted);font-weight:600;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-r{flex:0 0 auto;display:flex;align-items:center;color:var(--muted)}
+.pl-r svg{width:20px;height:20px}
+.pl-ok{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--primary);color:#fff}
+.pl-ok svg{width:16px;height:16px}
+.pl-btn{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;border-radius:99px;background:var(--field);border:1px solid var(--line);font-weight:800;font-size:13.5px;color:var(--text)}
+.pn-cur{padding:6px 2px 4px}
+.pn-cur small{display:block;color:var(--muted);font-weight:700;font-size:12.5px}
+.pn-cur b{font-family:var(--font-display);font-size:22px;font-weight:700;word-break:break-all}
+.pn-sec{padding:6px 0 12px}
+.pn-sec+.pn-sec{border-top:1px solid var(--line);padding-top:14px}
+.pn-sec>b{font-family:var(--font-display);font-size:16px}
+.pn-sec>small{display:block;color:var(--muted);font-weight:600;font-size:12.5px}
+.btn.loading span:not(.spin){opacity:.75}
+.btn.loading{pointer-events:none}
+.toast{z-index:120}
+
+.pick-hidden{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;opacity:0;pointer-events:none;padding:0!important;border:0!important}
+.date-row{position:relative;flex-wrap:wrap}
+.donut svg .seg{transition:opacity .2s,stroke-width .2s}
+.donut svg .seg.dim{opacity:.25}
+.cats li{padding:8px 10px;margin:-8px -10px;border-radius:14px;cursor:pointer}
+.cats li.on{background:var(--field)}
+/* Скелетон при смене месяца */
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.skel .tile>*,.skel #recentList>*,.skel #opsList>*,.skel #catCard>*,.skel #insights>*,.skel #dayCard>*,.skel #catList>*,.skel #statSay>*{visibility:hidden}
+.skel .tile,.skel #recentList,.skel #opsList,.skel #catCard,.skel #insights,.skel #dayCard,.skel #catList{border-radius:22px;background:linear-gradient(90deg,var(--field) 25%,var(--surface) 50%,var(--field) 75%);background-size:200% 100%;animation:shimmer 1s linear infinite;border-color:transparent;min-height:90px}
+.skel .hero-sum{opacity:.6}
+.kind[aria-checked=true]{background:color-mix(in srgb,var(--primary) 10%,var(--surface));box-shadow:inset 0 0 0 2px var(--primary)}
+.btn.primary[disabled]{background:var(--field);color:var(--muted);border:1px solid var(--line);opacity:1}

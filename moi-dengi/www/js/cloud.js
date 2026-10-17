@@ -10,7 +10,13 @@
   const enabled = (native && !!cfg.enabled) || mock;
   const providers = mock ? { google: true, email: true, phone: true, apple: true } : Object.assign({ google: true, email: true, phone: false, apple: false }, cfg.providers || {});
 
-  const toUser = u => u && { uid: u.uid, email: u.email || '', phone: u.phoneNumber || u.phone || '', name: u.displayName || u.name || '' };
+  const toUser = u => {
+    if (!u) return null;
+    const pd = u.providerData || [], by = id => pd.find(p => p.providerId === id) || null;
+    const ph = by('phone'), pw = by('password');
+    return { uid: u.uid, email: u.email || '', phone: u.phoneNumber || u.phone || '', name: u.displayName || u.name || '',
+      providers: pd.map(p => p.providerId), phoneLinked: ph ? (ph.phoneNumber || u.phoneNumber || '') : '', emailLinked: pw ? (pw.email || '') : '' };
+  };
   const asErr = e => (e && typeof e === 'object') ? e : { message: String(e) };
 
   /* ---------- Нативная реализация ---------- */
@@ -44,6 +50,8 @@
       linkPhoneSend(phoneNumber) { return api.phoneSend(phoneNumber, true); },
       linkPhoneConfirm: code => A.linkWithPhoneNumber({ verificationId, verificationCode: code }),
       linkEmail: (email, password) => A.linkWithEmailAndPassword({ email, password }),
+      unlink: providerId => A.unlink({ providerId }),
+      async updateEmail(newEmail) { await A.updateEmail({ newEmail }); try { await A.sendEmailVerification(); } catch (_) {} },
       async refreshUser() { const r = await A.getCurrentUser(); return toUser(r && r.user); },
       phoneConfirm: code => A.confirmVerificationCode({ verificationId, verificationCode: code }),
 
@@ -80,13 +88,14 @@
     const wr = (k, v) => { try { localStorage.setItem(K + k, JSON.stringify(v)); } catch (_) {} };
     let authCb = null, pendingPhone = null;
     const fail = (code, message) => Promise.reject({ code, message: message || code });
-    const setUser = u => { wr('user', u); authCb && authCb(u); return Promise.resolve({ user: u }); };
+    const setUser = u => { wr('user', u); authCb && authCb(toUser(u)); return Promise.resolve({ user: u }); };
+    const addProv = (u, prov) => Object.assign({}, u, { providerData: (u.providerData || []).filter(x => x.providerId !== prov.providerId).concat([prov]) });
     const cloudOf = uid => rd('cloud_' + uid, { meta: null, tx: {} });
     const listeners = new Set();
     const api = {
-      onAuth(cb) { authCb = cb; setTimeout(() => cb(rd('user', null)), 30); },
-      signInGoogle: () => setUser({ uid: 'g-demo', email: 'demo.user@gmail.com', name: 'Демо' }),
-      signInApple: () => setUser({ uid: 'a-demo', email: 'demo@icloud.com', name: 'Демо' }),
+      onAuth(cb) { authCb = cb; setTimeout(() => cb(toUser(rd('user', null))), 30); },
+      signInGoogle: () => setUser({ uid: 'g-demo', email: 'demo.user@gmail.com', name: 'Демо', providerData: [{ providerId: 'google.com', email: 'demo.user@gmail.com' }] }),
+      signInApple: () => setUser({ uid: 'a-demo', email: 'demo@icloud.com', name: 'Демо', providerData: [{ providerId: 'apple.com', email: 'demo@icloud.com' }] }),
       signInEmail(email, pw) {
         const users = rd('users', {});
         if (!users[email] || users[email] !== pw) return fail('auth/invalid-credential');
@@ -104,9 +113,11 @@
       phoneSend(phone) { if (phone === '+1000') return fail('auth/invalid-phone-number'); pendingPhone = phone; return Promise.resolve(); },
       phoneConfirm(code) { return code === '123456' ? setUser({ uid: 'p-' + pendingPhone, phone: pendingPhone }) : fail('auth/invalid-verification-code'); },
       linkPhoneSend(phone) { if (phone === '+1000') return fail('auth/invalid-phone-number'); pendingPhone = phone; return Promise.resolve(); },
-      linkPhoneConfirm(code) { if (code !== '123456') return fail('auth/invalid-verification-code'); const u = Object.assign({}, rd('user', {}), { phone: pendingPhone }); wr('user', u); return Promise.resolve({ user: u }); },
-      linkEmail(email, pw) { if (pw.length < 6) return fail('auth/weak-password'); const u = Object.assign({}, rd('user', {}), { email }); wr('user', u); return Promise.resolve({ user: u }); },
-      refreshUser: () => Promise.resolve(rd('user', null)),
+      linkPhoneConfirm(code) { if (code !== '123456') return fail('auth/invalid-verification-code'); const u = addProv(rd('user', {}), { providerId: 'phone', phoneNumber: pendingPhone }); wr('user', u); return Promise.resolve({ user: u }); },
+      linkEmail(email, pw) { if (pw.length < 6) return fail('auth/weak-password'); const u = addProv(rd('user', {}), { providerId: 'password', email }); wr('user', u); return Promise.resolve({ user: u }); },
+      unlink(id) { const u = rd('user', {}); u.providerData = (u.providerData || []).filter(x => x.providerId !== id); wr('user', u); return Promise.resolve({ user: u }); },
+      updateEmail(email) { const u = addProv(rd('user', {}), { providerId: 'password', email }); wr('user', u); return Promise.resolve(); },
+      refreshUser: () => Promise.resolve(toUser(rd('user', null))),
       listen(uid, h) {
         const fire = () => { const c = cloudOf(uid); h.onData({ exists: !!c.meta, currency: c.meta && c.meta.currency, accounts: (c.meta && c.meta.accounts) || [], goals: (c.meta && c.meta.goals) || [], tx: Object.entries(c.tx).map(([id, d]) => Object.assign({ id }, d)) }); };
         const l = () => setTimeout(fire, 20); listeners.add(l); setTimeout(fire, 40);

@@ -79,7 +79,7 @@ function pushCloud() {
   if (!ops.length) return;
   const prev = synced;
   synced = cloud.snapshotOf(state);
-  Promise.resolve(cloud.write(cloudUid, ops)).catch(() => { synced = prev; toast('Нет связи с облаком. Отправлю, как только появится сеть.', null, null, 'oops'); });
+  Promise.resolve(cloud.write(cloudUid, ops)).catch(() => { synced = prev; toast('Нет связи. Данные сохранятся на телефоне', null, null, 'oops'); });
 }
 const canon = st => JSON.stringify([st.currency, st.accounts, st.goals, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
 function applyRemote(r) {
@@ -115,7 +115,7 @@ function onSignedIn(u) {
   try { localStorage.setItem(UID_KEY, u.uid); } catch (_) {}
   cloudUid = u.uid; me = u; synced = null;
   MD.authUI.hide(); gate(true); showTab('home', true);
-  stopListen = cloud.listen(u.uid, { onData: applyRemote, onError: () => toast('Нет связи с облаком. Отправлю, как только появится сеть.', null, null, 'oops') });
+  stopListen = cloud.listen(u.uid, { onData: applyRemote, onError: () => toast('Нет связи. Данные сохранятся на телефоне', null, null, 'oops') });
 }
 function onSignedOut() {
   if (stopListen) stopListen();
@@ -171,7 +171,7 @@ function sanitize(o) {
 /* ---------- UI-состояние ---------- */
 const now0 = new Date();
 let ym = { y: now0.getFullYear(), m: now0.getMonth() };
-let filterAcc = null, tab = 'home', opsType = 'all', opsQuery = '', statType = 'expense';
+let statCat = null, filterAcc = null, tab = 'home', opsType = 'all', opsQuery = '', statType = 'expense';
 let draft = [];
 const catInfo = (type, name) => CATS[type].find(c => c[0] === name) || CATS[type][CATS[type].length - 1];
 const accById = id => state.accounts.find(a => a.id === id);
@@ -287,7 +287,7 @@ function renderHome() {
   const recent = list.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
     ? `<div class="recent">${recent.map(txRow).join('')}</div>`
-    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>Пока пусто</b>Нажми «+» или скажи Фину: «кофе 5». Я запишу.</div>`;
+    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>Пока пусто</b>Нажми +, чтобы добавить первую трату. Фин всё запишет.</div>`;
 }
 
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
@@ -320,7 +320,7 @@ function renderOps() {
     (!q || t.cat.toLowerCase().includes(q) || t.note.toLowerCase().includes(q) || ((accById(t.acc) || {}).name || '').toLowerCase().includes(q)));
   const el = $('#opsList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'sleepy', 132)}</span><b>${q ? 'Ничего не нашёл' : `В ${MONTHS_P[ym.m]} пока пусто`}</b>${q ? `По запросу «${esc(opsQuery.trim())}» ничего нет. Попробуй другое слово.` : 'Нажми «+», чтобы добавить запись.'}</div>`;
+    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'sleepy', 132)}</span><b>${q ? 'Ничего не нашлось' : `В ${MONTHS_P[ym.m]} пока пусто`}</b>${q ? 'Попробуй другое слово или часть названия.' : 'Нажми +, чтобы добавить запись. Фин подскажет.'}</div>`;
     return;
   }
   const days = {};
@@ -338,7 +338,7 @@ function renderStats() {
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>В ${MONTHS_P[ym.m]} ${statType === 'expense' ? 'трат' : 'доходов'} нет</b>Добавь первую запись, и я покажу, ${statType === 'expense' ? 'куда уходят деньги' : 'откуда приходят деньги'}.</div>`;
+    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>Нет данных за этот месяц</b>Добавь операции, и Фин покажет, ${statType === 'expense' ? 'куда уходят деньги' : 'откуда приходят деньги'}.</div>`;
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
@@ -346,18 +346,19 @@ function renderStats() {
   const by = {};
   list.forEach(t => { by[t.cat] = round2((by[t.cat] || 0) + t.amount); });
   const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
+  if (statCat && by[statCat] == null) statCat = null;
   const R = 56, C = 2 * Math.PI * R;
   let off = 0;
   const segs = rows.map(([name, sum]) => {
     const frac = sum / total, len = Math.max(frac * C - (rows.length > 1 ? 3 : 0), 0.5);
-    const s = `<circle cx="75" cy="75" r="${R}" fill="none" stroke="${catInfo(statType, name)[2]}" stroke-width="20" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
+    const s = `<circle class="seg${statCat && statCat !== name ? ' dim' : ''}${statCat === name ? ' on' : ''}" cx="75" cy="75" r="${R}" fill="none" stroke="${catInfo(statType, name)[2]}" stroke-width="${statCat === name ? 24 : 20}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
     off += frac * C;
     return s;
   }).join('');
   card.innerHTML = `<div class="cat-wrap">
       <div class="donut" role="img" aria-label="Всего ${word} за месяц: ${esc(hide ? 'скрыто' : money(total))}">
         <svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--field)" stroke-width="20"/>${segs}</svg>
-        <div class="donut-c"><b>${esc(maskT(fmt(total)))}</b><span>всего</span></div>
+        <div class="donut-c"><b>${esc(maskT(fmt(by[statCat] != null ? by[statCat] : total)))}</b><span>${by[statCat] != null ? esc(statCat) : 'всего'}</span></div>
       </div>
       <div class="top-cat">${statType === 'expense' ? 'Больше всего ушло на' : 'Главный источник'}<b>${esc(rows[0][0])}</b>${Math.round(rows[0][1] / total * 100)}% ${word} · ${esc(maskT(money(rows[0][1])))}</div>
     </div>`;
@@ -401,7 +402,7 @@ function renderStats() {
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = catInfo(statType, name), pc = sum / total * 100;
-    return `<li><div class="cat-top"><span class="dot" style="background:${ci[2]}"></span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span><span class="am">${esc(maskT(fmt(sum)))}</span></div><div class="bar"><i style="--c:${ci[2]};width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
+    return `<li class="${statCat === name ? 'on' : ''}" data-cat="${esc(name)}" role="button" tabindex="0" aria-pressed="${statCat === name}"><div class="cat-top"><span class="dot" style="background:${ci[2]}"></span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span><span class="am">${esc(maskT(fmt(sum)))}</span></div><div class="bar"><i style="--c:${ci[2]};width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
   }).join('')}</ul>`;
 }
 
@@ -419,14 +420,39 @@ function showTab(name, fromPop) {
   window.scrollTo(0, 0);
   render();
 }
+/* Смена месяца: короткий скелетон, потом данные */
+let skelT = null;
+function setMonth(y, m) {
+  if (y === ym.y && m === ym.m) return;
+  ym = { y, m };
+  renderMonthBars();
+  document.body.classList.add('skel');
+  clearTimeout(skelT);
+  skelT = setTimeout(() => { document.body.classList.remove('skel'); render(); }, 220);
+}
+function shiftMonth(d) { const dt = new Date(ym.y, ym.m + d, 1); setMonth(dt.getFullYear(), dt.getMonth()); buzz(6); }
+(() => {
+  let sx = null, sy = 0, zone = null;
+  document.addEventListener('touchstart', e => {
+    zone = e.target.closest('.monthbar, .tiles, #catCard'); if (!zone) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (sx === null || !zone) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    sx = null; zone = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) shiftMonth(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
 $$('.nav-b').forEach(b => b.addEventListener('click', () => { buzz(8); showTab(b.dataset.tab); }));
 document.addEventListener('click', e => {
   if (e.target.closest('[data-back]')) { showTab('home'); return; }
   const g = e.target.closest('[data-go]');
   if (g) showTab(g.dataset.go);
   const ms = e.target.closest('[data-mshift]');
-  if (ms) { const dt = new Date(ym.y, ym.m + Number(ms.dataset.mshift), 1); ym = { y: dt.getFullYear(), m: dt.getMonth() }; render(); }
-  if (e.target.closest('[data-mnow]')) { const n = new Date(); ym = { y: n.getFullYear(), m: n.getMonth() }; render(); }
+  if (ms) shiftMonth(Number(ms.dataset.mshift));
+  if (e.target.closest('[data-mnow]')) { const n = new Date(); setMonth(n.getFullYear(), n.getMonth()); }
+  if (g && g.dataset.go === 'ai') setTimeout(() => $('#aiText').focus(), 200);
 });
 $('#s-ops').addEventListener('click', e => {
   const f = e.target.closest('[data-ft]');
@@ -435,12 +461,15 @@ $('#s-ops').addEventListener('click', e => {
 $('#opsSearch').addEventListener('input', e => { opsQuery = e.target.value; renderOps(); });
 $('#s-stats').addEventListener('click', e => {
   const f = e.target.closest('[data-st]');
-  if (f) { statType = f.dataset.st; renderStats(); }
+  if (f) { statType = f.dataset.st; statCat = null; renderStats(); }
+  const c = e.target.closest('[data-cat]');
+  if (c) { statCat = statCat === c.dataset.cat ? null : c.dataset.cat; buzz(6); renderStats(); }
 });
 $('#btnEye').addEventListener('click', () => {
   hide = !hide;
   try { localStorage.setItem(HIDE_KEY, hide ? '1' : '0'); } catch (_) {}
   render();
+  toast(hide ? 'Суммы скрыты' : 'Суммы показаны');
 });
 
 /* ---------- Слои (листы/диалоги) + кнопка «Назад» ---------- */
@@ -499,7 +528,7 @@ function toast(msg, actionLabel, action, pose) {
   if (actionLabel) $('button', t).onclick = () => { t.hidden = true; action(); };
   t.hidden = false;
   clearTimeout(toastT);
-  toastT = setTimeout(() => { t.hidden = true; }, actionLabel ? 6000 : 3000);
+  toastT = setTimeout(() => { t.hidden = true; }, actionLabel ? 5500 : 4000);
 }
 const showErr = (el, msg) => { el.textContent = msg; el.hidden = false; };
 const hideErr = el => { el.hidden = true; };
@@ -511,13 +540,27 @@ function renderTxForm() {
   $('#txCur').textContent = sym();
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
     `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="--c:${c[2]}" aria-hidden="true">${cIcon(c)}</span><span>${esc(c[0])}</span></button>`).join('');
-  $('#txNote').placeholder = tx.type === 'income' ? 'Например: аванс за октябрь' : 'Например: обед с Аней';
+  $('#txNote').placeholder = tx.type === 'income' ? 'Например: аванс за октябрь' : 'Например: кофе с собой';
+  $('#txSaveT').textContent = tx.editId ? 'Сохранить изменения' : 'Сохранить';
+  syncSave();
   syncDateChips();
 }
+function syncSave() { $('#txSave').disabled = !(parseAmount($('#txAmount').value) > 0 && tx.cat); }
+$('#txAmount').addEventListener('input', e => {
+  let v = e.target.value.replace(/[^\d.,]/g, '');
+  const i = v.search(/[.,]/);
+  if (i >= 0) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/[.,]/g, '').slice(0, 2);
+  if (v !== e.target.value) e.target.value = v;
+  hideErr($('#txAmountErr')); syncSave();
+});
+$('#dOther').addEventListener('click', () => { const d = $('#txDate'); try { d.showPicker(); } catch (_) { d.focus(); d.click(); } });
 function syncDateChips() {
   const v = $('#txDate').value, y = new Date(); y.setDate(y.getDate() - 1);
-  $('#dToday').setAttribute('aria-checked', String(v === today()));
-  $('#dYest').setAttribute('aria-checked', String(v === ymd(y)));
+  const isT = v === today(), isY = v === ymd(y), other = !isT && !isY && !!parseYmd(v);
+  $('#dToday').setAttribute('aria-checked', String(isT));
+  $('#dYest').setAttribute('aria-checked', String(isY));
+  $('#dOther').setAttribute('aria-checked', String(other));
+  $('#dOther').textContent = other ? `${parseYmd(v).getDate()} ${MONTHS_G[parseYmd(v).getMonth()]}` : 'Другая дата';
 }
 function openTx(id) {
   ensureAccount();
@@ -562,7 +605,8 @@ $('#txForm').addEventListener('submit', e => {
   closeLayer($('#lyTx'));
   buzz(15);
   render();
-  toast(ex ? 'Изменил запись' : `Записал: ${tx.cat}, ${money(amt)}`, null, null, 'joy');
+  if (!ex) showTab('home');
+  toast(ex ? 'Изменения сохранены' : 'Записано', null, null, 'joy');
 });
 $('#txDelete').addEventListener('click', () => {
   const id = tx.editId;
@@ -575,7 +619,7 @@ function deleteTx(id) {
   if (i < 0) { render(); return; }
   const [t] = state.tx.splice(i, 1);
   save(); render(); buzz(15);
-  toast('Запись удалена', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); }, 'think');
+  toast('Удалено', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); }, 'think');
 }
 
 // Тап — правка, свайп влево — удаление
@@ -618,12 +662,13 @@ const goalLeft = g => {
   if (g.saved >= g.target) return 'Цель достигнута';
   const ml = G.monthsLeft(g.deadline, new Date());
   if (!ml) return 'Срок вышел';
-  return `Ещё ${G.termLabel(ml)} · по ${maskT(money(Math.ceil((g.target - g.saved) / ml)))}`;
+  const dl = new Date(g.deadline + 'T00:00:00');
+  return `${G.termLabel(ml)} · по ${maskT(money(Math.ceil((g.target - g.saved) / ml)))} · до ${MONTHS[dl.getMonth()].toLowerCase()} ${dl.getFullYear()}`;
 };
 function renderGoals() {
   const el = $('#goalsBody'), list = state.goals;
   if (!list.length) {
-    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 170)}</span><h2>Целей пока нет</h2><p>Скажи Фину, на что копишь. Он посчитает, сколько откладывать в месяц.</p><button class="btn primary wide" data-newgoal>Добавить цель</button></div>`;
+    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 170)}</span><h2>Пока нет целей</h2><p>Создай первую — Фин поможет посчитать, сколько откладывать в месяц.</p><button class="btn primary wide" data-newgoal>Добавить цель</button></div>`;
     return;
   }
   const sum = round2(list.reduce((s, g) => s + g.saved, 0));
@@ -671,12 +716,12 @@ $('#goalDetail').addEventListener('submit', e => {
   const was = g.saved >= g.target;
   g.saved = round2(g.saved + v); save(); render(); buzz(15);
   closeLayer($('#lyGoal'));
-  toast(!was && g.saved >= g.target ? `Цель достигнута! Собрано ${money(g.target)}` : `Добавил ${money(v)} к цели`, null, null, !was && g.saved >= g.target ? 'joy' : 'happy');
+  toast(!was && g.saved >= g.target ? `Цель достигнута! Собрано ${money(g.target)}` : 'Добавлено', null, null, !was && g.saved >= g.target ? 'joy' : 'happy');
 });
 $('#goalDetail').addEventListener('click', async e => {
   if (!e.target.closest('#goalDel')) return;
   const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
-  const yes = await confirmDlg(`Удалить «${g.name}»?`, `Отметка ${money(g.saved)} в цели пропадёт. Записи в истории останутся.`, 'Удалить');
+  const yes = await confirmDlg('Удалить цель?', `Цель «${g.name}» и отметка ${money(g.saved)} в ней пропадут. Записи в истории останутся.`, 'Удалить');
   if (!yes) return;
   state.goals = state.goals.filter(x => x.id !== g.id); save(); render();
   closeLayer($('#lyGoal'));
@@ -695,7 +740,7 @@ function openQuiz() {
 }
 const qGo = step => { quiz.stack.push(quiz.step); quiz.step = step; renderQuiz(); };
 const qIn = (id, ph, unit) => `<div class="amount-wrap"><input id="${id}" type="text" inputmode="decimal" autocomplete="off" placeholder="${ph}">${unit ? `<span class="cur">${esc(unit)}</span>` : ''}</div><div class="msg err" id="qErr" hidden></div>`;
-const qBtn = (act, label, cls = 'primary') => `<button class="btn ${cls} wide" type="button" data-qa="${act}">${esc(label)}</button>`;
+const qBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-qa="${act}" ${dis ? 'disabled' : ''}>${esc(label)}</button>`;
 function planOf() { return G.plan({ target: quiz.target, saved: quiz.saved, months: quiz.months, free: quiz.free }); }
 function renderQuiz() {
   const q = quiz, body = $('#quizBody');
@@ -706,28 +751,28 @@ function renderQuiz() {
   switch (q.step) {
     case 'kind':
       say = ['hello', 'На что копим?'];
-      html = `<div class="kind-grid">${KINDS.map(k => `<button type="button" class="kind" data-kind="${esc(k[0])}"><b>${esc(k[0])}</b><small>${esc(k[1])}</small></button>`).join('')}</div>`;
+      html = `<div class="kind-grid" role="radiogroup" aria-label="На что копим">${KINDS.map(k => `<button type="button" role="radio" class="kind" data-kind="${esc(k[0])}" aria-checked="${q.pick === k[0]}"><b>${esc(k[0])}</b><small>${esc(k[1])}</small></button>`).join('')}</div>${qBtn('kind', 'Далее', 'primary', !q.pick)}`;
       break;
     case 'custom':
       say = ['hello', 'Как назовём цель?'];
-      html = `<input id="qText" type="text" maxlength="40" autocomplete="off" placeholder="Например: велосипед"><div class="msg err" id="qErr" hidden></div>${qBtn('custom', 'Дальше')}`;
+      html = `<input id="qText" type="text" maxlength="40" autocomplete="off" placeholder="Например: велосипед"><div class="msg err" id="qErr" hidden></div>${qBtn('custom', 'Далее')}`;
       break;
     case 'target':
       say = ['think', `Сколько нужно на «${nm}»?`];
-      html = qIn('qNum', '0', sym()) + qBtn('target', 'Дальше');
+      html = qIn('qNum', '0', sym()) + qBtn('target', 'Далее');
       break;
     case 'saved':
       say = ['hello', 'Сколько уже есть?'];
-      html = qIn('qNum', '0', sym()) + qBtn('saved', 'Дальше') + qBtn('saved0', 'Пока ноль', 'soft');
+      html = qIn('qNum', '0', sym()) + qBtn('saved', 'Далее') + qBtn('saved0', 'Пока ноль', 'soft');
       break;
     case 'term':
       say = ['notify', 'За сколько хочешь накопить?'];
-      html = `<div class="term-grid">${[[3, '3 месяца'], [6, '6 месяцев'], [12, '1 год'], [24, '2 года']].map(t => `<button type="button" class="kind term" data-term="${t[0]}"><b>${t[1]}</b></button>`).join('')}</div>
-        <label class="fl sm" for="qNum">Другой срок, месяцев</label>${qIn('qNum', 'Например: 9')}${qBtn('term', 'Дальше', 'soft')}`;
+      html = `<div class="term-grid" role="radiogroup" aria-label="Срок">${[[3, '3 месяца'], [6, '6 месяцев'], [12, '1 год'], [24, '2 года']].map(t => `<button type="button" role="radio" class="kind term" data-term="${t[0]}" aria-checked="${q.termPick === t[0]}"><b>${t[1]}</b></button>`).join('')}</div>
+        <label class="fl sm" for="qNum">Другой срок, месяцев</label>${qIn('qNum', 'Например: 9')}${qBtn('term', 'Далее')}`;
       break;
     case 'free':
       say = ['think', 'Не вижу твоих трат и доходов. Сколько примерно остаётся свободным за месяц?'];
-      html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('free', 'Дальше') + qBtn('free0', 'Не знаю', 'soft');
+      html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('free', 'Далее') + qBtn('free0', 'Не знаю', 'soft');
       break;
     case 'think':
       say = ['think', 'Считаю…'];
@@ -753,9 +798,9 @@ function renderQuiz() {
         <div class="hl"><span>В месяц</span><b>${esc(money(p.monthly))}</b></div>
         <div><span>Срок</span><b>${T}, до ${untilTxt}</b></div>
         ${p.free !== null ? `<div><span>Свободно в среднем</span><b>${esc(money(p.free))} в месяц</b></div>` : ''}
-      </div>` + qBtn('accept', 'Беру этот план') +
+      </div>` + qBtn('accept', 'Согласен') +
         (p.verdict === 'hard' && p.altMonths ? qBtn('alt', `Растянуть до ${G.termLabel(p.altMonths)}`, 'soft') : '') +
-        qBtn('reject', 'Изменить план', 'ghost');
+        qBtn('reject', 'Не подходит', 'ghost');
       void cur;
       break;
     }
@@ -796,12 +841,13 @@ function quizNum(allowZero) {
 $('#quizBody').addEventListener('click', e => {
   const q = quiz; if (!q) return;
   const k = e.target.closest('[data-kind]');
-  if (k) { q.name = k.dataset.kind === 'Своя цель' ? '' : k.dataset.kind; buzz(6); qGo(q.name ? 'target' : 'custom'); return; }
+  if (k) { q.pick = k.dataset.kind; buzz(6); renderQuiz(); return; }
   const tm = e.target.closest('[data-term]');
-  if (tm) { q.months = Number(tm.dataset.term); buzz(6); toPlan(); return; }
+  if (tm) { q.termPick = Number(tm.dataset.term); const inp = $('#qNum'); if (inp) inp.value = ''; buzz(6); $$('#quizBody [data-term]').forEach(x => x.setAttribute('aria-checked', String(Number(x.dataset.term) === q.termPick))); return; }
   const b = e.target.closest('[data-qa]'); if (!b) return;
   const a = b.dataset.qa;
   if (a === 'back') { q.step = q.stack.pop(); renderQuiz(); return; }
+  if (a === 'kind') { if (!q.pick) return; q.name = q.pick === 'Своя цель' ? '' : q.pick; qGo(q.name ? 'target' : 'custom'); return; }
   if (a === 'custom') {
     const v = ($('#qText').value || '').trim();
     if (!v) { showErr($('#qErr'), 'Напиши, на что копим.'); return; }
@@ -817,8 +863,9 @@ $('#quizBody').addEventListener('click', e => {
     qGo('term'); return;
   }
   if (a === 'term' || a === 'doTerm') {
-    const n = quizNum(false); const m = Math.round(n.v);
-    if (!(m >= 1 && m <= 600)) return n.fail('Введи срок в месяцах, например 6.');
+    const typed = ($('#qNum').value || '').trim();
+    const n = quizNum(false); let m = typed ? Math.round(n.v) : (a === 'term' ? q.termPick : NaN);
+    if (!(m >= 1 && m <= 600)) return n.fail(a === 'term' ? 'Выбери срок или введи свой в месяцах, например 6.' : 'Введи срок в месяцах, например 6.');
     q.months = m; toPlan(a === 'doTerm'); return;
   }
   if (a === 'free' || a === 'free0') {
@@ -1014,126 +1061,200 @@ $('#micBtn').addEventListener('click', () => { voice.on ? stopVoice() : startVoi
 $('#txVoice').addEventListener('click', () => { closeLayer($('#lyTx')); showTab('ai'); setTimeout(startVoice, 200); });
 $('#homeMic').addEventListener('click', () => { showTab('ai'); setTimeout(startVoice, 120); });
 
-/* ---------- Аккаунт ---------- */
-function renderSettings() {
-  $('#setCur').innerHTML = Object.keys(CURRENCIES).map(c =>
-    `<button type="button" role="radio" class="chip" data-cur="${c}" aria-checked="${c === state.currency}">${c} ${CURRENCIES[c]}</button>`).join('');
+/* ---------- Профиль ---------- */
+const loggedIn = () => !!(cloud.enabled && me);
+const startBal = () => (state.accounts[0] ? state.accounts[0].balance : 0);
+const okIc = () => `<span class="pl-ok" role="img" aria-label="Привязано">${icon('check')}</span>`;
+function setPlate(sel, sub, right, disabled) {
+  const el = $(sel);
+  $('small', el).textContent = sub;
+  if (right !== null) $('.pl-r', el).innerHTML = right;
+  el.disabled = !!disabled;
 }
-function renderAcc() {
-  renderSettings();
-  renderAccount();
-}
-$('#setCur').addEventListener('click', e => {
-  const b = e.target.closest('[data-cur]');
-  if (!b) return;
-  state.currency = b.dataset.cur; save(); renderSettings(); render();
-});
+function renderAcc() { renderAccount(); }
 function renderAccount() {
+  const on = loggedIn();
   $('#setFoot').textContent = cloud.enabled ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';
   $('#acctMascot').innerHTML = MD.mascot('happy', 56);
-  const on = cloud.enabled && me;
-  $('#linkCard').hidden = false;
   $('#btnSignOut').hidden = !on;
-  $('#linkNote').hidden = !on;
   if (on) {
     $('#acctName').textContent = me.email || me.phone || me.name || 'Мой профиль';
     $('#acctSub').textContent = 'Данные синхронизируются';
-    $('#linkPhone').textContent = me.phone || 'Не привязан';
-    $('#linkPhoneBtn').hidden = !!me.phone;
-    $('#linkEmail').textContent = me.email || 'Не добавлена';
-    $('#linkEmailBtn').hidden = !!me.email;
   } else {
     $('#acctName').textContent = 'Ты без входа';
     $('#acctSub').textContent = 'Данные только на этом телефоне.';
-    $('#linkPhone').textContent = 'Появится после входа'; $('#linkEmail').textContent = 'Появится после входа';
-    $('#linkPhoneBtn').hidden = true; $('#linkEmailBtn').hidden = true;
   }
+  const ph = on && me.phoneLinked, em = on && me.emailLinked;
+  setPlate('#plPhone', ph ? me.phoneLinked : on ? 'Не привязан' : 'Появится после входа', ph ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', !on);
+  setPlate('#plEmail', em ? me.emailLinked : on ? 'Не привязана' : 'Появится после входа', em ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', !on);
+  setPlate('#plBalance', maskT(money(startBal())), null, false);
+  setPlate('#plCurrency', `${state.currency} ${CURRENCIES[state.currency]}`, null, false);
 }
 
-/* Привязка телефона и почты: чтобы вернуть доступ, если потеряешь Google или Apple */
-let linkStep = 'phone', linkPhoneNum = '';
-const linkErr = e => {
+/* Одна шторка для всего в профиле: телефон, почта, стартовый баланс, валюта, копия данных */
+let panel = null;
+const PN_TITLE = { phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт' };
+const pnBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-pn="${act}" ${dis ? 'disabled' : ''}><span class="spin" aria-hidden="true"></span><span>${esc(label)}</span></button>`;
+const onlyWay = () => ((me && me.providers) || []).length <= 1;
+const normPhone = v => { let t = String(v).replace(/[\s\-()]/g, ''); if (/^8\d{10}$/.test(t)) t = '+7' + t.slice(1); return /^\+\d{9,15}$/.test(t) ? t : null; };
+const pnErr = (e, ctx) => {
   const l = (((e && e.code) || '') + ' ' + ((e && e.message) || '')).toLowerCase();
-  if (/network|unavailable|timeout/.test(l)) return 'Нет сети. Проверь интернет и попробуй снова.';
   if (/invalid-phone/.test(l)) return 'Не понял номер. Введи с кодом страны: +375…';
-  if (/invalid-verification|invalid-code/.test(l)) return 'Не тот код. Проверь цифры из СМС.';
+  if (/invalid-verification|invalid-code/.test(l)) return 'Неверный код. Попробуй ещё раз';
   if (/expired/.test(l)) return 'Код устарел. Запроси новый.';
   if (/already-in-use|credential-already|provider-already/.test(l)) return 'Это уже привязано к другому профилю. Попробуй другое.';
   if (/weak-password/.test(l)) return 'Пароль короткий. Нужно хотя бы 6 символов.';
   if (/invalid-email/.test(l)) return 'Не понял почту. Проверь адрес.';
-  if (/too-many/.test(l)) return 'Слишком много попыток. Подожди немного.';
-  return 'Не получилось привязать. Попробуй ещё раз.';
+  if (/requires-recent-login/.test(l)) return 'Для этого нужно войти заново. Выйди и войди через Google или Apple.';
+  if (ctx === 'send') return 'Не удалось отправить код. Проверь связь';
+  if (ctx === 'code') return 'Неверный код. Попробуй ещё раз';
+  return 'Не получилось. Проверь связь и попробуй снова.';
 };
-function renderLink(err) {
-  const e = err ? `<div class="msg err" role="alert">${esc(err)}</div>` : '<div class="msg err" id="linkErr" hidden></div>';
-  const m = { phone: ['Привяжем телефон', 'Пришлю СМС с кодом.', `<label class="fl sm" for="lkPhone">Номер телефона</label><input id="lkPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+375 29 123-45-67" value="${esc(linkPhoneNum)}">${e}<button class="btn primary wide" data-lk="send" type="button">Получить код</button>`],
-    code: ['Введи код из СМС', linkPhoneNum, `<label class="fl sm" for="lkCode">Код</label><input id="lkCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">${e}<button class="btn primary wide" data-lk="confirm" type="button">Подтвердить</button>`],
-    email: ['Добавим почту', 'Нужна, чтобы вернуть доступ.', `<label class="fl sm" for="lkEmail">Почта</label><input id="lkEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="name@example.com"><label class="fl sm" for="lkPw">Пароль</label><input id="lkPw" type="password" autocomplete="new-password" placeholder="Не короче 6 символов">${e}<button class="btn primary wide" data-lk="email" type="button">Добавить почту</button>`] }[linkStep];
-  $('#linkTitle').textContent = linkStep === 'email' ? 'Почта' : 'Телефон';
-  $('#linkBody').innerHTML = MD.say(linkStep === 'code' ? 'notify' : 'hello', `${esc(m[0])}<small>${esc(m[1])}</small>`, 76) + m[2];
-  const f = $('#linkBody input'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 80);
-}
-function openLink(kind) { linkStep = kind; linkPhoneNum = ''; renderLink(); openLayer($('#lyLink')); }
-$('#linkCard').addEventListener('click', e => { const b = e.target.closest('[data-linkbtn]'); if (b) openLink(b.dataset.linkbtn); });
-$('#linkBody').addEventListener('click', async e => {
-  const b = e.target.closest('[data-lk]'); if (!b || b.disabled) return;
-  const a = b.dataset.lk, fail = m => { renderLink(m); };
-  const norm = v => { let t = v.replace(/[\s\-()]/g, ''); if (/^8\d{10}$/.test(t)) t = '+7' + t.slice(1); return /^\+\d{9,15}$/.test(t) ? t : null; };
-  b.disabled = true;
-  try {
-    if (a === 'send') {
-      const n = norm($('#lkPhone').value); linkPhoneNum = $('#lkPhone').value;
-      if (!n) return fail('Не понял номер. Введи с кодом страны: +375…');
-      await cloud.linkPhoneSend(n); linkPhoneNum = n; linkStep = 'code'; renderLink();
-    } else if (a === 'confirm') {
-      const c = $('#lkCode').value.replace(/\D/g, '');
-      if (c.length < 6) return fail('Код — шесть цифр из СМС.');
-      await cloud.linkPhoneConfirm(c);
-      await linkDone('Телефон привязан');
-    } else if (a === 'email') {
-      const em = $('#lkEmail').value.trim(), pw = $('#lkPw').value;
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) return fail('Не понял почту. Проверь адрес.');
-      if (pw.length < 6) return fail('Пароль короткий. Нужно хотя бы 6 символов.');
-      await cloud.linkEmail(em, pw);
-      await linkDone('Почта добавлена');
+function openPanel(kind, extra = {}) { panel = Object.assign({ kind, step: 'main' }, extra); renderPanel(); openLayer($('#lyLink')); }
+function renderPanel(err) {
+  const P = panel; if (!P) return;
+  const e = err ? `<div class="msg err" role="alert">${esc(err)}</div>` : '';
+  let say = null, html = '';
+  const cur = k => `<div class="pn-cur"><small>${k[0]}</small><b>${esc(k[1])}</b></div>`;
+  if (P.kind === 'phone') {
+    if (P.step === 'main') {
+      html = cur(['Привязан номер', me.phoneLinked]) + pnBtn('phone-change', 'Изменить номер', 'soft') + pnBtn('phone-unlink', 'Отвязать', 'danger', onlyWay()) + (onlyWay() ? '<div class="note ctr">Это единственный способ входа</div>' : '');
+    } else if (P.step === 'new') {
+      say = ['hello', P.mode === 'change' ? 'Введи новый номер<small>Пришлю СМС с кодом.</small>' : 'Привяжем телефон<small>Пришлю СМС с кодом.</small>'];
+      html = `<label class="fl sm" for="pnPhone">${P.mode === 'change' ? 'Новый номер' : 'Номер телефона'}</label><input id="pnPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+375 29 123-45-67" value="${esc(P.raw || '')}">${e}` + pnBtn('phone-send', 'Получить код');
+    } else {
+      say = ['notify', `Введи код из СМС<small>${esc(P.phone)}</small>`];
+      html = `<label class="fl sm" for="pnCode">Код</label><input id="pnCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">${e}` + pnBtn('phone-confirm', 'Подтвердить') + pnBtn('phone-resend', 'Отправить код ещё раз', 'ghost');
     }
-  } catch (err) { fail(linkErr(err)); }
-  finally { b.disabled = false; }
-});
-async function linkDone(msg) {
-  try { const u = await cloud.refreshUser(); if (u) me = Object.assign({}, me, u); } catch (_) {}
-  closeLayer($('#lyLink')); renderAccount();
-  toast(msg, null, null, 'happy');
-}
-$('#btnSignOut').addEventListener('click', async () => {
-  const yes = await confirmDlg('Выйти?', 'Данные останутся в облаке. Войдёшь снова, и всё вернётся.', 'Выйти');
-  if (!yes) return;
-  setTimeout(() => cloud.signOut(), 200);
-});
-$('#bkCopy').addEventListener('click', async () => {
-  const json = JSON.stringify(state);
-  let ok = false;
-  try { await navigator.clipboard.writeText(json); ok = true; } catch (_) {}
-  if (!ok) {
-    const ta = $('#bkText'); ta.value = json; ta.focus(); ta.select();
-    try { ok = document.execCommand('copy'); } catch (_) {}
-    if (!ok) { toast('Скопируй текст из поля вручную'); return; }
-    ta.value = '';
+  } else if (P.kind === 'email') {
+    if (P.step === 'main') {
+      html = cur(['Привязана почта', me.emailLinked]) + pnBtn('email-change', 'Изменить почту', 'soft') + pnBtn('email-unlink', 'Отвязать', 'danger', onlyWay()) + (onlyWay() ? '<div class="note ctr">Это единственный способ входа</div>' : '');
+    } else if (P.step === 'sent') {
+      say = ['happy', `Отправил письмо на ${esc(P.email)}<small>Открой его и нажми на ссылку, чтобы подтвердить адрес.</small>`];
+      html = pnBtn('email-done', 'Готово');
+    } else if (P.mode === 'change') {
+      say = ['hello', 'Введи новую почту<small>Пришлю письмо со ссылкой.</small>'];
+      html = `<label class="fl sm" for="pnEmail">Новая почта</label><input id="pnEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="name@example.com">${e}` + pnBtn('email-save', 'Изменить почту');
+    } else {
+      say = ['hello', 'Добавим почту<small>Нужна, чтобы вернуть доступ.</small>'];
+      html = `<label class="fl sm" for="pnEmail">Почта</label><input id="pnEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="name@example.com"><label class="fl sm" for="pnPw">Пароль</label><input id="pnPw" type="password" autocomplete="new-password" placeholder="Не короче 6 символов">${e}` + pnBtn('email-link', 'Привязать');
+    }
+  } else if (P.kind === 'balance') {
+    say = ['hello', 'С чего начинаем?<small>Сколько денег было до первой записи. Дальше баланс считается сам.</small>'];
+    html = `<label class="fl sm" for="pnBal">Сумма</label><div class="amount-wrap"><input id="pnBal" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" value="${esc(String(startBal()).replace('.', ','))}"><span class="cur">${esc(sym())}</span></div>${e}` + pnBtn('bal-save', 'Сохранить');
+  } else if (P.kind === 'currency') {
+    const sel = P.cur || state.currency;
+    html = `<div class="chips" role="radiogroup" aria-label="Валюта">${Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-chcur="${c}" aria-checked="${c === sel}">${c} ${CURRENCIES[c]}</button>`).join('')}</div><div class="note">Меняется только знак, суммы не пересчитываются.</div>` + pnBtn('cur-apply', 'Применить', 'primary', sel === state.currency);
+  } else if (P.kind === 'data') {
+    html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей и целей.</small>${pnBtn('exp-copy', 'Скопировать', 'soft')}${pnBtn('exp-file', 'Сохранить в файл', 'soft')}</div>
+      <div class="pn-sec"><b>Импорт</b><small>Всё текущее заменится копией.</small>${pnBtn('imp-file', 'Выбрать файл', 'soft')}<input id="pnFile" type="file" accept=".json,application/json,text/plain" hidden>
+      <label class="fl sm" for="pnPaste">Или вставь копию</label><textarea id="pnPaste" rows="3" placeholder="Вставь сюда копию"></textarea>${e}${pnBtn('imp-paste', 'Восстановить')}</div>`;
   }
-  toast('Копия в буфере', null, null, 'happy');
+  $('#linkTitle').textContent = PN_TITLE[P.kind];
+  $('#linkBody').innerHTML = (say ? MD.say(say[0], say[1], 76) : '') + html;
+  const f = $('#linkBody input:not([type=file]):not([hidden])'); if (f && P.kind !== 'data') setTimeout(() => f.focus({ preventScroll: true }), 80);
+}
+async function refreshMe() { try { const u = await cloud.refreshUser(); if (u) me = Object.assign({}, me, u); } catch (_) {} renderAccount(); }
+$('#s-acc').addEventListener('click', e => {
+  const b = e.target.closest('[data-plate]'); if (!b || b.disabled) return;
+  const k = b.dataset.plate;
+  if (k === 'phone') me.phoneLinked ? openPanel('phone') : openPanel('phone', { step: 'new', mode: 'link' });
+  else if (k === 'email') me.emailLinked ? openPanel('email') : openPanel('email', { step: 'new', mode: 'link' });
+  else openPanel(k);
 });
-$('#bkRestore').addEventListener('click', async () => {
-  const err = $('#bkErr'); hideErr(err);
-  const raw = $('#bkText').value.trim();
-  if (!raw) { showErr(err, 'Вставь в поле копию данных.'); return; }
+async function pnRun(btn, ctx, fn) {
+  btn.classList.add('loading'); btn.disabled = true;
+  try { await fn(); } catch (err) { renderPanel(pnErr(err, ctx)); }
+  finally { if (btn.isConnected) { btn.classList.remove('loading'); btn.disabled = false; } }
+}
+function pnDone(msg, pose = 'happy') { closeLayer($('#lyLink')); panel = null; toast(msg, null, null, pose); }
+$('#linkBody').addEventListener('click', async ev => {
+  const chip = ev.target.closest('[data-chcur]');
+  if (chip) { panel.cur = chip.dataset.chcur; renderPanel(); return; }
+  const b = ev.target.closest('[data-pn]'); if (!b || b.disabled || !panel) return;
+  const a = b.dataset.pn, P = panel, V = id => ($(id) || {}).value || '';
+  if (a === 'phone-change') { P.step = 'new'; P.mode = 'change'; renderPanel(); return; }
+  if (a === 'email-change') { P.step = 'new'; P.mode = 'change'; renderPanel(); return; }
+  if (a === 'phone-send' || a === 'phone-resend') {
+    const raw = a === 'phone-send' ? V('#pnPhone') : P.phone, n = normPhone(raw); P.raw = raw;
+    if (!n) return renderPanel('Не понял номер. Введи с кодом страны: +375…');
+    return pnRun(b, 'send', async () => {
+      if (P.mode === 'change' && !P.unlinked) { await cloud.unlink('phone'); P.unlinked = true; await refreshMe(); }
+      await cloud.linkPhoneSend(n); P.phone = n; P.step = 'code'; renderPanel();
+    });
+  }
+  if (a === 'phone-confirm') {
+    const c = V('#pnCode').replace(/\D/g, '');
+    if (c.length < 6) return renderPanel('Неверный код. Попробуй ещё раз');
+    return pnRun(b, 'code', async () => { await cloud.linkPhoneConfirm(c); await refreshMe(); pnDone(P.mode === 'change' ? 'Номер обновлён' : 'Телефон привязан'); });
+  }
+  if (a === 'phone-unlink' || a === 'email-unlink') {
+    const ph = a === 'phone-unlink';
+    const yes = await confirmDlg(ph ? 'Отвязать телефон?' : 'Отвязать почту?', ph ? 'Войти по номеру будет нельзя.' : 'Войти по почте будет нельзя.', 'Отвязать');
+    if (!yes) return;
+    return pnRun(b, 'x', async () => { await cloud.unlink(ph ? 'phone' : 'password'); await refreshMe(); pnDone(ph ? 'Телефон отвязан' : 'Почта отвязана', 'think'); });
+  }
+  if (a === 'email-link' || a === 'email-save') {
+    const em = V('#pnEmail').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) return renderPanel('Не понял почту. Проверь адрес.');
+    if (a === 'email-link') {
+      const pw = V('#pnPw'); if (pw.length < 6) return renderPanel('Пароль короткий. Нужно хотя бы 6 символов.');
+      return pnRun(b, 'x', async () => { await cloud.linkEmail(em, pw); await refreshMe(); pnDone('Почта привязана'); });
+    }
+    return pnRun(b, 'x', async () => { await cloud.updateEmail(em); await refreshMe(); P.step = 'sent'; P.email = em; renderPanel(); });
+  }
+  if (a === 'email-done') return pnDone('Почта обновлена');
+  if (a === 'bal-save') {
+    const v = parseAmount(V('#pnBal'), true);
+    if (!Number.isFinite(v)) return renderPanel('Введи сумму цифрами, например 1250,50.');
+    ensureAccount(); state.accounts[0].balance = round2(v); save(); render(); buzz(12);
+    return pnDone('Баланс обновлён');
+  }
+  if (a === 'cur-apply') {
+    const yes = await confirmDlg('Сменить валюту?', 'Меняется только знак, суммы не пересчитываются.', 'Сменить');
+    if (!yes) return;
+    state.currency = P.cur; save(); render(); return pnDone(`Валюта: ${P.cur}`);
+  }
+  if (a === 'exp-copy') {
+    const json = JSON.stringify(state);
+    let ok = false;
+    try { await navigator.clipboard.writeText(json); ok = true; } catch (_) {}
+    if (!ok) { try { const ta = document.createElement('textarea'); ta.value = json; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (_) {} }
+    return ok ? toast('Скопировано', null, null, 'happy') : renderPanel('Не получилось скопировать. Попробуй сохранить в файл.');
+  }
+  if (a === 'exp-file') {
+    const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
+    const file = new File([blob], 'fin-копия.json', { type: 'application/json' });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Копия данных Фина' }); return; }
+    } catch (_) { return; }
+    const url = URL.createObjectURL(blob), l = document.createElement('a');
+    l.href = url; l.download = 'fin-копия.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return toast('Файл сохранён', null, null, 'happy');
+  }
+  if (a === 'imp-file') { $('#pnFile').click(); return; }
+  if (a === 'imp-paste') { const raw = V('#pnPaste').trim(); if (!raw) return renderPanel('Вставь в поле копию данных.'); restoreFrom(raw); }
+});
+$('#linkBody').addEventListener('change', ev => {
+  if (ev.target.id !== 'pnFile' || !ev.target.files[0]) return;
+  const r = new FileReader();
+  r.onload = () => restoreFrom(String(r.result || '').trim());
+  r.onerror = () => renderPanel('Не получилось прочитать файл.');
+  r.readAsText(ev.target.files[0]);
+});
+async function restoreFrom(raw) {
   let s = null;
   try { s = sanitize(JSON.parse(raw)); } catch (_) {}
-  if (!s) { showErr(err, 'Не понял эту копию. Скопируй её заново целиком.'); return; }
+  if (!s) return renderPanel('Не понял эту копию. Выбери файл или скопируй копию заново целиком.');
   const yes = await confirmDlg('Заменить данные?', `Всё текущее заменится копией: ${s.tx.length} ${pluralN(s.tx.length, 'запись', 'записи', 'записей')} и ${s.goals.length} ${pluralN(s.goals.length, 'цель', 'цели', 'целей')}.`, 'Заменить');
   if (!yes) return;
-  state = s; save();
-  render();
-  toast('Данные восстановлены', null, null, 'happy');
+  state = s; save(); render();
+  pnDone('Данные восстановлены');
+}
+$('#btnSignOut').addEventListener('click', async () => {
+  const yes = await confirmDlg('Выйти из аккаунта?', 'Данные останутся в облаке. Войдёшь снова, и всё вернётся.', 'Выйти');
+  if (!yes) return;
+  setTimeout(() => { cloud.signOut(); toast('Вы вышли'); }, 200);
 });
 
 /* ---------- Старт ---------- */

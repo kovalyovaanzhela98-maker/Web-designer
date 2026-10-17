@@ -60,7 +60,7 @@
   <section class="screen" id="s-ops" data-screen="ops" aria-label="История" hidden>
     <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">История</h1></header>
     <div class="monthbar-slot"></div>
-    <div class="search"><i data-ic="search"></i><input id="opsSearch" type="search" placeholder="Найти: кофе, такси, зарплата" aria-label="Поиск по записям" autocomplete="off"></div>
+    <div class="search"><i data-ic="search"></i><input id="opsSearch" type="search" placeholder="Поиск по заметке или категории" aria-label="Поиск по записям" autocomplete="off"></div>
     <div class="seg ops-seg" role="radiogroup" aria-label="Тип записей">
       <button type="button" role="radio" class="seg-b" data-ft="all" aria-checked="true">Все</button>
       <button type="button" role="radio" class="seg-b" data-ft="expense" aria-checked="false">Расходы</button>
@@ -116,25 +116,15 @@
       <div class="acct-m" id="acctMascot" aria-hidden="true"></div>
       <div class="acct-t"><b id="acctName">Профиль</b><span id="acctSub"></span></div>
     </div>
-    <section class="card" aria-labelledby="hCur">
-      <h2 class="h3" id="hCur">Валюта</h2>
-      <div class="chips" id="setCur" role="radiogroup" aria-label="Валюта"></div>
-      <div class="note">Суммы не пересчитываются. Меняется только знак.</div>
-    </section>
-    <section class="card" id="linkCard" aria-labelledby="hLink" hidden>
-      <h2 class="h3" id="hLink">Вход и восстановление</h2>
-      <div class="link-row"><span class="lr-ic" aria-hidden="true"><i data-ic="phone"></i></span><div class="lr-t"><b>Телефон</b><small id="linkPhone">Не привязан</small></div><button class="btn soft" type="button" data-linkbtn="phone" id="linkPhoneBtn">Привязать</button></div>
-      <div class="link-row"><span class="lr-ic" aria-hidden="true"><i data-ic="mail"></i></span><div class="lr-t"><b>Почта</b><small id="linkEmail">Не добавлена</small></div><button class="btn soft" type="button" data-linkbtn="email" id="linkEmailBtn">Добавить</button></div>
-      <div class="note" id="linkNote">Чтобы вернуть доступ, если потеряешь Google или Apple.</div>
-    </section>
-    <section class="card" aria-labelledby="hBk">
-      <h2 class="h3" id="hBk">Копия данных</h2>
-      <button class="btn soft wide" type="button" id="bkCopy">Скопировать копию</button>
-      <label class="fl sm" for="bkText">Вставить копию</label>
-      <textarea id="bkText" rows="3" placeholder="Вставь сюда копию"></textarea>
-      <button class="btn soft wide" type="button" id="bkRestore">Восстановить</button>
-      <div class="msg err" id="bkErr" role="alert" hidden></div>
-    </section>
+    <div class="plates">
+      <button class="plate" type="button" data-plate="phone" id="plPhone"><span class="pl-ic" aria-hidden="true"><i data-ic="phone"></i></span><span class="pl-t"><b>Телефон</b><small></small></span><span class="pl-r"></span></button>
+      <button class="plate" type="button" data-plate="email" id="plEmail"><span class="pl-ic" aria-hidden="true"><i data-ic="mail"></i></span><span class="pl-t"><b>Почта</b><small></small></span><span class="pl-r"></span></button>
+    </div>
+    <div class="plates">
+      <button class="plate" type="button" data-plate="balance" id="plBalance"><span class="pl-ic" aria-hidden="true"><i data-ic="cash"></i></span><span class="pl-t"><b>Стартовый баланс</b><small></small></span><span class="pl-r"><i data-ic="right"></i></span></button>
+      <button class="plate" type="button" data-plate="currency" id="plCurrency"><span class="pl-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="pl-t"><b>Валюта</b><small></small></span><span class="pl-r"><i data-ic="right"></i></span></button>
+      <button class="plate" type="button" data-plate="data" id="plData"><span class="pl-ic" aria-hidden="true"><i data-ic="cloud"></i></span><span class="pl-t"><b>Экспорт и импорт</b><small>Копия данных</small></span><span class="pl-r"><i data-ic="right"></i></span></button>
+    </div>
     <button class="btn ghost wide" id="btnSignOut" type="button">Выйти</button>
     <div class="note ctr" id="setFoot"></div>
   </section>
@@ -170,11 +160,12 @@
       <div class="date-row">
         <button type="button" class="chip" id="dToday">Сегодня</button>
         <button type="button" class="chip" id="dYest">Вчера</button>
-        <input id="txDate" type="date" aria-label="Дата">
+        <button type="button" class="chip" id="dOther">Другая дата</button>
+        <input id="txDate" class="pick-hidden" type="date" aria-label="Другая дата" tabindex="-1">
       </div>
       <label class="fl" for="txNote">Заметка</label>
       <input id="txNote" type="text" maxlength="120" placeholder="Например: обед с Аней" autocomplete="off">
-      <button class="btn primary wide" type="submit">Сохранить</button>
+      <button class="btn primary wide" type="submit" id="txSave"><span class="spin" aria-hidden="true"></span><span id="txSaveT">Сохранить</span></button>
       <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить запись</button>
     </form>
   </div>
