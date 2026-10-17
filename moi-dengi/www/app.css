@@ -981,3 +981,8 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .sheet>.grab{position:sticky;top:0;z-index:6;width:auto;height:auto;margin:0 -16px;padding:10px 0 4px;background:var(--sheet);border-radius:0}
 .sheet>.grab::after{content:"";display:block;width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto}
 .sheet>.sheet-head{position:sticky;top:18px;z-index:6;margin:0 -16px 8px;padding:0 16px 8px;background:var(--sheet)}
+
+/* Платежи: лёгкий полупрозрачный градиент одного цвета (янтарный), без полосок */
+.pcard:not(.add),.pcard.late,.pcard.paid{background:linear-gradient(170deg,color-mix(in srgb,var(--c-pay) 20%,transparent) 0%,color-mix(in srgb,var(--c-pay) 5%,transparent) 100%),var(--surface);border:1px solid color-mix(in srgb,var(--c-pay) 22%,var(--line))}
+.pcard.late{border-color:color-mix(in srgb,var(--negative) 45%,var(--line))}
+.pcard .tx-ic,.pcard.paid .tx-ic{background:color-mix(in srgb,var(--c-pay) 22%,var(--surface))}
