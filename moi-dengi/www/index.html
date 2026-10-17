@@ -376,8 +376,13 @@
       <label class="field"><input id="payName" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Название, например аренда</span></label>
       <div class="bal-row" style="margin-top:12px">
         <label class="field unit"><input id="payAmount" type="text" inputmode="decimal" placeholder=" " autocomplete="off"><span>Сумма</span><span class="u" id="payCur"></span></label>
-        <label class="field"><input id="payDay" type="text" inputmode="numeric" maxlength="2" placeholder=" " autocomplete="off"><span>День месяца</span></label>
       </div>
+      <div class="seg pay-mode" id="payMode" role="radiogroup" aria-label="Как повторяется">
+        <button type="button" role="radio" class="seg-b" data-pmode="monthly" aria-checked="true">Каждый месяц</button>
+        <button type="button" role="radio" class="seg-b" data-pmode="once" aria-checked="false">Конкретная дата</button>
+      </div>
+      <label class="field" id="payDayF"><input id="payDay" type="text" inputmode="numeric" maxlength="2" placeholder=" " autocomplete="off"><span>Число месяца</span></label>
+      <label class="field t" id="payOnceF" hidden><input id="payOnce" type="date"><span>День, месяц и год</span></label>
       <div class="fl" id="payCatL">Категория</div>
       <button type="button" class="cat-cur" id="payCatCur" hidden></button>
       <div class="cat-grid" id="payCats" role="radiogroup" aria-label="Категория"></div>
@@ -393,6 +398,20 @@
 </div>
 
 <!-- Подтверждение -->
+<!-- Совпадение дат: Фин спрашивает, не забыл ли ты внести платёж -->
+<div class="layer dlg" id="lyClash" hidden>
+  <div class="scrim" data-close></div>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="clTitle">
+    <div id="clSay"></div>
+    <div class="dlg-col">
+      <button class="btn primary" type="button" data-cl="now">Внесу сейчас</button>
+      <button class="btn soft" type="button" data-cl="details">Посмотреть детали</button>
+      <button class="btn ghost" type="button" data-cl="later">В другой раз</button>
+      <button class="btn ghost" type="button" data-cl="mute">Не напоминай мне про это</button>
+    </div>
+  </div>
+</div>
+
 <div class="layer dlg" id="lyConfirm" hidden>
   <div class="scrim" data-close></div>
   <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="cfTitle" aria-describedby="cfText">

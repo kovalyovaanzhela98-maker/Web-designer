@@ -15,7 +15,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/404|Failed to load/.test(m.text())) errs.push(m.text()); });
   await p.addInitScript(() => {
     localStorage.getItem('moidengi_intro') || localStorage.setItem('moidengi_intro', '1'); localStorage.getItem('moidengi_tour') || localStorage.setItem('moidengi_tour', '1');
-    window.SpeechRecognition = window.webkitSpeechRecognition = class { constructor() { this.listeners = {}; } start() { setTimeout(() => { this.onstart && this.onstart(); }, 50); setTimeout(() => { const t = window.__SPEECH || ''; const ev = { resultIndex: 0, results: [Object.assign([{ transcript: t, confidence: .9 }], { isFinal: true })] }; this.onresult && this.onresult(ev); setTimeout(() => { this.onend && this.onend(); }, 50); }, 300); } stop() {} abort() { this.onend && this.onend(); } };
+    // подмена распознавания речи: каждый запуск отдаёт следующий отрезок речи, потом тишина (как после паузы)
+    window.__PARTS = [];
+    window.SpeechRecognition = window.webkitSpeechRecognition = class { constructor() {} start() { setTimeout(() => { this.onstart && this.onstart(); }, 30); setTimeout(() => { const t = window.__PARTS.length ? window.__PARTS.shift() : (window.__SPEECH_ONCE ? (() => { const x = window.__SPEECH_ONCE; window.__SPEECH_ONCE = ''; return x; })() : ''); if (t) { const ev = { resultIndex: 0, results: [Object.assign([{ transcript: t, confidence: .9 }], { isFinal: true })] }; this.onresult && this.onresult(ev); } setTimeout(() => { this.onend && this.onend(); }, 40); }, 250); } stop() { setTimeout(() => { this.onend && this.onend(); }, 30); } abort() { this.onend && this.onend(); } };
   });
   const S = () => p.evaluate(() => JSON.parse(localStorage.getItem('moidengi_v1') || '{}'));
   const now = new Date(), pad = n => String(n).padStart(2, '0'), ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -37,8 +39,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   s = await S(); ok('правка суммы сохранена', s.tx.some(t => t.amount === 30), s.tx.map(t => t.amount));
 
   // ---- 2. голос через кнопку микрофона: длинная живая речь
-  await p.evaluate(() => { window.__SPEECH = 'Короче, сегодня утром я купила продукты на 54 рубля, потом заехала на заправку, залила бензина на 80, а вечером на карту пришла премия 300'; });
-  await p.click('#fab'); await sleep(250); await p.click('#txVoice'); await sleep(900);
+  await p.evaluate(() => { window.__SPEECH_ONCE = 'Короче, сегодня утром я купила продукты на 54 рубля, потом заехала на заправку, залила бензина на 80, а вечером на карту пришла премия 300'; });
+  await p.click('#fab'); await sleep(250); await p.click('#txVoice'); await sleep(700); await p.click('#txVoiceStop'); await sleep(500);
   ok('голос: открыт черновик «Всё верно?»', await p.isVisible('#lyDraft'), await p.evaluate(() => [...document.querySelectorAll('.layer:not([hidden])')].map(x => x.id)));
   const rows = await p.$$eval('#draftList .dr', e => e.map(x => x.textContent.replace(/\s+/g, ' ').trim()));
   ok('голос: найдено 3 записи (2 расхода и приход)', rows.length === 3, rows);
@@ -46,11 +48,20 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   s = await S(); ok('голос: записи сохранены', s.tx.length === 5 && s.tx.filter(t => t.type === 'income').length === 2, s.tx.length);
   // разговорная речь ещё
   for (const [phrase, n] of [['слушай, вчера мы ходили в кино и я отдала там тридцать пять рублей, а ещё купила попкорн за двенадцать', 2], ['мне вернули долг пятьсот', 1], ['сегодня ничего не покупала', 0]]) {
-    await p.evaluate(t => { window.__SPEECH = t; }, phrase); await p.click('#fab'); await sleep(250); await p.click('#txVoice'); await sleep(900);
+    await p.evaluate(t => { window.__SPEECH_ONCE = t; }, phrase); await p.click('#fab'); await sleep(250); await p.click('#txVoice'); await sleep(700); await p.click('#txVoiceStop'); await sleep(500);
     const open = await p.isVisible('#lyDraft'); const cnt = open ? (await p.$$('#draftList .dr')).length : 0;
     ok(`голос «${phrase.slice(0, 40)}…» → ${n}`, cnt === n || (n === 0 && !open), cnt);
     if (open) { await p.click('#draftOk'); await sleep(350); } else { await p.evaluate(() => { const l = document.querySelector('#lyTx:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(300); }
   }
+
+  // длинная речь с паузами: распознавание не обрывается, всё собирается после «Стоп»
+  await p.evaluate(() => { window.__PARTS = ['вчера купила молоко за 4 рубля', 'так, потом заехала на заправку и залила на 50', 'а ещё мне перевели 100 за уроки']; });
+  await p.click('#fab'); await sleep(250); await p.click('#txVoice'); await sleep(1900);
+  ok('голос: после пауз окно записи ещё открыто', await p.isVisible('#txVoiceLive'));
+  await p.click('#txVoiceStop'); await sleep(600);
+  const parts = await p.$$eval('#draftList .dr', e => e.length);
+  ok('голос: три отрезка речи дали три записи', parts === 3, parts);
+  await p.click('#draftOk'); await sleep(400);
 
   // ---- 3. удаление и «Вернуть»
   s = await S(); const cnt0 = s.tx.length;

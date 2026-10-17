@@ -773,7 +773,7 @@ button.hs{text-align:left;color:inherit;width:100%}
 @keyframes tshrink{to{transform:scaleX(0)}}
 
 /* Редактор категорий и пометка new */
-.newb{display:inline-block;margin-left:6px;padding:0 6px;border-radius:99px;background:var(--c-gift);color:#fff;font-style:normal;font-size:11px;font-weight:700;line-height:16px;vertical-align:2px}
+.newb{display:inline-block;margin-left:6px;padding:0 6px;border-radius:99px;background:var(--c-gift);color:#fff;font-style:normal;font-size:var(--fs-cap);font-weight:700;line-height:18px;vertical-align:1px}
 .pick-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .pk{display:grid;place-items:center;height:48px;border-radius:var(--r-md);background:var(--surface);border:var(--card-b)}
 .pk[aria-checked=true]{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
@@ -796,3 +796,9 @@ button.hs{text-align:left;color:inherit;width:100%}
 .tx-done b{font-family:var(--font-display);font-size:var(--fs-title)}
 .tx-done small{color:var(--muted)}
 .tx-done .btn{margin:0}
+
+.dlg-col{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.dlg-col .btn{margin:0;width:100%}
+.toast .t2{display:block;margin-top:2px;opacity:.8;font-size:var(--fs-cap);font-weight:400}
+.pay-mode{margin:12px 0}
+.pc-d{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

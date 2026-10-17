@@ -34,27 +34,31 @@
       if (!p || typeof p !== 'object') continue;
       const name = str(p.name, 30), amount = Number(p.amount);
       if (!name || !(amount > 0)) continue;
-      const days = (Array.isArray(p.days) ? p.days : []).map(d => ({ from: /^\d{4}-\d{2}$/.test(d && d.from) ? d.from : '0000-00', day: Math.max(1, Math.min(31, Math.floor(Number(d && d.day)) || 0)) })).filter(d => d.day >= 1).sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0));
+      const once = parseYmd(p.once) ? p.once : '';
+      const days = once ? [{ from: '0000-00', day: Number(once.slice(8)) }] : (Array.isArray(p.days) ? p.days : []).map(d => ({ from: /^\d{4}-\d{2}$/.test(d && d.from) ? d.from : '0000-00', day: Math.max(1, Math.min(31, Math.floor(Number(d && d.day)) || 0)) })).filter(d => d.day >= 1).sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0));
       if (!days.length) continue;
       let nid = Math.floor(Number(p.nid)); if (!(nid >= 0 && nid < MAX) || used.has(nid)) { nid = 0; while (used.has(nid)) nid++; } used.add(nid);
       const paid = {};
       Object.keys(p.paid && typeof p.paid === 'object' ? p.paid : {}).sort().slice(-36).forEach(k => { if (/^\d{4}-\d{2}$/.test(k)) paid[k] = str(p.paid[k], 60) || 'manual'; });
       const remind = REMIND.some(r => r.id === p.remind) ? p.remind : 'off';
       rec.list.push({
+        once,
         id: typeof p.id === 'string' && p.id ? p.id.slice(0, 40) : 'p' + nid + Date.now().toString(36),
         name, amount: r2(amount), cat: cats && !cats.includes(p.cat) ? 'Другое' : str(p.cat, 30) || 'Другое', days,
         remind, time: /^\d{2}:\d{2}$/.test(p.time) ? p.time : '10:00',
-        start: /^\d{4}-\d{2}$/.test(p.start) ? p.start : '0000-00', paid, nid
+        start: once ? once.slice(0, 7) : /^\d{4}-\d{2}$/.test(p.start) ? p.start : '0000-00', paid, nid
       });
     }
     return rec;
   }
   const freeNid = list => { const used = new Set(list.map(p => p.nid)); let n = 0; while (used.has(n)) n++; return n; };
 
+  /* Платёж действует в месяце mk: ежемесячный с начала, разовый только в месяце своей даты */
+  const active = (p, mk) => p.start <= mk && (!p.once || p.once.slice(0, 7) === mk);
   /* День платежа в нужном месяце: 31-е в коротком месяце уходит на последний день */
   function dayFor(p, mk) { let d = p.days[0].day; for (const x of p.days) if (x.from <= mk) d = x.day; return d; }
   const curDay = p => p.days[p.days.length - 1].day;
-  function dateOf(p, mk) { const [y, m] = mk.split('-').map(Number); return new Date(y, m - 1, Math.min(dayFor(p, mk), daysIn(y, m - 1))); }
+  function dateOf(p, mk) { if (p.once) return parseYmd(p.once); const [y, m] = mk.split('-').map(Number); return new Date(y, m - 1, Math.min(dayFor(p, mk), daysIn(y, m - 1))); }
   const isPaid = (p, mk) => !!p.paid[mk];
   const dayDiff = (a, b) => Math.round((midnight(a) - midnight(b)) / 864e5);
 
@@ -78,14 +82,14 @@
   }
   /* Строки списка на месяц (платежи, которые в этом месяце уже действуют), по дате */
   function monthRows(list, mk, today) {
-    return list.filter(p => p.start <= mk).map(p => ({ p, date: dateOf(p, mk), status: statusOf(p, mk, today) })).sort((a, b) => a.date - b.date || a.p.name.localeCompare(b.p.name));
+    return list.filter(p => active(p, mk)).map(p => ({ p, date: dateOf(p, mk), status: statusOf(p, mk, today) })).sort((a, b) => a.date - b.date || a.p.name.localeCompare(b.p.name));
   }
   /* Ближайший: сначала то, что в этом месяце ещё не закрыто (в том числе вчерашнее), потом следующий месяц */
   function nextDue(list, today) {
     const cur = mkOfDate(today), nxt = shiftMk(cur, 1), out = [];
     for (const p of list) {
-      if (p.start <= cur && !isPaid(p, cur)) out.push({ p, mk: cur, date: dateOf(p, cur) });
-      else if (p.start <= nxt && !isPaid(p, nxt)) out.push({ p, mk: nxt, date: dateOf(p, nxt) });
+      if (active(p, cur) && !isPaid(p, cur)) out.push({ p, mk: cur, date: dateOf(p, cur) });
+      else if (active(p, nxt) && !isPaid(p, nxt)) out.push({ p, mk: nxt, date: dateOf(p, nxt) });
     }
     out.sort((a, b) => a.date - b.date);
     const f = out[0]; if (!f) return null;
@@ -102,13 +106,45 @@
     for (const p of list) {
       if (p.cat !== t.cat || Math.abs(p.amount - t.amount) > 0.005) continue;
       for (const mk of [shiftMk(base, -1), base, shiftMk(base, 1)]) {
-        if (p.start > mk || isPaid(p, mk)) continue;
+        if (!active(p, mk) || isPaid(p, mk)) continue;
         const diff = Math.abs(dayDiff(dateOf(p, mk), td));
         if (diff <= TOL && (!best || diff < best.diff)) best = { p, mk, diff };
       }
     }
     return best;
   }
+
+  /* Похоже ли на обязательный платёж, но сумма другая (больше или меньше обычной) */
+  const norm = s => String(s || '').toLowerCase().replace(/ё/g, 'е');
+  function similar(list, t) {
+    if (!t || t.type !== 'expense') return null;
+    const td = parseYmd(t.date); if (!td) return null;
+    const base = mkOfDate(td), note = norm(t.note), cat = norm(t.cat);
+    let best = null;
+    for (const p of list) {
+      const nm = norm(p.name), byName = nm.length >= 3 && (note.includes(nm) || nm.includes(note) && note.length >= 4 || cat.includes(nm));
+      const byCat = p.cat === t.cat && t.amount >= p.amount * 0.5 && t.amount <= p.amount * 4;
+      if (!byName && !byCat) continue;
+      for (const mk of [base, shiftMk(base, -1)]) {
+        if (!active(p, mk) || isPaid(p, mk)) continue;
+        const diff = Math.abs(dayDiff(dateOf(p, mk), td));
+        if (diff <= 20 && (!best || diff < best.diff)) best = { p, mk, diff, extra: r2(t.amount - p.amount), more: t.amount > p.amount + 0.005 };
+      }
+    }
+    return best;
+  }
+  const isLoan = p => /(кредит|ипотек|займ|рассрочк|лизинг)/.test(norm(p.name) + ' ' + norm(p.cat));
+  /* На сколько раньше закроется кредит, если внести лишнее: лишнее делим на обычный взнос = «сколько взносов сэкономили» */
+  function earlier(p, extra) {
+    const months = extra / p.amount, days = Math.round(months * 30);
+    if (days < 1) return 'меньше чем на день';
+    if (days < 14) return `примерно на ${days} ${pl(days, 'день', 'дня', 'дней')}`;
+    if (days < 60) { const w = Math.round(days / 7); return `примерно на ${w} ${pl(w, 'неделю', 'недели', 'недель')}`; }
+    const m = Math.round(months * 10) / 10; const mm = String(m).replace('.', ',');
+    return `примерно на ${mm} ${Number.isInteger(m) ? pl(m, 'месяц', 'месяца', 'месяцев') : 'месяца'}`;
+  }
+  /* Все платежи и праздники в один день: список для вопроса «не забыл ли?» */
+  const dueOn = (list, date, today) => monthRows(list, mkOfDate(date), today).filter(r => r.status !== 'paid' && dayDiff(r.date, date) === 0);
 
   const pl = (n, a, b, c) => { const m = n % 100, k = n % 10; return m >= 11 && m <= 14 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; };
   /* «сегодня», «завтра», «через 3 дня», «вчера», «5 дней назад» */
@@ -135,7 +171,7 @@
       const [h, mi] = p.time.split(':').map(Number);
       for (let i = 0; i < 12; i++) {
         const mk = shiftMk(cur, i);
-        if (p.start > mk || isPaid(p, mk)) continue;
+        if (!active(p, mk) || isPaid(p, mk)) continue;
         const d = dateOf(p, mk), at = new Date(d.getFullYear(), d.getMonth(), d.getDate() - r.lead, h, mi, 0);
         if (at <= now) continue;
         out.push({ id: 1000 + p.nid * 12 + i, title: 'Фин', body: pushBody(p, r.lead, money), at, pid: p.id, mk });
@@ -143,12 +179,19 @@
     }
     return out;
   }
+  /* Подпись в карточке: «каждое 5-е · 5 окт» или «15 ноября 2026» */
+  const MG = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  function scheduleText(p, date) {
+    if (p.once) { const d = parseYmd(p.once); return `${d.getDate()} ${MG[d.getMonth()]} ${d.getFullYear()}`; }
+    const dd = date || dateOf(p, mkOfDate(new Date()));
+    return `каждое ${curDay(p)}-е · ${dd.getDate()} ${MG[dd.getMonth()]}`;
+  }
   const summary = (list, mk, today) => {
     const rows = monthRows(list, mk, today), paid = rows.filter(r => r.status === 'paid');
     return { n: rows.length, paid: paid.length, total: r2(rows.reduce((s, r) => s + r.p.amount, 0)), left: r2(rows.filter(r => r.status !== 'paid').reduce((s, r) => s + r.p.amount, 0)) };
   };
 
-  const api = { FREE_LIMIT, MAX, REMIND, PRESETS, defaultRec, sanitize, freeNid, dayFor, curDay, dateOf, isPaid, startMonth, setDay, statusOf, monthRows, nextDue, matchTx, whenText, dueLine, pushBody, notifications, summary, mkOf, mkOfDate, shiftMk };
+  const api = { FREE_LIMIT, MAX, REMIND, PRESETS, defaultRec, sanitize, freeNid, dayFor, curDay, dateOf, isPaid, active, startMonth, setDay, statusOf, monthRows, nextDue, matchTx, scheduleText, similar, isLoan, earlier, dueOn, whenText, dueLine, pushBody, notifications, summary, mkOf, mkOfDate, shiftMk };
   root.MD = root.MD || {};
   root.MD.rec = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -188,7 +188,7 @@ function sanitize(o) {
     const sv = parseAmount(g.saved, true), months = Math.max(1, Math.min(600, Math.round(Number(g.months)) || 1)), unit = g.unit === 'week' ? 'week' : 'month';
     goals.push({
       id: typeof g.id === 'string' && g.id ? g.id : uid(), name: g.name.trim().slice(0, 40), target: round2(target),
-      saved: Number.isFinite(sv) && sv > 0 ? round2(sv) : 0, months, unit,
+      saved: Number.isFinite(sv) && sv > 0 ? round2(sv) : 0, months, unit, cur: CURRENCIES[g.cur] ? g.cur : currency,
       deadline: parseYmd(g.deadline) ? g.deadline : MD.goals.ymdOf(MD.goals.addMonths(new Date(), months)),
       created: parseYmd(g.created) ? g.created : today(),
       nid: Math.max(0, Math.min(49, Math.floor(Number(g.nid)) || goals.length)),
@@ -273,7 +273,7 @@ function renderPays() {
     const sub = r.status === 'paid' ? 'Оплачено' : esc(R.whenText(days));
     return `<div class="pcard ${r.status}"><button class="pc-main" type="button" data-go-pay aria-label="${esc(cap(p.name))}, ${esc(sub)}. Все обязательные платежи">
         <span class="pc-top"><span class="tx-ic" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span><b class="pc-n">${esc(cap(p.name))}</b></span>
-        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small></span></button>
+        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small><small class="pc-d">${esc(R.scheduleText(p, d))}</small></span></button>
       ${r.status === 'late' ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${key}">Записать</button>` : ''}</div>`;
   }).join('');
 }
@@ -281,7 +281,7 @@ function renderPays() {
 /* Цели на главной: карточки в ряд, у каждой свой цвет */
 function renderGoalsHome() {
   const el = $('#goalsStrip'), list = state.goals;
-  el.innerHTML = list.map(g => `<button class="grow" type="button" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}"><span class="gr-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span><small>${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</small></button>`).join('') +
+  el.innerHTML = list.map(g => `<button class="grow" type="button" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}"><span class="gr-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span><small>${esc(maskT(gm(g, g.saved)))} из ${esc(maskT(gm(g, g.target)))}</small></button>`).join('') +
     `<button class="grow add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё копилка' : 'Новая копилка'}</b></button>`;
 }
 /* Дни рождения и праздники: ближайшие, одной строкой */
@@ -300,7 +300,7 @@ $('#s-home').addEventListener('click', e => {
 function renderSaveCard() {
   const el = $('#saveCard'), c = G.homeCard(state.goals, state.tx, new Date());
   if (!c) { el.innerHTML = ''; return; }
-  const g = c.goal, per = esc(maskT(money(c.amount))), unit = g.unit === 'week' ? 'на этой неделе' : 'в этом месяце';
+  const g = c.goal, per = esc(maskT(gm(g, c.amount))), unit = g.unit === 'week' ? 'на этой неделе' : 'в этом месяце';
   el.innerHTML = c.kind === 'due'
     ? `<div class="save-card due">${MD.mascot('love', 56)}<span class="sc-t"><b>Отложи ${per} на «${esc(g.name)}»</b></span><button class="btn primary" type="button" data-savenow="${esc(g.id)}">Отложил</button></div>`
     : `<div class="save-card">${MD.mascot('think', 56)}<span class="sc-t"><b>«${esc(g.name)}»: напомнить откладывать ${esc(G.dayName(g.unit === 'week' ? 'week' : 'month', c.day))}?</b></span><button class="btn primary" type="button" data-remindgoal="${esc(g.id)}|${c.day}">Да</button></div>`;
@@ -646,7 +646,7 @@ function toast(msg, actionLabel, action, pose, ms) {
   const t = $('#toast'), dur = ms || (actionLabel ? 6000 : 4000);
   t.hidden = true; void t.offsetWidth;
   t.style.transform = ''; t.style.opacity = ''; t.style.setProperty('--tms', dur + 'ms');
-  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, msg.length > 60 ? 44 : 30)}</span>` : '') + `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
+  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, msg.length > 60 ? 44 : 30)}</span>` : '') + `<span>${esc(msg.split('\n')[0])}${msg.indexOf('\n') > 0 ? `<small class="t2">${esc(msg.split('\n').slice(1).join(' '))}</small>` : ''}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
   if (actionLabel) $('button', t).onclick = () => { clearTimeout(toastT); t.hidden = true; action(); };
   t.hidden = false;
   clearTimeout(toastT);
@@ -917,10 +917,14 @@ function afterAdd(items, first, pay, quiet) {
   let m = null, hit = null;
   items.forEach(it => markCatUsed(it.type, it.cat));
   const madeCat = autoCategory(items);
-  if (pay) toast('Записано, платёж отмечен', null, null, 'joy');
+  if (pay) { if (!askClash(pay.id, items[0].date)) toast('Записано, платёж отмечен', null, null, 'joy'); }
   else {
     for (const it of items) { m = R.matchTx(state.rec.list, it); if (m) { hit = it; break; } }
-    if (m) toast(`Записано. Это оплата «${cap(m.p.name)}»?`, 'Отметить', () => { markPaid(m.p.id, m.mk, hit.id); save(); render(); toast(`Отмечено: ${cap(m.p.name)}`, null, null, 'happy'); }, 'joy', 8000);
+    const sim = !m && items.length === 1 ? R.similar(state.rec.list, items[0]) : null;
+    if (sim && sim.more) {
+      markPaid(sim.p.id, sim.mk, items[0].id); save(); render();
+      toast(`Класс, в этом месяце ты вносишь платёж за «${cap(sim.p.name)}» больше, чем нужно. Так держать!` + (R.isLoan(sim.p) ? `\nЕсли вносить больше нужного, кредит выплатится быстрее ${R.earlier(sim.p, sim.extra)}.` : ''), null, null, 'joy', 7000);
+    } else if (m) toast(`Записано. Это оплата «${cap(m.p.name)}»?`, 'Отметить', () => { markPaid(m.p.id, m.mk, hit.id); save(); render(); if (!askClash(m.p.id, hit.date)) toast(`Отмечено: ${cap(m.p.name)}`, null, null, 'happy'); }, 'joy', 8000);
     else if (!quiet || madeCat) toast(madeCat ? `Записано. Завёл категорию «${madeCat.n}»` : items.length > 1 ? `Записано: ${items.length}` : 'Записано', null, null, 'joy');
   }
   maybeAskFest(items);
@@ -1019,6 +1023,8 @@ const G = MD.goals;
 const GCOL = ['#5C8A3C', '#4A7FA8', '#B58A45', '#8A78AE', '#B8697F', '#4B9A97'];
 const rampCol = i => `var(--r${Math.min(i + 1, 6)})`;
 const gCol = g => GCOL[(g.nid || 0) % GCOL.length];
+const gm = (g, n) => `${fmt(n)} ${sym(g.cur)}`;
+const qm = n => `${fmt(n)} ${sym(quiz.cur)}`;
 const goalPct = g => Math.min(100, Math.round(g.saved / g.target * 100));
 /* Карточка цели: прогресс, остаток, взнос за период (неделя или месяц) и дедлайн */
 const gUnit = g => (g.unit === 'week' ? 'week' : 'month');
@@ -1028,10 +1034,18 @@ function goalFacts(g) {
   return { done, left, monthly: done ? 0 : G.perPeriodNow(g, new Date()), dlText: `${dl.getDate()} ${MONTHS_G[dl.getMonth()]} ${dl.getFullYear()}`, over: !done && !pl };
 }
 const goalLeft = g => { const f = goalFacts(g); return f.done ? 'Копилка собрана' : f.over ? `Срок был ${f.dlText}` : `Дедлайн ${f.dlText}`; };
+/* Сколько ещё внести в этом периоде (месяце или неделе): взнос минус то, что уже отложено сейчас */
+function periodAsk(g) {
+  const per = G.perPeriodNow(g, new Date()), T = new Date(), wk = gUnit(g) === 'week';
+  const from = wk ? ymd(mondayOf(T)) : `${T.getFullYear()}-${pad(T.getMonth() + 1)}-01`, to = wk ? ymd(addD(mondayOf(T), 6)) : `${T.getFullYear()}-${pad(T.getMonth() + 1)}-31`;
+  const did = round2((g.log || []).filter(x => x.d >= from && x.d <= to).reduce((s, x) => s + x.a, 0)), need = Math.max(0, round2(per - did));
+  const when = wk ? 'на этой неделе' : 'в этом месяце';
+  return need > 0 ? `Внести ${when}: ${gm(g, need)}` : `${cap(when)} уже отложено ${gm(g, did)}. Так держать!`;
+}
 const goalRows = (g, full) => {
   const f = goalFacts(g);
-  return `<span class="goal-sub"><span>${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</span><span>${f.done ? 'Готово' : esc(f.dlText)}</span></span>` +
-    (full && !f.done ? `<span class="goal-sub"><span>${esc(cap(G.perWord(gUnit(g))))} ${esc(maskT(money(f.monthly)))}</span><span>Осталось ${esc(maskT(money(f.left)))}</span></span>` : '');
+  return `<span class="goal-sub"><span>${esc(maskT(gm(g, g.saved)))} из ${esc(maskT(gm(g, g.target)))}</span><span>${f.done ? 'Готово' : esc(f.dlText)}</span></span>` +
+    (full && !f.done ? `<span class="goal-sub"><span>${esc(cap(G.perWord(gUnit(g))))} ${esc(maskT(gm(g, f.monthly)))}</span><span>Осталось ${esc(maskT(gm(g, f.left)))}</span></span>` : '');
 };
 function renderGoals() {
   const el = $('#goalsBody'), list = state.goals;
@@ -1069,16 +1083,16 @@ function remindBlock(g) {
 function drawGoal(g) {
   const done = g.saved >= g.target, pct = goalPct(g), per = G.perPeriodNow(g, new Date());
   const say = done ? ['joy', 'Копилка собрана! Можно собираться']
-    : pct >= 50 ? ['happy', `Больше половины пути. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
-      : pct > 0 ? ['hello', `Начало положено. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
+    : pct >= 50 ? ['happy', `Больше половины пути. Осталось ${esc(maskT(gm(g, round2(g.target - g.saved))))}`]
+      : pct > 0 ? ['hello', `Начало положено. Осталось ${esc(maskT(gm(g, round2(g.target - g.saved))))}`]
         : ['think', 'Пока ноль. Отложи первую сумму'];
   const el = $('#goalDetail'); el.style.setProperty('--gc', gCol(g));
   el.innerHTML = `${MD.say(say[0], say[1], 64)}
-    <div class="goal big"><span class="goal-top"><b>${esc(maskT(money(g.saved)))}</b><span class="goal-pct">${pct}%</span></span>
+    <div class="goal big"><span class="goal-top"><b>${esc(maskT(gm(g, g.saved)))}</b><span class="goal-pct">${pct}%</span></span>
     <span class="goal-bar"><i style="width:${pct}%"></i></span>${goalRows(g, true)}</div>
     ${done ? '' : `<form id="goalAdd" class="gblock key" novalidate>
-      <div class="bal-row">${fld('goalAmt', 'Сколько отложил', { mode: 'decimal', unit: sym() })}<button class="btn primary" type="submit">Отложить</button></div>
-      ${per ? `<div class="note">По плану ${esc(G.perWord(gUnit(g)))}: ${esc(maskT(money(per)))}. Если отложишь больше, Фин порадуется.</div>` : ''}
+      <div class="bal-row">${fld('goalAmt', 'Сколько отложил', { mode: 'decimal', unit: sym(g.cur) })}<button class="btn primary" type="submit">Отложить</button></div>
+      ${per ? `<div class="note">${esc(periodAsk(g))}</div>` : ''}
       <div class="msg err" id="goalErr" hidden></div>
     </form>`}
     ${goalCalendar(g)}
@@ -1112,8 +1126,8 @@ function topUp(g, v) {
   g.saved = round2(g.saved + v); (g.log = g.log || []).push({ d: today(), a: round2(v) });
   save(); render(); buzz(15); afterDataChange();
   const doneNow = !was && g.saved >= g.target;
-  if (doneNow) toast(`Копилка собрана! Собрано ${money(g.target)}`, null, null, 'joy', 6000);
-  else if (planned > 0 && v > planned * 1.0001) toast(`Ты большой молодец! Отложил на ${money(round2(v - planned))} больше плана. Надеюсь, это не навредит твоим финансам.`, null, null, 'joy', 6500);
+  if (doneNow) toast(`Копилка собрана! Собрано ${gm(g, g.target)}`, null, null, 'joy', 6000);
+  else if (planned > 0 && v > planned * 1.0001) toast(`Ты большой молодец! Отложил на ${gm(g, round2(v - planned))} больше плана. Надеюсь, это не навредит твоим финансам.`, null, null, 'joy', 6500);
   else toast('Отложено', null, null, 'happy');
 }
 $('#goalDetail').addEventListener('submit', e => {
@@ -1151,7 +1165,7 @@ const KINDS = [['Отпуск', 'Билеты, отель'], ['Подушка б
 const STEP_NO = { kind: 1, custom: 1, target: 2, saved: 3, term: 4, free: 5, think: 5, plan: 6, tune: 6, tuneMonthly: 6, tuneTerm: 6, tuneTarget: 6, tuneIncome: 6 };
 let quiz = null;
 function openQuiz() {
-  quiz = { step: 'kind', stack: [], name: '', target: 0, saved: 0, term: null, free: G.freeMoney(state.tx, new Date()), extra: 0, hadFree: false };
+  quiz = { cur: state.currency, deadline: null, step: 'kind', stack: [], name: '', target: 0, saved: 0, term: null, free: G.freeMoney(state.tx, new Date()), extra: 0, hadFree: false };
   quiz.hadFree = quiz.free !== null;
   renderQuiz();
   openLayer($('#lyQuiz'));
@@ -1159,14 +1173,16 @@ function openQuiz() {
 const qGo = step => { quiz.stack.push(quiz.step); quiz.step = step; renderQuiz(); };
 const qIn = (id, label, unit) => `${fld(id, label, { mode: 'decimal', unit })}<div class="msg err" id="qErr" hidden></div>`;
 const qBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-qa="${act}" ${dis ? 'disabled' : ''}>${esc(label)}</button>`;
-function planOf() { return G.planTerm({ target: quiz.target, saved: quiz.saved, n: quiz.term.n, unit: quiz.term.unit, free: quiz.free }); }
+function planOf() { return G.planTerm({ target: quiz.target, saved: quiz.saved, n: quiz.term.n, unit: quiz.term.unit, free: quiz.cur === state.currency ? quiz.free : null }); }
 /* Срок: быстрые варианты от двух недель до года и свой (число и неделя или месяц) */
 const TERMS = [[2, 'week', '2 недели'], [1, 'month', '1 месяц'], [3, 'month', '3 месяца'], [6, 'month', '6 месяцев'], [12, 'month', '1 год'], [24, 'month', '2 года']];
 function termHtml(act) {
   const q = quiz, u = q.termUnit || 'month';
   return `<div class="term-grid" role="radiogroup" aria-label="Срок">${TERMS.map(t => `<button type="button" role="radio" class="kind term" data-term="${t[0]}:${t[1]}" aria-checked="${q.termPick === t[0] + ':' + t[1]}"><b>${t[2]}</b></button>`).join('')}</div>
     <div class="fl">Или свой срок</div>
-    <div class="term-custom">${fld('qNum', 'Сколько', { mode: 'numeric' })}<div class="seg unit-seg" role="radiogroup" aria-label="Единица срока" style="flex:1"><button type="button" role="radio" class="seg-b" data-tunit="week" aria-checked="${u === 'week'}">недель</button><button type="button" role="radio" class="seg-b" data-tunit="month" aria-checked="${u === 'month'}">месяцев</button></div></div>
+    <div class="term-custom">${fld('qNum', 'Сколько', { mode: 'numeric' })}<div class="seg unit-seg" role="radiogroup" aria-label="Единица срока"><button type="button" role="radio" class="seg-b" data-tunit="week" aria-checked="${u === 'week'}">неделя</button><button type="button" role="radio" class="seg-b" data-tunit="month" aria-checked="${u === 'month'}">месяц</button><button type="button" role="radio" class="seg-b" data-tunit="year" aria-checked="${u === 'year'}">год</button></div></div>
+    <div class="fl">Или выбери дату</div>
+    <label class="field t"><input id="qDate" type="date" min="${ymd(addD(new Date(), 1))}"><span>День, месяц и год</span></label>
     <div class="msg err" id="qErr" hidden></div>${qBtn(act, act === 'doTerm' ? 'Пересчитать' : 'Далее')}`;
 }
 function renderQuiz() {
@@ -1186,11 +1202,11 @@ function renderQuiz() {
       break;
     case 'target':
       say = ['think', `Сколько нужно на «${nm}»?`];
-      html = qIn('qNum', 'Сумма', sym()) + qBtn('target', 'Далее');
+      html = `<div class="chips" role="radiogroup" aria-label="Валюта копилки">${Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-qcur="${c}" aria-checked="${c === q.cur}">${c}</button>`).join('')}</div>` + qIn('qNum', 'Сумма', sym(q.cur)) + qBtn('target', 'Далее');
       break;
     case 'saved':
       say = ['hello', 'Сколько уже есть?'];
-      html = qIn('qNum', 'Сколько уже есть', sym()) + qBtn('saved', 'Далее') + qBtn('saved0', 'Пока ноль', 'soft');
+      html = qIn('qNum', 'Сколько уже есть', sym(q.cur)) + qBtn('saved', 'Далее') + qBtn('saved0', 'Пока ноль', 'soft');
       break;
     case 'term':
       say = ['notify', 'За сколько хочешь накопить? Хоть за две недели.'];
@@ -1208,22 +1224,20 @@ function renderQuiz() {
       const p = planOf(), U = p.unit, per = G.perWord(U);
       const until = G.addTerm(new Date(), p.n, U), untilTxt = `${until.getDate()} ${MONTHS_G[until.getMonth()]} ${until.getFullYear()}`;
       const T = G.unitLabel(p.n, U);
-      const fm = p.free !== null ? esc(money(p.free)) : '';
       const txt = {
-        easy: ['joy', `Легко. По <em>${esc(money(p.perPeriod))}</em> ${per}, и через ${T} на «${nm}» будет ${esc(money(q.target))}.<small>Останется запас.</small>`],
-        ok: ['happy', `Посильно: <em>${esc(money(p.perPeriod))}</em> ${per}, срок ${T}.<small>Это заметная часть твоего среднего остатка.</small>`],
-        hard: ['think', `Тяжеловато: нужно <em>${esc(money(p.perPeriod))}</em> ${per}, а в среднем остаётся ${p.free > 0 ? fm + ' в месяц' : 'меньше нуля'}.${p.altN ? `<small>Могу растянуть до ${G.unitLabel(p.altN, U)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
-        unknown: ['hello', `План: <em>${esc(money(p.perPeriod))}</em> ${per}, срок ${T}.<small>Твоих доходов я пока не знаю, поэтому не скажу, посильно ли это.</small>`],
+        easy: ['joy', `Легко. По <em>${esc(qm(p.perPeriod))}</em> ${per}, и через ${T} на «${nm}» будет ${esc(qm(q.target))}.<small>Останется запас.</small>`],
+        ok: ['happy', `Посильно: <em>${esc(qm(p.perPeriod))}</em> ${per}, срок ${T}.`],
+        hard: ['think', `Тяжеловато: нужно <em>${esc(qm(p.perPeriod))}</em> ${per}.${p.altN ? `<small>Могу растянуть до ${G.unitLabel(p.altN, U)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
+        unknown: ['hello', `План: <em>${esc(qm(p.perPeriod))}</em> ${per}, срок ${T}.`],
         done: ['joy', 'Нужная сумма уже есть!<small>Сохрани копилку, чтобы следить за ней.</small>']
       }[p.verdict];
       say = txt;
       html = `<div class="plan">
         <div><span>Копилка</span><b>${nm}</b></div>
-        <div><span>Нужно</span><b>${esc(money(q.target))}</b></div>
-        <div><span>Уже есть</span><b>${esc(money(q.saved))}</b></div>
-        <div class="hl"><span>${esc(cap(per))}</span><b>${esc(money(p.perPeriod))}</b></div>
+        <div><span>Нужно</span><b>${esc(qm(q.target))}</b></div>
+        <div><span>Уже есть</span><b>${esc(qm(q.saved))}</b></div>
+        <div class="hl"><span>${esc(cap(per))}</span><b>${esc(qm(p.perPeriod))}</b></div>
         <div><span>Срок</span><b>${T}, до ${untilTxt}</b></div>
-        ${p.free !== null ? `<div><span>Средний остаток</span><b>${esc(money(p.free))} в месяц</b></div>` : ''}
       </div>` + qBtn('accept', 'Согласен') +
         (p.verdict === 'hard' && p.altN ? qBtn('alt', `Растянуть до ${G.unitLabel(p.altN, U)}`, 'soft') : '') +
         qBtn('reject', 'Не подходит', 'ghost');
@@ -1267,8 +1281,11 @@ $('#quizBody').addEventListener('click', e => {
   const q = quiz; if (!q) return;
   const k = e.target.closest('[data-kind]');
   if (k) { q.pick = k.dataset.kind; buzz(6); renderQuiz(); return; }
+  const qc = e.target.closest('[data-qcur]');
+  if (qc) { const v = ($('#qNum') || {}).value; q.cur = qc.dataset.qcur; renderQuiz(); if ($('#qNum')) $('#qNum').value = v || ''; buzz(6); return; }
   const tm = e.target.closest('[data-term]');
   if (tm) { q.termPick = tm.dataset.term; const inp = $('#qNum'); if (inp) inp.value = ''; buzz(6); $$('#quizBody [data-term]').forEach(x => x.setAttribute('aria-checked', String(x.dataset.term === q.termPick))); return; }
+  if (e.target.id === 'qDate') { /* выбор даты снимает быстрые варианты */ }
   const tu = e.target.closest('[data-tunit]');
   if (tu) { q.termUnit = tu.dataset.tunit; q.termPick = null; $$('#quizBody [data-term]').forEach(x => x.setAttribute('aria-checked', 'false')); $$('#quizBody [data-tunit]').forEach(x => x.setAttribute('aria-checked', String(x === tu))); return; }
   const b = e.target.closest('[data-qa]'); if (!b) return;
@@ -1290,11 +1307,17 @@ $('#quizBody').addEventListener('click', e => {
     qGo('term'); return;
   }
   if (a === 'term' || a === 'doTerm') {
-    const typed = ($('#qNum').value || '').trim();
-    let term = null;
-    if (typed) { const v = Math.round(Number(typed.replace(',', '.'))); if (v >= 1 && v <= (q.termUnit === 'week' ? 520 : 600)) term = { n: v, unit: q.termUnit || 'month' }; }
-    else if (q.termPick) { const [n, u] = q.termPick.split(':'); term = { n: Number(n), unit: u }; }
-    if (!term) return showErr($('#qErr'), 'Выбери срок или впиши свой, например 2 недели или 6 месяцев.');
+    const typed = ($('#qNum').value || '').trim(), dateV = ($('#qDate') || {}).value || '';
+    let term = null; q.deadline = null;
+    if (parseYmd(dateV) && parseYmd(dateV) > new Date()) {
+      const days = Math.max(1, Math.ceil((parseYmd(dateV) - new Date()) / 864e5));
+      term = days <= 120 ? { n: Math.max(1, Math.ceil(days / 7)), unit: 'week' } : { n: Math.max(1, Math.round(days / 30.44)), unit: 'month' };
+      q.deadline = dateV;
+    } else if (typed) {
+      const v = Math.round(Number(typed.replace(',', '.'))), u = q.termUnit || 'month';
+      if (v >= 1 && v <= (u === 'week' ? 520 : u === 'year' ? 50 : 600)) term = u === 'year' ? { n: v * 12, unit: 'month' } : { n: v, unit: u };
+    } else if (q.termPick) { const [n, u] = q.termPick.split(':'); term = { n: Number(n), unit: u }; }
+    if (!term) return showErr($('#qErr'), 'Выбери срок, впиши свой, например 2 недели, или выбери дату.');
     q.term = term; toPlan(a === 'doTerm'); return;
   }
   if (a === 'free' || a === 'free0') {
@@ -1324,7 +1347,7 @@ $('#quizBody').addEventListener('keydown', e => {
   const b = $('#quizBody [data-qa]:not(.ghost):not(.soft):not([data-qa=back])'); if (b) b.click();
 });
 function toPlan(replace) {
-  if (quiz.free === null && !quiz.hadFree && quiz.step !== 'free' && !replace) { qGo('free'); return; }
+  if (quiz.free === null && !quiz.hadFree && quiz.step !== 'free' && !replace && quiz.cur === state.currency) { qGo('free'); return; }
   if (replace) quiz.stack.push(quiz.step);
   thinkThen();
 }
@@ -1338,7 +1361,7 @@ function saveGoal() {
   const unit = p.unit, months = unit === 'week' ? Math.max(1, Math.round(p.n * 12 / 52)) : p.n;
   const used = new Set(state.goals.map(g => g.nid)); let nid = 0; while (used.has(nid) && nid < 49) nid++;
   const sd = G.suggestDay(state.tx, unit);
-  state.goals.push({ id: uid(), name: q.name, target: round2(q.target), saved: round2(q.saved), months, unit, deadline: G.ymdOf(G.addTerm(now, p.n, unit)), created: today(), nid, remind: { on: false, day: sd.day, time: '10:00' }, log: q.saved > 0 ? [{ d: today(), a: round2(q.saved) }] : [] });
+  state.goals.push({ id: uid(), name: q.name, target: round2(q.target), saved: round2(q.saved), months, unit, deadline: q.deadline || G.ymdOf(G.addTerm(now, p.n, unit)), cur: q.cur, created: today(), nid, remind: { on: false, day: sd.day, time: '10:00' }, log: q.saved > 0 ? [{ d: today(), a: round2(q.saved) }] : [] });
   save(); closeLayer($('#lyQuiz')); quiz = null; buzz(20);
   showTab('goals'); afterDataChange();
   toast('Копилка добавлена. Откладывай и отмечай, а я напомню', null, null, 'joy');
@@ -1589,6 +1612,37 @@ function afterDataChange() {
   return MD.notify.applyPayments(state.rec.list, n => money(n));
 }
 function markPaid(id, mk, txId) { const p = payById(id); if (p) p.paid[mk] = txId || 'manual'; afterDataChange(); }
+/* ---------- Совпадение дат: «не забыл ли внести ещё и это?» ---------- */
+const clashKey = 'moidengi_clash';
+const clashState = () => { try { return JSON.parse(localStorage.getItem(clashKey) || '{}') || {}; } catch (_) { return {}; } };
+const clashSave = o => { try { localStorage.setItem(clashKey, JSON.stringify(o)); } catch (_) {} };
+function clashItems(dateStr, exceptId) {
+  const d = parseYmd(dateStr) || new Date(), T = new Date(), st = clashState(), muted = new Set(st.mute || []);
+  const pays = R.dueOn(state.rec.list, d, T).filter(r => r.p.id !== exceptId && !muted.has(r.p.id)).map(r => ({ kind: 'pay', id: r.p.id, mk: R.mkOfDate(d), label: `${cap(r.p.name)} ${money(r.p.amount)}` }));
+  const evs = MD.events.upcoming(festList(), d).filter(u => MD.events.daysTo(u.occ, d) === 0 && !muted.has(u.e.id)).map(u => ({ kind: 'ev', id: u.e.id, label: MD.events.whatText(u.e) }));
+  return pays.concat(evs);
+}
+let clash = null;
+/* Возвращает true, если вопрос показан */
+function askClash(exceptId, dateStr, minItems = 1) {
+  if (layers.length) return false;
+  const items = clashItems(dateStr || today(), exceptId);
+  if (items.length < minItems) return false;
+  const st = clashState(); if (st.day === today() && exceptId === undefined) return false;
+  clash = { items };
+  $('#clSay').innerHTML = MD.say('think', `Не забыл ли ты внести ещё: ${esc(items.map(i => i.label).join(', '))}?<small id="clTitle">Эти платежи приходятся на ту же дату.</small>`, 64);
+  openLayer($('#lyClash'));
+  return true;
+}
+$('#lyClash').addEventListener('click', e => {
+  const b = e.target.closest('[data-cl]'); if (!b || !clash) return;
+  const a = b.dataset.cl, items = clash.items, st = clashState(); clash = null;
+  closeLayer($('#lyClash'));
+  if (a === 'now') { const f = items[0]; setTimeout(() => { if (f.kind === 'pay') payWrite(f.id, f.mk); else openEvent(f.id); }, 280); }
+  else if (a === 'details') setTimeout(() => { items[0].kind === 'pay' ? openPayScreen() : openEvent(items[0].id); }, 280);
+  else if (a === 'later') { st.day = today(); clashSave(st); }
+  else if (a === 'mute') { st.mute = Array.from(new Set((st.mute || []).concat(items.map(i => i.id)))); clashSave(st); toast('Хорошо, больше не напоминаю об этом', null, null, 'happy'); }
+});
 function openPayScreen() { if (tab !== 'pay') payFrom = tab === 'chat' ? 'acc' : tab; showTab('pay'); }
 function payWrite(id, mk) {
   const p = payById(id); if (!p) return;
@@ -1602,7 +1656,7 @@ function payRowHtml(r, mk) {
   const p = r.p, ci = catInfo('expense', p.cat), d = r.date, late = r.status === 'late';
   const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Записать</span>` : '<span class="st">Ожидает</span>';
   return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span>
-    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${d.getDate()} ${MONTHS_G[d.getMonth()]} · ${esc(p.cat)}</small></span>
+    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(R.scheduleText(p, d))} · ${esc(p.cat)}</small></span>
     <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${st}</span></button>${late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать</button>` : ''}</div>`;
 }
 function renderPay() {
@@ -1616,6 +1670,7 @@ function renderPay() {
   el.innerHTML = `<div class="card pay-sum"><span>Оплачено ${sm.paid} из ${sm.n}</span><b>${sm.left > 0 ? `Осталось ${esc(maskT(money(sm.left)))}` : 'Всё закрыто'}</b></div>
     <div class="block"><div class="h2-row"><h2 class="h2">${esc(MONTHS[T.getMonth()])}</h2></div><div class="card" style="padding:0 12px">${rows.length ? rows.map(r => payRowHtml(r, mk)).join('') : '<div class="note ctr" style="margin:16px 0">В этом месяце платежей нет</div>'}</div></div>
     ${later.length ? `<div class="block"><div class="h2-row"><h2 class="h2">Со следующего месяца</h2></div><div class="card" style="padding:0 12px">${later.map(p => payRowHtml({ p, date: R.dateOf(p, R.shiftMk(mk, 1)), status: 'wait' }, mk)).join('')}</div></div>` : ''}
+    ${(() => { const past = list.filter(p => p.once && p.once.slice(0, 7) < mk); return past.length ? `<div class="block"><div class="h2-row"><h2 class="h2">Прошедшие</h2></div><div class="card" style="padding:0 12px">${past.map(p => payRowHtml({ p, date: R.dateOf(p, p.once.slice(0, 7)), status: R.isPaid(p, p.once.slice(0, 7)) ? 'paid' : 'wait' }, p.once.slice(0, 7))).join('')}</div></div>` : ''; })()}
     ${lim !== Infinity ? `<div class="note ctr">Платежей: ${list.length} из ${lim}. Больше с Фин Навсегда, без подписки.</div>` : ''}
     <div class="note ctr">Фин напоминает и помогает записать. Деньги он не списывает.</div>`;
 }
@@ -1626,10 +1681,10 @@ let pm = null;
 const payDefaultDay = () => new Date().getDate();
 function openPaySheet(id) {
   const p = id && payById(id);
-  pm = p ? { id: p.id, name: p.name, amount: p.amount, day: R.curDay(p), cat: p.cat, remind: p.remind, time: p.time, catOpen: false }
-    : { id: null, name: '', amount: '', day: payDefaultDay(), cat: '', remind: 'off', time: '10:00' };
+  pm = p ? { id: p.id, name: p.name, amount: p.amount, day: R.curDay(p), mode: p.once ? 'once' : 'monthly', once: p.once || '', cat: p.cat, remind: p.remind, time: p.time, catOpen: false }
+    : { id: null, name: '', amount: '', day: payDefaultDay(), mode: 'monthly', once: '', cat: '', remind: 'off', time: '10:00' };
   $('#payHead').textContent = p ? 'Платёж' : 'Новый платёж';
-  $('#payName').value = pm.name; $('#payAmount').value = pm.amount ? String(pm.amount).replace('.', ',') : ''; $('#payDay').value = pm.day; $('#payTime').value = pm.time;
+  $('#payName').value = pm.name; $('#payAmount').value = pm.amount ? String(pm.amount).replace('.', ',') : ''; $('#payDay').value = pm.day; $('#payTime').value = pm.time; $('#payOnce').value = pm.once || today();
   $('#payCur').textContent = sym();
   $('#payDelete').hidden = !p;
   hideErr($('#payErr'));
@@ -1650,7 +1705,10 @@ function renderPaySheet() {
   $('#payCats').innerHTML = CATS.expense.map(c => `<button type="button" role="radio" class="cat-tile" data-pcat="${esc(c[0])}" aria-checked="${c[0] === pm.cat}"><span class="ci" style="${cs(c)};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
   $('#payRemind').innerHTML = R.REMIND.map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${esc(r.label)}</button>`).join('');
   $('#payTimeF').hidden = pm.remind === 'off';
+  $$('#payMode [data-pmode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.pmode === pm.mode)));
+  $('#payDayF').hidden = pm.mode === 'once'; $('#payOnceF').hidden = pm.mode !== 'once';
 }
+$('#payMode').addEventListener('click', e => { const b = e.target.closest('[data-pmode]'); if (!b || !pm) return; pm.mode = b.dataset.pmode; renderPaySheet(); buzz(6); });
 $('#lyPay').addEventListener('click', e => {
   if (!pm) return;
   const pp = e.target.closest('[data-pp]'), pc = e.target.closest('[data-pcat]'), pr = e.target.closest('[data-pr]');
@@ -1672,18 +1730,23 @@ $('#payDay').addEventListener('input', e => { e.target.value = e.target.value.re
 $('#payForm').addEventListener('submit', async e => {
   e.preventDefault();
   if (!pm) return;
-  const name = $('#payName').value.trim().replace(/\s+/g, ' ').slice(0, 30), amount = parseAmount($('#payAmount').value), day = parseInt($('#payDay').value, 10), err = $('#payErr');
+  const name = $('#payName').value.trim().replace(/\s+/g, ' ').slice(0, 30), amount = parseAmount($('#payAmount').value), day = parseInt($('#payDay').value, 10), err = $('#payErr'), once = $('#payOnce').value;
   if (!name) { showErr(err, 'Назови платёж, например «аренда».'); $('#payName').focus(); return; }
   if (!(amount > 0)) { showErr(err, 'Впиши сумму, например 500.'); $('#payAmount').focus(); return; }
-  if (!(day >= 1 && day <= 31)) { showErr(err, 'Впиши день месяца от 1 до 31.'); $('#payDay').focus(); return; }
+  if (pm.mode === 'once') { if (!parseYmd(once)) { showErr(err, 'Выбери дату платежа.'); return; } }
+  else if (!(day >= 1 && day <= 31)) { showErr(err, 'Впиши число месяца от 1 до 31.'); $('#payDay').focus(); return; }
   if (!pm.cat) { showErr(err, 'Выбери категорию, и сохраним.'); return; }
   const time = /^\d{2}:\d{2}$/.test($('#payTime').value) ? $('#payTime').value : '10:00', T = new Date();
   let p = pm.id && payById(pm.id);
   if (p) {
     Object.assign(p, { name, amount: round2(amount), cat: pm.cat, remind: pm.remind, time });
-    R.setDay(p, day, T);                          // новый день со следующего месяца, прошлые отметки остаются
+    if (pm.mode === 'once') { p.once = once; p.days = [{ from: '0000-00', day: Number(once.slice(8)) }]; p.start = once.slice(0, 7); }
+    else if (p.once) { p.once = ''; p.days = [{ from: '0000-00', day }]; p.start = R.startMonth(day, T); }
+    else R.setDay(p, day, T);                          // новый день со следующего месяца, прошлые отметки остаются
   } else {
-    p = { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, days: [{ from: '0000-00', day }], remind: pm.remind, time, start: R.startMonth(day, T), paid: {}, nid: R.freeNid(state.rec.list) };
+    p = pm.mode === 'once'
+      ? { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once, days: [{ from: '0000-00', day: Number(once.slice(8)) }], remind: pm.remind, time, start: once.slice(0, 7), paid: {}, nid: R.freeNid(state.rec.list) }
+      : { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once: '', days: [{ from: '0000-00', day }], remind: pm.remind, time, start: R.startMonth(day, T), paid: {}, nid: R.freeNid(state.rec.list) };
     state.rec.list.push(p);
   }
   const edit = !!pm.id, remind = pm.remind !== 'off';
@@ -2059,6 +2122,7 @@ function addTx(items) {
   if (first) setTimeout(offerLogin, 1800);
   return list.length;
 }
+setTimeout(() => { if (!document.querySelector('#auth').hidden) return; const st = clashState(); if (st.day !== today()) { if (askClash(undefined, today(), 2)) { st.day = today(); clashSave(st); } } }, 3500);
 MD.app = {
   get state() { return state; },
   ctx() { ensureAccount(); return { now: new Date(), tx: state.tx, goals: state.goals, sym: sym(), startBalance: startBal(), freeMoney: MD.goals.freeMoney(state.tx, new Date()), accounts: state.accounts }; },

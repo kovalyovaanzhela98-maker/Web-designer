@@ -54,3 +54,15 @@ const s = R.sanitize({ list: [{ name: '  Кредит ', amount: '1200.5', cat: 
 eq('санитайзер', [s.list.length, s.list[0].name, s.list[0].amount, s.list[0].days, s.list[0].remind, s.list[0].paid, s.list[1].nid], [2, 'Кредит', 1200.5, [{ from: '0000-00', day: 3 }, { from: '2026-10', day: 31 }], '3', { '2026-09': 't' }, 0]);
 eq('свободный nid', R.freeNid([{ nid: 0 }, { nid: 1 }, { nid: 3 }]), 2);
 if (fail) { console.log(`\nПровалено: ${fail}`); process.exit(1); } else console.log('\nВсе тесты прошли');
+
+// разовый платёж по дате и похожая трата с другой суммой
+{
+  const ok = (n, c, i) => eq(n, !!c, true);
+  const T = new Date(2026, 9, 17);
+  const l = R.sanitize({ list: [{ name: 'Налог', amount: 50, cat: 'Налоги', once: '2026-11-20', paid: {} }, { name: 'Кредит', amount: 200, cat: 'Кредиты', days: [{ from: '0000-00', day: 15 }], start: '0000-00', paid: {} }] }).list;
+  ok('разовый: в октябре его нет, в ноябре есть', R.monthRows(l, '2026-10', T).every(r => r.p.name !== 'Налог') && R.monthRows(l, '2026-11', T).some(r => r.p.name === 'Налог'));
+  ok('разовый: подпись с датой и годом', R.scheduleText(l[0]) === '20 ноября 2026', R.scheduleText(l[0]));
+  const sim = R.similar(l, { type: 'expense', cat: 'Кредиты', amount: 260, date: '2026-10-16', note: '' });
+  ok('больше нужного: найден кредит, лишних 60', sim && sim.more && sim.extra === 60, sim);
+  ok('кредит выплатится раньше: 60 из 200 ≈ 9 дней', R.earlier(l[1], 60) === 'примерно на 9 дней', R.earlier(l[1], 60));
+}
