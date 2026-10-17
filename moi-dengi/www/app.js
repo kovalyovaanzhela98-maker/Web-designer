@@ -59,7 +59,7 @@ const moneyH = n => hide ? MASK : `${esc(fmt(n))}<small>${esc(sym())}</small>`;
 const maskT = s => (hide ? MASK : s);
 
 /* ---------- Хранилище ---------- */
-let state = { currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState() };
+let state = { currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState(), fest: MD.events.defaultFest() };
 let hide = false;
 function load() {
   try {
@@ -84,14 +84,14 @@ function pushCloud() {
   synced = cloud.snapshotOf(state);
   Promise.resolve(cloud.write(cloudUid, ops)).catch(() => { synced = prev; toast('Нет связи. Данные сохранятся на телефоне', null, null, 'oops'); });
 }
-const canon = st => JSON.stringify([st.currency, st.accounts, st.goals, st.nudge, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
+const canon = st => JSON.stringify([st.currency, st.accounts, st.goals, st.nudge, st.fest, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
 function applyRemote(r) {
   if (!r.exists) {                               // новый аккаунт: заливаем то, что уже есть на телефоне
     synced = { meta: '', tx: new Map() };
     pushCloud();
     return;
   }
-  const st = sanitize({ currency: r.currency, accounts: r.accounts, goals: r.goals, nudge: r.nudge, tx: r.tx });
+  const st = sanitize({ currency: r.currency, accounts: r.accounts, goals: r.goals, nudge: r.nudge, fest: r.fest, tx: r.tx });
   if (!st) return;
   st.tx.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0)));
   synced = cloud.snapshotOf(st);
@@ -100,9 +100,10 @@ function applyRemote(r) {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (_) {}
   render();
   nudgeRefresh(true);
+  MD.notify.applyEvents(state.fest.list);
 }
 function wipeLocal() {
-  state = { currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState() };
+  state = { currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState(), fest: MD.events.defaultFest() };
   try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(UID_KEY); } catch (_) {}
 }
 function gate(signedIn) {
@@ -169,7 +170,7 @@ function sanitize(o) {
       created: parseYmd(g.created) ? g.created : today()
     });
   }
-  return { currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge) };
+  return { currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge), fest: MD.events.sanitize(o.fest) };
 }
 
 /* ---------- UI-состояние ---------- */
@@ -514,7 +515,9 @@ $('#btnEye').addEventListener('click', () => {
 /* ---------- Слои (листы/диалоги) + кнопка «Назад» ---------- */
 const layers = [];
 let ignorePops = 0;
-function openLayer(el) {
+function openLayer(el, tries = 0) {
+  /* Пока идёт возврат назад после закрытия другого слоя, историю не трогаем: иначе вернёмся на пустую страницу */
+  if (ignorePops > 0 && tries < 20) { setTimeout(() => openLayer(el, tries + 1), 30); return; }
   $('#toast').hidden = true;
   el.hidden = false;
   layers.push(el);
@@ -548,10 +551,14 @@ $$('.layer').forEach(l => l.addEventListener('click', e => {
   if (e.target.closest('[data-close]')) closeLayer(l);
 }));
 
-function confirmDlg(title, text, yes = 'Удалить') {
+function confirmDlg(title, text, yes = 'Удалить', opts = {}) {
   return new Promise(res => {
     const l = $('#lyConfirm');
     $('#cfTitle').textContent = title; $('#cfText').textContent = text; $('#cfYes').textContent = yes;
+    $('#cfYes').className = 'btn ' + (opts.tone === 'primary' ? 'primary' : 'danger-solid');
+    $('#cfNo').textContent = opts.no || 'Отмена';
+    const ex = $('#cfExtra'); ex.hidden = !opts.extra; ex.textContent = opts.extra || '';
+    ex.onclick = () => { l._onClose = null; fin('extra'); closeLayer(l); };
     let done = false;
     const fin = v => { if (done) return; done = true; res(v); };
     l._onClose = () => fin(false);
@@ -664,6 +671,7 @@ $('#txForm').addEventListener('submit', e => {
   if (!ex) showTab('home');
   toast(ex ? 'Изменения сохранены' : 'Записано', null, null, 'joy');
   if (first) confetti();
+  if (!ex) maybeAskFest([rec]);
 });
 $('#txDelete').addEventListener('click', () => {
   const id = tx.editId;
@@ -1059,7 +1067,7 @@ $('#draftList').addEventListener('click', e => {
 $('#draftCancel').addEventListener('click', () => closeLayer($('#lyDraft')));
 $('#draftOk').addEventListener('click', () => {
   if (!draft.length) return;
-  const n = draft.length;
+  const n = draft.length, saved = draft.slice();
   const latest = draft.map(d => d.date).sort().pop(), ld = parseYmd(latest);
   draft.forEach((d, i) => state.tx.push({ id: uid(), ...d, ts: Date.now() + i }));
   draft = [];
@@ -1071,6 +1079,89 @@ $('#draftOk').addEventListener('click', () => {
   buzz(20);
   showTab('home');
   toast(`Записал: ${n}`, null, null, 'happy');
+  maybeAskFest(saved);
+});
+
+/* ---------- Праздники и подарки ---------- */
+const FEST_PRESETS = ['День рождения', 'Новый год', '8 Марта', '23 Февраля', 'Свадьба', 'Юбилей'];
+let ev = null;
+const festList = () => state.fest.list;
+const evById = id => festList().find(e => e.id === id);
+function festSave() { save(); MD.notify.applyEvents(festList()); renderAccount(); if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel(); }
+/* Записали подарок: предлагаем внести чей-то праздник, чтобы заранее откладывать деньги */
+function maybeAskFest(items) {
+  if (!state.fest.ask || !items.some(i => i.type === 'expense' && i.cat === 'Подарки')) return;
+  setTimeout(async () => {
+    if (layers.length) return;
+    const r = await confirmDlg('Внести праздник?', 'Подарок записан. Хочешь внести чей-то день рождения или праздник? Напомню заранее отложить деньги.', 'Добавить', { tone: 'primary', no: 'Не сейчас', extra: 'Больше не спрашивать' });
+    if (r === true) openEvent();
+    else if (r === 'extra') { state.fest.ask = false; save(); toast('Хорошо, больше не спрашиваю. Включить можно в Профиле.'); }
+  }, 1100);
+}
+const evDefaultDate = () => { const d = new Date(); d.setDate(d.getDate() + 30); return ymd(d); };
+function openEvent(id) {
+  const e = id && evById(id);
+  ev = e ? { id: e.id, nid: e.nid, yearly: e.yearly, on: e.remind.on, lead: Object.assign({}, e.remind.lead) } : { id: null, nid: MD.events.freeNid(festList()), yearly: true, on: true, lead: MD.events.defaultLead() };
+  $('#evHead').textContent = e ? 'Праздник' : 'Новый праздник';
+  $('#evTitle').value = e ? e.title : ''; $('#evPerson').value = e ? e.person : ''; $('#evDate').value = e ? e.date : evDefaultDate();
+  $('#evCustom').value = ev.lead.date || '';
+  $('#evDelete').hidden = !e; hideErr($('#evErr'));
+  renderEvent();
+  $('#lyEvent')._onClose = () => { ev = null; };
+  openLayer($('#lyEvent'));
+  if (!e) setTimeout(() => $('#evTitle').focus({ preventScroll: true }), 120);
+}
+function evObj() {
+  return { id: ev.id || ('e' + Date.now().toString(36)), title: $('#evTitle').value.trim(), person: $('#evPerson').value.trim(), date: $('#evDate').value, yearly: ev.yearly, nid: ev.nid, remind: { on: ev.on, lead: ev.lead } };
+}
+function renderEvent() {
+  const cur = $('#evTitle').value.trim();
+  $('#evPresets').innerHTML = FEST_PRESETS.map(p => `<button type="button" class="chip" data-evp="${esc(p)}" aria-checked="${cur === p}">${esc(p)}</button>`).join('');
+  const sw = (id, on) => { $(id).setAttribute('aria-checked', String(on)); $(id + ' .sw-t').setAttribute('aria-checked', String(on)); };
+  sw('#evYearly', ev.yearly); sw('#evRemind', ev.on);
+  $('#evLeadBox').hidden = !ev.on;
+  const L = ev.lead, isDate = L.kind === 'date';
+  $('#evLeads').innerHTML = MD.events.LEADS.map(x => `<button type="button" role="radio" class="chip" data-evl="${x.id}" aria-checked="${!isDate && x.kind === L.kind && x.n === L.n}">${esc(x.label)}</button>`).join('') +
+    `<button type="button" role="radio" class="chip" data-evl="date" aria-checked="${isDate}">Своя дата</button>`;
+  $('#evCustomF').hidden = !isDate;
+  const o = evObj(), d = MD.events.parse(o.date);
+  let hint = '';
+  if (ev.on && d) {
+    if (isDate && !MD.events.parse(L.date)) hint = 'Выбери дату, когда напомнить.';
+    else { const r = MD.events.remindDate(o, new Date()); hint = r ? `Напомню ${MD.events.dayText(r.rd)} в 10:00. Само событие: ${MD.events.dayText(r.occ)}.` : 'Эта дата напоминания уже прошла. Выбери другую.'; }
+  }
+  $('#evHint').textContent = hint;
+}
+$('#evPresets').addEventListener('click', e => { const b = e.target.closest('[data-evp]'); if (!b) return; $('#evTitle').value = b.dataset.evp; buzz(6); renderEvent(); if (!$('#evPerson').value && b.dataset.evp !== 'Новый год') $('#evPerson').focus(); });
+$('#evForm').addEventListener('input', e => { hideErr($('#evErr')); if (e.target.id === 'evCustom') ev.lead.date = e.target.value; renderEvent(); });
+$('#evYearly').addEventListener('click', () => { ev.yearly = !ev.yearly; renderEvent(); });
+$('#evRemind').addEventListener('click', () => { ev.on = !ev.on; renderEvent(); });
+$('#evLeads').addEventListener('click', e => {
+  const b = e.target.closest('[data-evl]'); if (!b) return;
+  const x = MD.events.LEADS.find(l => l.id === b.dataset.evl);
+  ev.lead = x ? { kind: x.kind, n: x.n, date: '' } : { kind: 'date', n: 1, date: $('#evCustom').value };
+  renderEvent(); if (!x) setTimeout(() => { try { $('#evCustom').showPicker(); } catch (_) { $('#evCustom').focus(); } }, 60);
+});
+$('#evForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const o = evObj(), err = $('#evErr');
+  if (!o.title && !o.person) { showErr(err, 'Напиши название или имя, например «День рождения» и «Аня».'); $('#evTitle').focus(); return; }
+  if (!MD.events.parse(o.date)) { showErr(err, 'Выбери дату праздника.'); return; }
+  if (o.remind.on && o.remind.lead.kind === 'date' && !MD.events.parse(o.remind.lead.date)) { showErr(err, 'Выбери дату напоминания или другой срок.'); return; }
+  const clean = MD.events.sanitize({ ask: true, list: [o] }).list[0];
+  const i = festList().findIndex(x => x.id === clean.id);
+  if (i >= 0) festList()[i] = clean; else festList().push(clean);
+  const r = clean.remind.on ? await MD.notify.applyEvents(festList()) : (MD.notify.applyEvents(festList()), { ok: true });
+  save(); closeLayer($('#lyEvent')); ev = null; buzz(15); renderAccount();
+  if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel();
+  if (r && r.reason === 'denied') toast('Праздник записан, но уведомления выключены. Включи их в настройках телефона.', null, null, 'oops');
+  else toast(clean.remind.on && MD.notify.supported() ? 'Праздник записан, напомню заранее' : 'Праздник записан', null, null, 'happy');
+});
+$('#evDelete').addEventListener('click', async () => {
+  if (!ev || !ev.id) return;
+  if (!(await confirmDlg('Удалить праздник?', 'Напоминание тоже пропадёт.', 'Удалить'))) return;
+  state.fest.list = festList().filter(x => x.id !== ev.id);
+  closeLayer($('#lyEvent')); ev = null; festSave(); toast('Праздник удалён');
 });
 
 /* ---------- Фин заметил: подсказки по привычкам ---------- */
@@ -1200,6 +1291,8 @@ function renderAccount() {
   const rc = MD.notify.cfg();
   setPlate('#plRemind', rc.on ? `Каждый день в ${rc.times.join(', ')}` : 'Выключены', null, false);
   setPlate('#plQuick', rc.quick ? 'Кнопки на экране блокировки включены' : 'Записывай, не открывая Фин', null, false);
+  const up = MD.events.upcoming(festList(), new Date())[0];
+  setPlate('#plFest', up ? `${MD.events.whatText(up.e)}, ${MD.events.daysTo(up.occ, new Date()) === 0 ? 'сегодня' : `через ${MD.events.daysTo(up.occ, new Date())} ${pluralN(MD.events.daysTo(up.occ, new Date()), 'день', 'дня', 'дней')}`}` : 'Дни рождения и праздники с напоминанием', null, false);
   const ng = state.nudge, onCats = MD.nudges.WATCH.filter(k => ng.cats[k] !== false).length;
   $('#plNudge').setAttribute('aria-checked', String(ng.on)); $('#plNudge .sw-t').setAttribute('aria-checked', String(ng.on));
   $('#plNudge small').textContent = ng.on ? NG.counter(ng) : NG.t('set.off');
@@ -1214,7 +1307,7 @@ $('#plusCard').addEventListener('click', () => MD.sub.open('generic'));
 
 /* Одна шторка для всего в профиле: телефон, почта, стартовый баланс, валюта, копия данных */
 let panel = null;
-const PN_TITLE = { nudge: 'Подсказки Фина', phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт', remind: 'Напоминания', quick: 'Виджет и экран блокировки' };
+const PN_TITLE = { fest: 'Праздники и подарки', nudge: 'Подсказки Фина', phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт', remind: 'Напоминания', quick: 'Виджет и экран блокировки' };
 const pnBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-pn="${act}" ${dis ? 'disabled' : ''}><span class="spin" aria-hidden="true"></span><span>${esc(label)}</span></button>`;
 const onlyWay = () => ((me && me.providers) || []).length <= 1;
 const normPhone = v => { let t = String(v).replace(/[\s\-()]/g, ''); if (/^8\d{10}$/.test(t)) t = '+7' + t.slice(1); return /^\+\d{9,15}$/.test(t) ? t : null; };
@@ -1266,6 +1359,12 @@ function renderPanel(err) {
   } else if (P.kind === 'currency') {
     const sel = P.cur || state.currency;
     html = `<div class="chips" role="radiogroup" aria-label="Валюта">${Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-chcur="${c}" aria-checked="${c === sel}">${c} ${CURRENCIES[c]}</button>`).join('')}</div><div class="note">Меняется только знак, суммы не пересчитываются.</div>` + pnBtn('cur-apply', 'Применить', 'primary', sel === state.currency);
+  } else if (P.kind === 'fest') {
+    const ups = MD.events.upcoming(festList(), new Date());
+    say = ups.length ? null : ['hello', 'Добавь чей-то день рождения или праздник<small>Напомню заранее отложить деньги на подарок.</small>'];
+    html = (ups.length ? `<div class="grp flat">${ups.map(({ e, occ }) => `<button class="row" type="button" data-pn="ev-edit:${esc(e.id)}"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>${esc(MD.events.whatText(e))}</b><small>${esc(MD.events.dayText(occ))}${e.yearly ? ', каждый год' : ''} · ${esc(MD.events.reminderLine(e, new Date()))}</small></span><span class="rw-r">${icon('right')}</span></button>`).join('')}</div>` : '') +
+      pnBtn('ev-add', 'Добавить праздник', 'primary') +
+      `<div class="grp flat"><button class="row" type="button" data-pn="ev-ask" role="switch" aria-checked="${state.fest.ask}"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Спрашивать о праздниках</b><small>Предлагать внести праздник</small></span><span class="sw-t" aria-checked="${state.fest.ask}"></span></button></div>`;
   } else if (P.kind === 'nudge') {
     const ng = state.nudge, lims = Object.keys(ng.limit);
     say = ['hello', `${NG.counter(ng)}<small>Выбери, по каким категориям Фин может подсказывать.</small>`];
@@ -1324,6 +1423,9 @@ $('#linkBody').addEventListener('click', async ev => {
   if (chip) { panel.cur = chip.dataset.chcur; renderPanel(); return; }
   const b = ev.target.closest('[data-pn]'); if (!b || b.disabled || !panel) return;
   const a = b.dataset.pn, P = panel, V = id => ($(id) || {}).value || '';
+  if (a === 'ev-add') return openEvent();
+  if (a.startsWith('ev-edit:')) return openEvent(a.slice(8));
+  if (a === 'ev-ask') { state.fest.ask = !state.fest.ask; save(); renderPanel(); return; }
   if (a.startsWith('ng-cat:')) { const k = a.slice(7), ng = state.nudge; if (ng.cats[k] === false) delete ng.cats[k]; else ng.cats[k] = false; if (ng.active && ng.active.cat === k && ng.cats[k] === false) ng.active = null; save(); renderPanel(); renderAccount(); renderNudge(); nudgeRefresh(true); return; }
   if (a === 'ng-limits') { state.nudge.limit = {}; save(); renderPanel(); renderNudge(); return; }
   if (a === 'ng-reset') { NG.resetHidden(state.nudge); save(); renderPanel(); renderAccount(); toast(NG.t('set.resetDone'), null, null, 'happy'); nudgeRefresh(true); return; }
@@ -1485,6 +1587,7 @@ function addTx(items) {
   lastAddAt = Date.now();
   save(); render(); buzz(15);
   nudgeRefresh(true);
+  maybeAskFest(list);
   return list.length;
 }
 MD.app = {
@@ -1506,5 +1609,6 @@ if (cloud.enabled) {
   render();
 }
 MD.notify.init(quickAdd);
+MD.notify.applyEvents(state.fest.list);
 if (history.state && (history.state.layer || history.state.tab)) history.replaceState(null, '');
 })();

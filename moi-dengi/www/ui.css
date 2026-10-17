@@ -368,3 +368,12 @@ body.kb .chat-dock{bottom:8px}
 .dm-btns span{flex:1;height:38px;border-radius:14px;display:grid;place-items:center;font-size:14px;font-weight:600;border:1px solid #E3E5E0}
 .dm-btns span.p{background:#4F6F34;border-color:#4F6F34;color:#fff}
 .intro-art i{transition:opacity .45s var(--ease),transform .9s var(--ease)}
+
+/* ---------- Праздники ---------- */
+.cf-extra{display:block;width:100%;margin-top:6px;min-height:44px;text-align:center;color:var(--muted);font-size:14px;font-weight:600}
+#evPresets{margin-bottom:2px}
+#evLeadBox{margin-top:4px}
+#evLeads .chip{min-height:44px}
+#evLeadBox .note{margin-top:10px}
+#evCustomF{margin-top:12px}
+.rw-t small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}

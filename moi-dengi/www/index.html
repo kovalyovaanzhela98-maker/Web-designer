@@ -148,6 +148,11 @@
       <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджет и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
+    <div class="grp-t">Праздники</div>
+    <div class="grp">
+      <button class="row" type="button" data-plate="fest" id="plFest"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>Праздники и подарки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+
     <div class="grp-t">Подсказки Фина</div>
     <div class="grp">
       <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Подсказывать о привычках</b><small></small></span><span class="sw-t" aria-checked="true"></span></button>
@@ -276,6 +281,34 @@
   </div>
 </div>
 
+<!-- Праздник: название, имя, дата и напоминание -->
+<div class="layer" id="lyEvent" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="evHead">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="evHead">Новый праздник</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <form id="evForm" novalidate>
+      <div class="chips scroll" id="evPresets" role="group" aria-label="Быстрый выбор названия"></div>
+      <label class="field"><input id="evTitle" type="text" maxlength="40" placeholder=" " autocomplete="off"><span>Название праздника</span></label>
+      <label class="field"><input id="evPerson" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Чей праздник, имя</span></label>
+      <label class="field t"><input id="evDate" type="date"><span>Дата праздника</span></label>
+      <div class="grp flat">
+        <button class="row" type="button" id="evYearly" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Каждый год</b><small>Повторять в эту же дату</small></span><span class="sw-t" aria-checked="true"></span></button>
+        <button class="row" type="button" id="evRemind" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напомнить отложить деньги</b><small>Заранее, чтобы не тратить в последний момент</small></span><span class="sw-t" aria-checked="true"></span></button>
+      </div>
+      <div id="evLeadBox">
+        <div class="fl">Когда напомнить</div>
+        <div class="chips" id="evLeads" role="radiogroup" aria-label="Когда напомнить"></div>
+        <label class="field t" id="evCustomF" hidden><input id="evCustom" type="date"><span>Дата напоминания</span></label>
+        <p class="note" id="evHint"></p>
+      </div>
+      <div class="msg err" id="evErr" role="alert" hidden></div>
+      <button class="btn primary wide" type="submit" id="evSave">Сохранить</button>
+      <button class="btn danger wide" type="button" id="evDelete" hidden>Удалить праздник</button>
+    </form>
+  </div>
+</div>
+
 <!-- Прикрепить в чате -->
 <div class="layer" id="lyAttach" hidden>
   <div class="scrim" data-close></div>
@@ -310,6 +343,7 @@
       <button class="btn ghost" id="cfNo" type="button">Отмена</button>
       <button class="btn danger-solid" id="cfYes" type="button">Удалить</button>
     </div>
+    <button class="link cf-extra" id="cfExtra" type="button" hidden></button>
   </div>
 </div>
 
@@ -321,6 +355,7 @@
 <script src="js/parser.js"></script>
 <script src="js/goals.js"></script>
 <script src="js/nudges.js"></script>
+<script src="js/events.js"></script>
 <script src="js/importers.js"></script>
 <script src="js/brain.js"></script>
 <script src="js/cloud.js"></script>
