@@ -288,10 +288,11 @@ function renderGoalsHome() {
     `<button class="grow add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё копилка' : 'Новая копилка'}</b></button>`;
 }
 /* Дни рождения и праздники: ближайшие, одной строкой */
+const festTot = e => { const t = MD.events.itemsTotal(e); return t ? ` · ≈ ${money(t)}` : ''; };
 function renderFestHome() {
   const el = $('#festStrip'), ups = MD.events.upcoming(festList(), new Date()).slice(0, 6);
   el.innerHTML = `<button class="fpill add" type="button" data-ev=""><span class="fp-ic" aria-hidden="true">${icon('plus')}</span><span class="fp-t"><b>Добавить</b></span></button>` +
-    ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="fpill" type="button" data-ev="${esc(u.e.id)}"><span class="fp-ic" aria-hidden="true">${icon('gift')}</span><span class="fp-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}</small></span></button>`; }).join('');
+    ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="fpill" type="button" data-ev="${esc(u.e.id)}"><span class="fp-ic" aria-hidden="true">${icon('gift')}</span><span class="fp-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}${festTot(u.e)}</small></span></button>`; }).join('');
 }
 $('#s-home').addEventListener('click', e => {
   const g = e.target.closest('[data-goal]'); if (g) { openGoal(g.dataset.goal); return; }
@@ -1622,18 +1623,36 @@ function maybeAskFest(items) {
 const evDefaultDate = () => { const d = new Date(); d.setDate(d.getDate() + 30); return ymd(d); };
 function openEvent(id) {
   const e = id && evById(id);
-  ev = e ? { id: e.id, nid: e.nid, yearly: e.yearly, on: e.remind.on, lead: Object.assign({}, e.remind.lead) } : { id: null, nid: MD.events.freeNid(festList()), yearly: true, on: true, lead: MD.events.defaultLead() };
+  ev = e ? { id: e.id, nid: e.nid, yearly: e.yearly, on: e.remind.on, items: (e.items || []).map(x => Object.assign({}, x)), lead: Object.assign({}, e.remind.lead) } : { id: null, nid: MD.events.freeNid(festList()), yearly: true, on: true, items: [], lead: MD.events.defaultLead() };
   $('#evHead').textContent = e ? 'Праздник' : 'Новый праздник';
   $('#evTitle').value = e ? e.title : ''; $('#evPerson').value = e ? e.person : ''; $('#evDate').value = e ? e.date : evDefaultDate();
   $('#evCustom').value = ev.lead.date || '';
   $('#evDelete').hidden = !e; hideErr($('#evErr'));
+  renderEvItems(true);
   renderEvent();
   $('#lyEvent')._onClose = () => { ev = null; };
   openLayer($('#lyEvent'));
   if (!e) setTimeout(() => $('#evTitle').focus({ preventScroll: true }), 120);
 }
+/* Новый год: на что откладываем (ёлка, украшения, аренда дома). 8 Марта, 23 Февраля: кому дарим и примерно сколько. Обычный праздник: один человек */
+const evMode = () => MD.events.modeOf(($('#evTitle') || {}).value);
+const EV_TXT = { things: ['На что отложить', 'Например: ёлка, украшения, подарки, аренда дома', 'Добавить статью', 'Что отложить'], people: ['Кому дарим', 'Добавь всех, кому нужен подарок, и примерно сколько на каждого', 'Добавить человека', 'Имя'] };
+let evShown = '';
+function renderEvItems(force) {
+  const m = evMode(), box = $('#evItemsBox');
+  $('#evPersonF').hidden = m !== 'person'; box.hidden = m === 'person';
+  if (m === 'person') { evShown = m; return; }
+  const T = EV_TXT[m];
+  $('#evItemsT').textContent = T[0]; $('#evItemAdd').innerHTML = `${icon('plus')}<span>${T[2]}</span>`;
+  if (!force && evShown === m) { evItemsSum(); return; }
+  evShown = m;
+  if (!ev.items.length) ev.items.push({ n: '', a: 0 });
+  $('#evItems').innerHTML = ev.items.map((x, i) => `<div class="ev-item"><label class="field"><input data-evi="${i}:n" type="text" maxlength="30" placeholder=" " value="${esc(x.n)}" autocomplete="off"><span>${esc(T[3])}</span></label><label class="field unit"><input data-evi="${i}:a" type="text" inputmode="decimal" placeholder=" " value="${x.a ? esc(String(x.a).replace('.', ',')) : ''}" autocomplete="off"><span>Примерно</span><span class="u">${esc(sym())}</span></label><button class="icon-btn sm" type="button" data-evid="${i}" aria-label="Убрать">${icon('close')}</button></div>`).join('');
+  evItemsSum();
+}
+function evItemsSum() { const t = MD.events.itemsTotal({ items: ev.items }); $('#evItemsSum').textContent = t ? `Итого примерно ${money(t)}` : ''; }
 function evObj() {
-  return { id: ev.id || ('e' + Date.now().toString(36)), title: $('#evTitle').value.trim(), person: $('#evPerson').value.trim(), date: $('#evDate').value, yearly: ev.yearly, nid: ev.nid, remind: { on: ev.on, lead: ev.lead } };
+  return { id: ev.id || ('e' + Date.now().toString(36)), title: $('#evTitle').value.trim(), person: evMode() === 'person' ? $('#evPerson').value.trim() : '', items: evMode() === 'person' ? [] : ev.items, date: $('#evDate').value, yearly: ev.yearly, nid: ev.nid, remind: { on: ev.on, lead: ev.lead } };
 }
 function renderEvent() {
   const cur = $('#evTitle').value.trim();
@@ -1653,8 +1672,16 @@ function renderEvent() {
   }
   $('#evHint').textContent = hint;
 }
-$('#evPresets').addEventListener('click', e => { const b = e.target.closest('[data-evp]'); if (!b) return; $('#evTitle').value = b.dataset.evp; buzz(6); renderEvent(); if (!$('#evPerson').value && b.dataset.evp !== 'Новый год') $('#evPerson').focus(); });
-$('#evForm').addEventListener('input', e => { hideErr($('#evErr')); if (e.target.id === 'evCustom') ev.lead.date = e.target.value; renderEvent(); });
+$('#evPresets').addEventListener('click', e => { const b = e.target.closest('[data-evp]'); if (!b) return; $('#evTitle').value = b.dataset.evp; buzz(6); renderEvItems(); renderEvent(); if (!$('#evPerson').value && b.dataset.evp !== 'Новый год') $('#evPerson').focus(); });
+$('#evForm').addEventListener('input', e => {
+  hideErr($('#evErr'));
+  if (e.target.id === 'evCustom') ev.lead.date = e.target.value;
+  if (e.target.dataset && e.target.dataset.evi) { const [i, k] = e.target.dataset.evi.split(':'), it = ev.items[+i]; if (it) { if (k === 'n') it.n = e.target.value; else it.a = parseAmount(e.target.value) || 0; evItemsSum(); } return; }
+  if (e.target.id === 'evTitle') renderEvItems();
+  renderEvent();
+});
+$('#evItemAdd').addEventListener('click', () => { ev.items.push({ n: '', a: 0 }); renderEvItems(true); const f = $$('#evItems .ev-item:last-child input')[0]; if (f) f.focus(); });
+$('#evItems').addEventListener('click', e => { const b = e.target.closest('[data-evid]'); if (!b) return; ev.items.splice(+b.dataset.evid, 1); renderEvItems(true); });
 $('#evYearly').addEventListener('click', () => { ev.yearly = !ev.yearly; renderEvent(); });
 $('#evRemind').addEventListener('click', () => { ev.on = !ev.on; renderEvent(); });
 $('#evLeads').addEventListener('click', e => {
@@ -1666,7 +1693,7 @@ $('#evLeads').addEventListener('click', e => {
 $('#evForm').addEventListener('submit', async e => {
   e.preventDefault();
   const o = evObj(), err = $('#evErr');
-  if (!o.title && !o.person) { showErr(err, 'Напиши название или имя, например «День рождения» и «Аня».'); $('#evTitle').focus(); return; }
+  if (!o.title && !o.person && !(o.items || []).some(x => x.n || x.a)) { showErr(err, 'Напиши название праздника, например «Новый год» или «День рождения».'); $('#evTitle').focus(); return; }
   if (!MD.events.parse(o.date)) { showErr(err, 'Выбери дату праздника.'); return; }
   if (o.remind.on && o.remind.lead.kind === 'date' && !MD.events.parse(o.remind.lead.date)) { showErr(err, 'Выбери дату напоминания или другой срок.'); return; }
   const clean = MD.events.sanitize({ ask: true, list: [o] }).list[0];
@@ -2064,7 +2091,7 @@ function renderPanel(err) {
   } else if (P.kind === 'fest') {
     const ups = MD.events.upcoming(festList(), new Date());
     say = ups.length ? null : ['hello', 'Добавь чей-то день рождения или праздник<small>Напомню заранее отложить деньги на подарок.</small>'];
-    html = (ups.length ? `<div class="grp flat">${ups.map(({ e, occ }) => `<button class="row" type="button" data-pn="ev-edit:${esc(e.id)}"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>${esc(MD.events.whatText(e))}</b><small>${esc(MD.events.dayText(occ))}${e.yearly ? ', каждый год' : ''} · ${esc(MD.events.reminderLine(e, new Date()))}</small></span><span class="rw-r">${icon('right')}</span></button>`).join('')}</div>` : '') +
+    html = (ups.length ? `<div class="grp flat">${ups.map(({ e, occ }) => `<button class="row" type="button" data-pn="ev-edit:${esc(e.id)}"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>${esc(MD.events.whatText(e))}</b><small>${esc(MD.events.dayText(occ))}${e.yearly ? ', каждый год' : ''} · ${esc(MD.events.reminderLine(e, new Date()))}${esc(festTot(e))}</small></span><span class="rw-r">${icon('right')}</span></button>`).join('')}</div>` : '') +
       pnBtn('ev-add', 'Добавить праздник', 'primary') +
       `<div class="grp flat"><button class="row" type="button" data-pn="ev-ask" role="switch" aria-checked="${state.fest.ask}"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Спрашивать о праздниках</b><small>Предлагать внести праздник</small></span><span class="sw-t" aria-checked="${state.fest.ask}"></span></button></div>`;
   } else if (P.kind === 'nudge') {

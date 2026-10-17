@@ -40,4 +40,12 @@ const s = E.sanitize({ ask: false, list: [{ title: '  Свадьба  ', person:
 eq('санитайзер', [s.ask, s.list.length, s.list[0].title, s.list[0].remind.lead, s.list[0].nid, s.list[1].nid], [false, 2, 'Свадьба', { kind: 'months', n: 12, date: '' }, 5, 0]);
 eq('свободный nid', E.freeNid([{ nid: 0 }, { nid: 1 }, { nid: 3 }]), 2);
 eq('по порядку', E.upcoming([ev('2000-12-20', L('months', 1), { id: 'b' }), ev('2000-11-01', L('months', 1), { id: 'c' })], today).map(x => x.e.id), ['c', 'b']);
+
+eq('режим: Новый год — на что отложить', E.modeOf('Новый год'), 'things');
+eq('режим: 8 Марта и 23 Февраля — кому дарим', [E.modeOf('8 Марта'), E.modeOf('23 февраля')], ['people', 'people']);
+eq('режим: день рождения — один человек', E.modeOf('День рождения'), 'person');
+const ny = E.sanitize({ list: [{ id: 'ny', title: 'Новый год', date: '2026-12-31', items: [{ n: 'Ёлка', a: '120,5' }, { n: '', a: 0 }, { n: 'Аренда дома', a: 800 }] }] }).list[0];
+eq('пункты Нового года: пустые убраны, сумма с запятой', [ny.items.length, ny.items[0].a, E.itemsTotal(ny)], [2, 120.5, 920.5]);
+const w = E.sanitize({ list: [{ id: 'w', title: '8 Марта', date: '2027-03-08', items: [{ n: 'Мама', a: 100 }, { n: 'Аня', a: 50 }] }] }).list[0];
+eq('8 Марта: в напоминании имена', E.whatText(w), '8 Марта: Мама, Аня');
 if (fail) { console.log(`\nПровалено: ${fail}`); process.exit(1); } else console.log('\nВсе тесты прошли');

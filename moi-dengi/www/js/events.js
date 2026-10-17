@@ -29,6 +29,15 @@
   const defaultLead = () => ({ kind: 'months', n: 1, date: '' });
   const defaultFest = () => ({ ask: true, list: [] });
 
+  /* Режим праздника по названию: «things» — на что отложить (Новый год), «people» — кому дарим (8 Марта, 23 Февраля), «person» — один человек */
+  function modeOf(title) {
+    const t = String(title || '').toLowerCase().replace(/ё/g, 'е');
+    if (/нов(ый|ого)\s*год|рождеств/.test(t)) return 'things';
+    if (/8\s*март|23\s*феврал|14\s*феврал|валентин|женск|мужск|день\s+(матери|отца|учителя|защитник)/.test(t)) return 'people';
+    return 'person';
+  }
+  const itemsOf = list => (Array.isArray(list) ? list : []).slice(0, 30).map(x => ({ n: String(x && x.n || '').replace(/\s+/g, ' ').trim().slice(0, 30), a: Math.max(0, Math.min(1e9, Math.round((Number(String(x && x.a).replace(',', '.')) || 0) * 100) / 100)) })).filter(x => x.n || x.a);
+  const itemsTotal = e => Math.round((e.items || []).reduce((s, x) => s + (x.a || 0), 0) * 100) / 100;
   const str = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
   function sanitize(o) {
     const f = defaultFest();
@@ -39,11 +48,12 @@
       if (!e || typeof e !== 'object') continue;
       const date = parse(e.date) ? e.date : null; if (!date) continue;
       const title = str(e.title, 40), person = str(e.person, 30);
-      if (!title && !person) continue;
+      const items = itemsOf(e.items);
+      if (!title && !person && !items.length) continue;
       const l = e.remind && e.remind.lead || {}, kind = ['weeks', 'months', 'date'].includes(l.kind) ? l.kind : 'months';
       let nid = Math.floor(Number(e.nid)); if (!(nid >= 0 && nid < 100) || used.has(nid)) { nid = 0; while (used.has(nid)) nid++; } used.add(nid);
       f.list.push({
-        id: typeof e.id === 'string' && e.id ? e.id.slice(0, 40) : 'e' + nid + Date.now().toString(36), title, person, date, yearly: e.yearly !== false, nid,
+        id: typeof e.id === 'string' && e.id ? e.id.slice(0, 40) : 'e' + nid + Date.now().toString(36), title, person, items, date, yearly: e.yearly !== false, nid,
         remind: { on: !!(e.remind && e.remind.on), lead: { kind, n: Math.max(1, Math.min(12, Math.floor(Number(l.n)) || 1)), date: parse(l.date) ? l.date : '' } }
       });
     }
@@ -84,7 +94,11 @@
     if (lead.kind === 'months') return lead.n === 1 ? 'за месяц' : `за ${lead.n} ${lead.n < 5 ? 'месяца' : 'месяцев'}`;
     return 'в выбранный день';
   }
-  const whatText = ev => [ev.title, ev.person].filter(Boolean).join(', ');
+  const whatText = ev => {
+    const m = modeOf(ev.title), names = (ev.items || []).map(x => x.n).filter(Boolean);
+    if (m === 'people' && names.length) return `${ev.title}: ${names.join(', ')}`;
+    return [ev.title, ev.person].filter(Boolean).join(', ');
+  };
   function reminderLine(ev, today) {
     const r = remindDate(ev, today);
     if (!ev.remind.on) return 'Без напоминания';
@@ -96,7 +110,7 @@
     const r = remindDate(ev, now); if (!r) return null;
     const l = ev.remind.lead;
     const lead = l.kind === 'weeks' ? (l.n === 1 ? 'Через неделю' : `Через ${l.n} ${l.n < 5 ? 'недели' : 'недель'}`) : l.kind === 'months' ? (l.n === 1 ? 'Через месяц' : `Через ${l.n} ${l.n < 5 ? 'месяца' : 'месяцев'}`) : 'Скоро';
-    const body = `${lead}: ${whatText(ev)} (${dayText(r.occ)}). Пора отложить деньги на подарок.`;
+    const body = `${lead}: ${whatText(ev)} (${dayText(r.occ)}). ${modeOf(ev.title) === 'things' ? 'Пора отложить деньги.' : 'Пора отложить деньги на подарок.'}`;
     const schedule = ev.yearly
       ? { on: { month: r.rd.getMonth() + 1, day: r.rd.getDate(), hour: 10, minute: 0 }, allowWhileIdle: true }
       : { at: new Date(r.rd.getFullYear(), r.rd.getMonth(), r.rd.getDate(), 10, 0, 0), allowWhileIdle: true };
@@ -108,7 +122,7 @@
   }
   const daysTo = (occ, today) => Math.round((midnight(occ) - midnight(today)) / 864e5);
 
-  const api = { sanitize, defaultFest, defaultLead, freeNid, nextOccurrence, remindDate, notification, leadLabel, reminderLine, whatText, dayText, upcoming, daysTo, addMonths, LEADS, parse, ymd };
+  const api = { modeOf, itemsTotal, sanitize, defaultFest, defaultLead, freeNid, nextOccurrence, remindDate, notification, leadLabel, reminderLine, whatText, dayText, upcoming, daysTo, addMonths, LEADS, parse, ymd };
   root.MD = root.MD || {};
   root.MD.events = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -343,7 +343,13 @@
     <form id="evForm" novalidate>
       <div class="chips scroll" id="evPresets" role="group" aria-label="Быстрый выбор названия"></div>
       <label class="field"><input id="evTitle" type="text" maxlength="40" placeholder=" " autocomplete="off"><span>Название праздника</span></label>
-      <label class="field"><input id="evPerson" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Чей праздник, имя</span></label>
+      <label class="field" id="evPersonF"><input id="evPerson" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Чей праздник, имя</span></label>
+      <div id="evItemsBox" hidden>
+        <div class="fl" id="evItemsT"></div>
+        <div class="ev-items" id="evItems"></div>
+        <button class="btn soft wide" type="button" id="evItemAdd"></button>
+        <p class="note" id="evItemsSum"></p>
+      </div>
       <label class="field t"><input id="evDate" type="date"><span>Дата праздника</span></label>
       <div class="grp flat">
         <button class="row" type="button" id="evYearly" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Каждый год</b><small>Повторять в эту же дату</small></span><span class="sw-t" aria-checked="true"></span></button>

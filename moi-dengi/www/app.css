@@ -744,26 +744,19 @@ button.hs{text-align:left;color:inherit;width:100%}
 /* Цвета тем: иконки, тонкие полоски слева, прогресс. Фоны не заливаем */
 #paysBlock{--tc:var(--c-pay)}#goalsHome{--tc:var(--c-save)}#festHome{--tc:var(--c-gift)}
 #paysBlock .h2,#goalsHome .h2,#festHome .h2{display:flex;align-items:center;gap:8px}
-#paysBlock .h2::before,#goalsHome .h2::before,#festHome .h2::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--tc)}
-.pcard:not(.late):not(.add){border-left:3px solid var(--c-pay)}
 .pcard:not(.late):not(.add) .tx-ic{background:color-mix(in srgb,var(--c-pay) 14%,var(--surface));color:var(--c-pay)}
-.pcard.late{border-left:3px solid var(--exp)}
-.pcard.paid{border-left-color:var(--accent)}
 .pcard.paid .tx-ic{background:var(--accent-bg);color:var(--accent-t)}
-.grow{border-left:3px solid var(--c-save)}
 .grow .goal-pct{color:var(--c-save)}
 .grow .goal-bar{background:color-mix(in srgb,var(--c-save) 16%,var(--field))}
 .grow .goal-bar i{background:var(--c-save)}
-.grow.add{border-left-color:transparent}
-.fpill{border-left:3px solid var(--c-gift)}
 .fp-ic{background:color-mix(in srgb,var(--c-gift) 14%,var(--surface));color:var(--c-gift)}
 .curve-sum,.days{color:var(--c-stat)}
-.save-card{border-left:3px solid var(--c-save);background:var(--surface);border-color:var(--line);border-left-color:var(--c-save)}
-.save-card.due{background:var(--surface);border-color:var(--line);border-left-color:var(--c-save)}
+.save-card{background:var(--surface);border-color:var(--line)}
+.save-card.due{background:var(--surface);border-color:var(--line)}
 .pc-ic2{background:color-mix(in srgb,var(--tc,var(--accent)) 14%,var(--surface));color:var(--tc,var(--accent-t))}
 .goal-bar i,.gblock .goal-bar i{background:var(--gc,var(--c-save))}
 /* Тост: плотная тёмная плашка, слева полоска, кнопка «Вернуть» с убывающим фоном; смахивается вправо */
-.toast{background:var(--toast);color:#F2F6EC;border-left:4px solid var(--tstripe,#8FA083);padding:10px 10px 10px 14px;touch-action:pan-y;transition:transform .15s ease-out,opacity .15s}
+.toast{background:var(--toast);color:#F2F6EC;padding:10px 10px 10px 14px;touch-action:pan-y;transition:transform .15s ease-out,opacity .15s}
 .toast button{position:relative;overflow:hidden;min-height:36px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.14);color:#F2F6EC;text-decoration:none;z-index:0}
 .toast button::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(255,255,255,.26);transform-origin:left;animation:tshrink var(--tms,6s) linear forwards}
 @keyframes tshrink{to{transform:scaleX(0)}}
@@ -817,7 +810,7 @@ button.hs{text-align:left;color:inherit;width:100%}
 .imp-sum span{display:flex;gap:8px;align-items:baseline;font-weight:600}
 .imp-sum i{font-style:normal}.imp-sum .i{color:var(--inc-t)}.imp-sum .e{color:var(--exp-t)}
 .imp-sum em{font-style:normal;color:var(--muted);font-weight:300}
-.imp-hint{display:flex;align-items:center;gap:8px;padding:12px;border-radius:var(--r-lg);background:var(--surface);border:var(--card-b);border-left:3px solid var(--c-pay);margin-bottom:12px}
+.imp-hint{display:flex;align-items:center;gap:8px;padding:12px;border-radius:var(--r-lg);background:var(--surface);border:var(--card-b);margin-bottom:12px}
 .imp-hint .ih-t{flex:1;min-width:0;display:flex;flex-direction:column}
 .imp-hint small{color:var(--muted)}
 .imp-hint .btn{min-height:40px;margin:0;padding:0 12px}
@@ -899,11 +892,6 @@ h1,h2,h3,h4,.title,.h2{font-family:var(--font-display);font-weight:var(--w-stron
 
 /* Блоки: полоска 3px цветом блока вместо заливок */
 .pcard,.grow,.fpill,.save-card{background:var(--surface);border:var(--card-b)}
-.pcard:not(.late):not(.add){border-left:3px solid var(--c-pay)}
-.pcard.late{border-left:3px solid var(--negative)}
-.pcard.paid{border-left-color:var(--positive)}
-.grow{border-left:3px solid var(--c-save)}
-.fpill{border-left:3px solid var(--c-gift)}
 .pc-a,.curve-sum,.am{font-family:var(--font-display);font-weight:600;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
 .bubble,.nudge,.nudge-mini,.bm.bot,.draft-sum{background:var(--accent-bg)}
 .bubble{font-weight:var(--w-label)}
@@ -979,3 +967,17 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .pk img.ic-cat{width:32px;height:32px}
 .cat-tile[aria-checked=true] .ci{background:var(--cbg,var(--field));color:inherit;box-shadow:0 0 0 2px var(--c)}
 .rw-ic.ci img.ic-cat{width:28px;height:28px}
+
+/* Никаких полосок слева на карточках. Цвет блока живёт в значке, прогрессе и тексте */
+.pcard.late{border-color:color-mix(in srgb,var(--negative) 45%,var(--line))}
+.pcard.paid{border-color:color-mix(in srgb,var(--positive) 40%,var(--line))}
+.ev-item{display:grid;grid-template-columns:1fr 132px 40px;gap:8px;align-items:start;margin-bottom:8px}
+.ev-item .field{margin:0}
+.ev-item .icon-btn{margin-top:8px}
+#evItemAdd{margin-top:0}
+
+/* Шапка шторки и крестик не прокручиваются вместе с содержимым */
+.sheet{padding-top:0}
+.sheet>.grab{position:sticky;top:0;z-index:6;width:auto;height:auto;margin:0 -16px;padding:10px 0 4px;background:var(--sheet);border-radius:0}
+.sheet>.grab::after{content:"";display:block;width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto}
+.sheet>.sheet-head{position:sticky;top:18px;z-index:6;margin:0 -16px 8px;padding:0 16px 8px;background:var(--sheet)}

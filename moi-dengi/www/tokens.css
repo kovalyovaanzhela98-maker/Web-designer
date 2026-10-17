@@ -12,13 +12,13 @@
   /* Семантика отдельно от бренда */
   --positive:#2E8B57;--positive-t:#1F6B41;--negative:#D14D41;--negative-t:#B23A2F;--warning:#C98A12;--warning-t:#85590A;--neutral:#6B7466;
   /* Поверхности: фон слегка тонирован брендом, не чистый белый */
-  --bg:#F6F7F1;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#F6F7F1;--field:#EEF1E6;--toast:#1F2A1D;
-  --text:#1B241A;--muted:#5B6657;--ph:#737E6E;
-  --line:#E4E8DA;--outline:1px solid #D5DBC9;--card-b:1px solid #E4E8DA;
+  --bg:#FBFBFA;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#FFFFFF;--field:#F3F3F1;--toast:#1F2A1D;
+  --text:#1A1A1A;--muted:#5F5F5B;--ph:#777772;
+  --line:#EBEBE8;--outline:1px solid #DEDEDA;--card-b:1px solid #EBEBE8;
   /* Алиасы, которыми пользуется вёрстка */
   --accent:var(--brand-primary);--accent-d:#2F5426;--accent-t:#2F5426;--on-accent:#FFFFFF;--lime:var(--brand-accent);--on-lime:#1B2A12;
-  --btn:var(--brand-primary);--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#EAF0DD;
-  --tone-mint:#EAF0DD;--tone-lime:#F0F2E4;--tone-peach:#F8EEE4;--tone-sky:#E9EFF8;--tone-lilac:#EEEBF8;--tone-sun:#F8F0DD;--on-tone:#1B241A;
+  --btn:var(--brand-primary);--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#F2F5EE;
+  --tone-mint:#F2F5EE;--tone-lime:#F5F5F0;--tone-peach:#F9F3EE;--tone-sky:#F0F3F8;--tone-lilac:#F3F1F8;--tone-sun:#F9F5EA;--on-tone:#1A1A1A;
   --inc:var(--positive);--inc-bg:color-mix(in srgb,var(--positive) 13%,var(--surface));--inc-t:var(--positive-t);
   --exp:var(--negative);--exp-bg:color-mix(in srgb,var(--negative) 12%,var(--surface));--exp-t:var(--negative-t);
   --r1:#3F6B33;--r2:#F5B82E;--r3:#4F8CF5;--r4:#F25C6E;--r5:#8A6BEF;--r6:#8C99B0;
