@@ -1162,7 +1162,7 @@ function renderPanel(err) {
     const c = MD.notify.cfg(), plus = MD.sub.isPlus();
     const DN = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
     say = ['notify', 'Напомню записать траты<small>Придёт уведомление, даже если приложение закрыто.</small>'];
-    html = `<div class="grp flat"><button class="row" type="button" data-pn="rm-toggle" role="switch" aria-checked="${c.on}"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминать каждый день</b><small>${MD.notify.supported() ? (c.on ? 'Включено' : 'Выключено') : 'Работает только в приложении'}</small></span><span class="sw-t" aria-checked="${c.on}"></span></button></div>`;
+    html = `<div class="grp flat"><button class="row" type="button" data-pn="rm-toggle" role="switch" aria-checked="${c.on}"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Каждый день</b><small>${MD.notify.supported() ? (c.on ? 'Включено' : 'Выключено') : 'Работает только в приложении'}</small></span><span class="sw-t" aria-checked="${c.on}"></span></button></div>`;
     if (c.on) {
       html += `<div class="fl">Время</div>` + c.times.map((t, i) => `<div class="time-row"><label class="field t"><input type="time" data-time="${i}" value="${esc(t)}" aria-label="Время напоминания ${i + 1}"><span>Напоминание ${i + 1}</span></label>${c.times.length > 1 ? `<button class="time-x" type="button" data-pn="rm-del:${i}" aria-label="Убрать время">${icon('close')}</button>` : ''}</div>`).join('');
       if (c.times.length < 3) html += pnBtn('rm-add', plus ? 'Добавить время' : 'Добавить время · Плюс', 'soft');
