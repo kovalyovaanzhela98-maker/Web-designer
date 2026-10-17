@@ -21,4 +21,4 @@
 
 
 ## Иконки
-Набор Phosphor Icons (MIT, https://phosphoricons.com): двухтоновый duotone и жирные знаки для действий. Таблица имён в `www/js/icons.js`.
+Набор Phosphor Icons (MIT, https://phosphoricons.com): один стиль: duotone, для знаков без заливки (плюс, крестик, стрелки) regular той же толщины. Таблица имён в `www/js/icons.js`.
