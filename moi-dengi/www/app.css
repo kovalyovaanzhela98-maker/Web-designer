@@ -191,15 +191,16 @@ input:focus,textarea:focus,input:focus-visible,textarea:focus-visible{border-col
 .day-chips .chip{flex:1;padding:0;justify-content:center;border-radius:var(--r-sm)}
 
 /* ---------- Нижнее меню ---------- */
-.nav{position:fixed;left:12px;right:12px;bottom:calc(10px + var(--sab));z-index:30;max-width:536px;margin:0 auto;height:var(--nav-h);display:grid;grid-template-columns:1fr 1fr 68px 1fr 1fr;align-items:center;padding:0 4px;border-radius:30px;background:var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.1)}
-.nav-b{height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:var(--fs-cap);font-weight:600;border-radius:20px;min-width:0}
-.np{display:grid;place-items:center;width:56px;height:30px;border-radius:15px;transition:background var(--dur) ease-out,color var(--dur) ease-out}
-.nl{line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav{position:fixed;left:12px;right:12px;bottom:calc(10px + var(--sab));z-index:30;max-width:536px;margin:0 auto;height:var(--nav-h);display:grid;grid-template-columns:1fr 1fr 64px 1fr 1fr;align-items:center;padding:0 2px;border-radius:22px;background:var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.nav-b{height:68px;gap:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:var(--fs-cap);font-weight:600;border-radius:16px;min-width:0}
+.np{display:grid;place-items:center;width:52px;height:40px;border-radius:14px;transition:background var(--dur) ease-out,color var(--dur) ease-out}
+.nl{line-height:1.1;max-width:100%;white-space:nowrap}
 .nav-b[aria-current=page]{color:var(--accent-t);font-weight:700}
 .nav-b[aria-current=page] .np{background:var(--accent-bg)}
 .nav-mid{display:grid;place-items:center;height:100%}
-.nav-add{width:60px;height:48px;border-radius:18px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
-.nav-add svg{width:28px;height:28px}
+.nav-add{width:64px;height:56px;border-radius:18px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.nav-add svg{width:32px;height:32px}
+.np svg{width:28px;height:28px}
 body.kb .nav{display:none}
 
 /* ---------- Слои ---------- */
