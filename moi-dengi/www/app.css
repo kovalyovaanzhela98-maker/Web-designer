@@ -1023,3 +1023,11 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .nav-mid{align-items:center;padding-top:0}
 .nav-add{width:56px;height:56px;border-radius:50%;margin-top:0;background:var(--grad-fab);color:#fff;box-shadow:0 6px 14px -6px rgba(44,107,69,.7)}
 .nav-add svg{width:28px;height:28px}
+
+/* Стрелки «Пришло» и «Потрачено»: контрастные значки на белом кружке, стрелки чуть толще */
+.hs small svg{width:20px;height:20px;padding:3px;border-radius:50%;background:#fff;stroke:currentColor;stroke-width:14;stroke-linejoin:round;stroke-linecap:round}
+.hs.inc small svg{color:#17713F}
+.hs.exp small svg{color:#C9302C}
+.pcard:not(.add),.pcard.paid{background:linear-gradient(135deg,color-mix(in srgb,var(--c-pay) 16%,transparent) 0%,transparent 100%),var(--surface)}
+.pcard .tx-ic,.pcard.paid .tx-ic{background:color-mix(in srgb,var(--c-pay) 18%,var(--surface))}
+.pcard .tx-ic svg{color:var(--cat-lilac-text)}

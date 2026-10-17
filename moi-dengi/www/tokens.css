@@ -23,7 +23,7 @@
   --exp:var(--negative);--exp-bg:color-mix(in srgb,var(--negative) 12%,var(--surface));--exp-t:var(--negative-t);
   --r1:#3F6B33;--r2:#F5B82E;--r3:#4F8CF5;--r4:#F25C6E;--r5:#8A6BEF;--r6:#8C99B0;
   /* Цвет блока: платежи, копилки, праздники, аналитика */
-  --c-pay:var(--cat-butter-solid);--c-save:var(--cat-sky-solid);--c-gift:var(--cat-coral-solid);--c-stat:var(--cat-lilac-solid);
+  --c-pay:var(--cat-lilac-solid);--c-save:var(--cat-sky-solid);--c-gift:var(--cat-coral-solid);--c-stat:var(--cat-lilac-solid);
   --focus:var(--brand-primary);--scrim:rgba(18,28,14,.42);
   /* Цвет категории: фон подложки и текст плашки */
   --ci-a:16%;--ci-text-key:text;
