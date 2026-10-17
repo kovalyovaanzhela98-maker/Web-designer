@@ -61,7 +61,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('после входа данные гостя на месте', (await page.textContent('#recentList')).includes('Транспорт'));
 
   // ---- 3. быстрая запись: «Всё верно?»
-  await page.fill('#qaInput', 'вчера такси 12 и кофе 6,5'); await page.click('#qaGo'); await sleep(250);
+  await page.evaluate(() => MD.app.spoken('вчера такси 12 и кофе 6,5', false)); await sleep(250);
   ok('быстрая запись: открыт «Всё верно?»', await vis('#lyDraft') && (await page.textContent('#draftTitle')).includes('Всё верно'));
   ok('«Всё верно?»: две строки', (await page.$$eval('#draftList .dr', e => e.length)) === 2);
   await page.click('#draftList [data-edit="1"]'); await sleep(350);
@@ -71,7 +71,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await page.click('#draftOk'); await sleep(300);
   ok('сохранено: тост «Записано: 2»', (await page.textContent('#toast')).includes('Записано: 2'));
   // непонятная фраза: без вины
-  await page.fill('#qaInput', 'абвгд'); await page.click('#qaGo'); await sleep(200);
+  await page.evaluate(() => MD.app.spoken('абвгд', false)); await sleep(200);
   ok('не понял: подсказка с примером, без слова «ошибка»', /вчера такси 12/.test(await page.textContent('#toast')) && !/ошибк/i.test(await page.textContent('#toast')));
 
   // ---- 4. удаление с возвратом ≥ 5 секунд

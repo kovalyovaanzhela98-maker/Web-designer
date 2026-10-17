@@ -260,7 +260,7 @@ function renderPays() {
   const mid = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   el.innerHTML = rows.map(r => {
     const p = r.p, ci = catInfo('expense', p.cat), d = r.date, days = Math.round((mid(d) - mid(T)) / 864e5), key = r.mk || mk;
-    const sub = r.status === 'paid' ? 'Оплачено' : r.status === 'late' ? 'Пора записать' : esc(R.whenText(days));
+    const sub = r.status === 'paid' ? 'Оплачено' : esc(R.whenText(days));
     return `<div class="pcard ${r.status}"><button class="pc-main" type="button" data-go-pay aria-label="${esc(cap(p.name))}, ${esc(sub)}. Все обязательные платежи">
         <span class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span>
         <b class="pc-n">${esc(cap(p.name))}</b><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small></button>
@@ -268,14 +268,32 @@ function renderPays() {
   }).join('');
 }
 
+/* Цели на главной: карточки в ряд, у каждой свой цвет */
+function renderGoalsHome() {
+  const el = $('#goalsStrip'), list = state.goals;
+  el.innerHTML = list.map(g => `<button class="pcard gcard" type="button" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}"><span class="goal-dot" aria-hidden="true"></span><b class="pc-n">${esc(g.name)}</b><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span><small class="pc-s">${goalPct(g)}% · ${esc(maskT(money(g.saved)))}</small></button>`).join('') +
+    `<button class="pcard add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё цель' : 'Новая цель'}</b></button>`;
+}
+/* Дни рождения и праздники: ближайшие */
+function renderFestHome() {
+  const el = $('#festStrip'), ups = MD.events.upcoming(festList(), new Date()).slice(0, 6);
+  el.innerHTML = ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="pcard fcard" type="button" data-ev="${esc(u.e.id)}"><span class="tx-ic" style="--c:#CC5B7B" aria-hidden="true">${icon('gift')}</span><b class="pc-n">${esc(MD.events.whatText(u.e))}</b><small class="pc-s">${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}</small></button>`; }).join('') +
+    `<button class="pcard add" type="button" data-ev=""><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>Добавить</b></button>`;
+}
+$('#s-home').addEventListener('click', e => {
+  const g = e.target.closest('[data-goal]'); if (g) { openGoal(g.dataset.goal); return; }
+  if (e.target.closest('[data-newgoal]')) { startNewGoal(); return; }
+  const v = e.target.closest('[data-ev]'); if (v) openEvent(v.dataset.ev || null);
+});
+
 /* Карточка «Пора отложить»: цель, в этом периоде ещё не откладывали. Или совет включить напоминание в лучший день */
 function renderSaveCard() {
   const el = $('#saveCard'), c = G.homeCard(state.goals, state.tx, new Date());
   if (!c) { el.innerHTML = ''; return; }
   const g = c.goal, per = esc(maskT(money(c.amount))), unit = g.unit === 'week' ? 'на этой неделе' : 'в этом месяце';
   el.innerHTML = c.kind === 'due'
-    ? `<div class="save-card due">${MD.mascot('love', 56)}<span class="sc-t"><b>Пора отложить на «${esc(g.name)}»</b><small>${per} ${unit}, как договорились</small></span><button class="btn primary" type="button" data-savenow="${esc(g.id)}">Отложил</button></div>`
-    : `<div class="save-card">${MD.mascot('think', 56)}<span class="sc-t"><b>«${esc(g.name)}»: лучше откладывать ${esc(G.dayName(g.unit === 'week' ? 'week' : 'month', c.day))}</b><small>${per} ${G.perWord(g.unit === 'week' ? 'week' : 'month')}${c.fromIncome ? ', когда у тебя обычно приходят деньги' : ''}. Напомнить?</small></span><button class="btn primary" type="button" data-remindgoal="${esc(g.id)}|${c.day}">Да</button></div>`;
+    ? `<div class="save-card due">${MD.mascot('love', 56)}<span class="sc-t"><b>Отложи ${per} на «${esc(g.name)}»</b></span><button class="btn primary" type="button" data-savenow="${esc(g.id)}">Отложил</button></div>`
+    : `<div class="save-card">${MD.mascot('think', 56)}<span class="sc-t"><b>«${esc(g.name)}»: напомнить откладывать ${esc(G.dayName(g.unit === 'week' ? 'week' : 'month', c.day))}?</b></span><button class="btn primary" type="button" data-remindgoal="${esc(g.id)}|${c.day}">Да</button></div>`;
 }
 /* Баннеры: пара наблюдений по записям */
 function renderBanners() {
@@ -295,6 +313,8 @@ function renderHome() {
   $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
   $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
   renderPays();
+  renderGoalsHome();
+  renderFestHome();
   renderSaveCard();
   renderBanners();
 
@@ -472,7 +492,7 @@ let tabPushed = false, payFrom = 'acc';
 function showTab(name, fromPop) {
   tab = name;
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
-  const navName = name === 'ops' ? 'home' : name === 'chat' ? 'acc' : name === 'pay' ? payFrom : name;
+  const navName = name === 'ops' ? 'home' : name === 'pay' ? payFrom : name;
   $$('.nav-b').forEach(b => { if (b.dataset.tab === navName) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
@@ -507,7 +527,7 @@ function shiftMonth(d) { if (tab === 'stats') { shiftPeriod(d); return; } const 
 })();
 $$('.nav-b').forEach(b => b.addEventListener('click', () => { buzz(8); showTab(b.dataset.tab); }));
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-back]')) { showTab(tab === 'pay' ? payFrom : tab === 'chat' ? 'acc' : 'home'); return; }
+  if (e.target.closest('[data-back]')) { showTab(tab === 'pay' ? payFrom : 'home'); return; }
   const g = e.target.closest('[data-go]');
   if (g) showTab(g.dataset.go);
   if (e.target.closest('[data-go-pay]')) openPayScreen();
@@ -797,11 +817,7 @@ $('#txVoiceStop').addEventListener('click', () => MD.voice.stop());
 $('#txVoiceCancel').addEventListener('click', () => { MD.voice.cancel(); endTxVoice(); });
 
 /* Быстрая запись на главной: поле «скажи или напиши» и микрофон */
-$('#qaForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const v = $('#qaInput').value.trim(); if (!v) return;
-  if (spoken(v, false)) $('#qaInput').value = '';
-});
+
 
 /* Удаление без вопросов: «Удалено» и «Вернуть» не меньше пяти секунд */
 function deleteTx(id) {
@@ -859,10 +875,10 @@ function goalFacts(g) {
   return { done, left, monthly: done ? 0 : G.perPeriodNow(g, new Date()), dlText: `${dl.getDate()} ${MONTHS_G[dl.getMonth()]} ${dl.getFullYear()}`, over: !done && !pl };
 }
 const goalLeft = g => { const f = goalFacts(g); return f.done ? 'Цель достигнута' : f.over ? `Срок был ${f.dlText}` : `Дедлайн ${f.dlText}`; };
-const goalRows = g => {
+const goalRows = (g, full) => {
   const f = goalFacts(g);
-  return `<span class="goal-sub"><span>Отложено ${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</span><span>${f.done ? 'Готово' : `Осталось ${esc(maskT(money(f.left)))}`}</span></span>
-    <span class="goal-sub"><span>${f.done ? '' : `${esc(cap(G.perWord(gUnit(g))))} ${esc(maskT(money(f.monthly)))}`}</span><span>${esc(goalLeft(g))}</span></span>`;
+  return `<span class="goal-sub"><span>${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</span><span>${f.done ? 'Готово' : esc(f.dlText)}</span></span>` +
+    (full && !f.done ? `<span class="goal-sub"><span>${esc(cap(G.perWord(gUnit(g))))} ${esc(maskT(money(f.monthly)))}</span><span>Осталось ${esc(maskT(money(f.left)))}</span></span>` : '');
 };
 function renderGoals() {
   const el = $('#goalsBody'), list = state.goals;
@@ -906,7 +922,7 @@ function drawGoal(g) {
   const el = $('#goalDetail'); el.style.setProperty('--gc', gCol(g));
   el.innerHTML = `${MD.say(say[0], say[1], 64)}
     <div class="goal big"><span class="goal-top"><b>${esc(maskT(money(g.saved)))}</b><span class="goal-pct">${pct}%</span></span>
-    <span class="goal-bar"><i style="width:${pct}%"></i></span>${goalRows(g)}</div>
+    <span class="goal-bar"><i style="width:${pct}%"></i></span>${goalRows(g, true)}</div>
     ${done ? '' : `<form id="goalAdd" class="gblock key" novalidate>
       <div class="bal-row">${fld('goalAmt', 'Сколько отложил', { mode: 'decimal', unit: sym() })}<button class="btn primary" type="submit">Отложить</button></div>
       ${per ? `<div class="note">По плану ${esc(G.perWord(gUnit(g)))}: ${esc(maskT(money(per)))}. Если отложишь больше, Фин порадуется.</div>` : ''}
@@ -1864,7 +1880,7 @@ MD.app = {
   ctx() { ensureAccount(); return { now: new Date(), tx: state.tx, goals: state.goals, sym: sym(), startBalance: startBal(), freeMoney: MD.goals.freeMoney(state.tx, new Date()), accounts: state.accounts }; },
   addTx, openTx, openQuiz: startNewGoal, showTab, toast, confirmDlg, openLayer, closeLayer, confetti, buzz,
   refreshAll: () => { render(); },
-  normalizeItems, esc, icon, money, fmt, paintIcons, quickAdd,
+  normalizeItems, esc, icon, money, fmt, paintIcons, quickAdd, spoken,
   loggedIn: () => !cloud.enabled || !!me
 };
 

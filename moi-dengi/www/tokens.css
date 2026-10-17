@@ -11,8 +11,8 @@
 /* Размеры текста: ровно три. Заголовок экрана, карточка, подпись. */
 :root{
   /* Поверхности и текст. Фон белый, плашки белые с мягкой тенью, поля с обводкой */
-  --bg:#EFF2EC;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#EFF2EC;--text:#16241A;--muted:#566659;--ph:#6B7A6E;
-  --line:#DCE2DA;--field:#EBEFE9;--outline:1px solid #CBD3CB;--card-b:1px solid #DCE2DA;
+  --bg:#F8F9F7;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#F8F9F7;--text:#16241A;--muted:#566659;--ph:#6B7A6E;
+  --line:#E3E7E1;--field:#EFF2EE;--outline:1px solid #D0D7CF;--card-b:1px solid #E3E7E1;
   /* Яркий акцент: свежий изумруд и лайм. Кнопки, баланс, активные элементы, прогресс, «+» */
   --accent:#0E8A4F;--accent-d:#0A6B3D;--accent-t:#0A6B3D;--on-accent:#FFFFFF;--lime:#D5F26B;--on-lime:#16300F;
   --btn:#0A6B3D;--on-btn:#FFFFFF;--cream:#FFF4D6;--accent-bg:#E6F6EC;

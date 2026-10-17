@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#F7F8F6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1611" media="(prefers-color-scheme: dark)">
 <title>Фин</title>
 <link rel="icon" href="icon.png">
@@ -36,13 +36,18 @@
       <div class="pays" id="paysStrip"></div>
     </section>
 
+    <section class="block panel" id="goalsHome" aria-labelledby="hGoalsH">
+      <div class="h2-row"><h2 class="h2" id="hGoalsH">Цели</h2><button class="link" data-go="goals">Все</button></div>
+      <div class="pays" id="goalsStrip"></div>
+    </section>
+
+    <section class="block panel" id="festHome" aria-labelledby="hFest">
+      <div class="h2-row"><h2 class="h2" id="hFest">Дни рождения</h2></div>
+      <div class="pays" id="festStrip"></div>
+    </section>
+
     <div id="saveCard"></div>
     <div class="banners" id="banners" aria-label="Наблюдение Фина"></div>
-
-    <form class="qadd" id="qaForm" autocomplete="off">
-      <input id="qaInput" type="text" placeholder="Напиши: вчера такси 12" aria-label="Быстрая запись фразой">
-      <button type="submit" class="qa-go" id="qaGo" aria-label="Записать"><i data-ic="check"></i></button>
-    </form>
 
     <section class="block" aria-labelledby="hRecent">
       <div class="h2-row"><h2 class="h2" id="hRecent">Последние операции</h2><button class="link" data-go="ops" aria-label="Вся история">Все</button></div>
@@ -97,7 +102,7 @@
       <div class="chat-quick" id="chatQuick"></div>
       <form class="chat-bar" id="chatForm" autocomplete="off">
         <button type="button" class="cb-btn" id="chatAttach" aria-label="Прикрепить чек или выписку"><i data-ic="clip"></i></button>
-        <textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси или скажи: вчера такси 12" aria-label="Сообщение помощнику"></textarea>
+        <textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси Фина" aria-label="Сообщение помощнику"></textarea>
         <button type="button" class="cb-mic" id="chatMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
         <button type="submit" class="cb-send" id="chatSend" aria-label="Отправить" hidden><i data-ic="send"></i></button>
       </form>
@@ -114,7 +119,7 @@
 
   <!-- ЦЕЛИ -->
   <section class="screen" id="s-goals" data-screen="goals" aria-label="Цели" hidden>
-    <header class="hdr"><h1 class="title">Цели</h1><button class="pill-btn" id="goalNew"><i data-ic="plus"></i><span>Новая</span></button></header>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Цели</h1><button class="pill-btn" id="goalNew"><i data-ic="plus"></i><span>Новая</span></button></header>
     <div id="goalsBody"></div>
   </section>
 
@@ -189,7 +194,7 @@
   <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-ic="home"></i></span><span class="nl">Главная</span></button>
   <button class="nav-b" data-tab="stats"><span class="np"><i data-ic="chart"></i></span><span class="nl">Аналитика</span></button>
   <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-ic="plus"></i></button></span>
-  <button class="nav-b" data-tab="goals"><span class="np"><i data-ic="goal"></i></span><span class="nl">Цели</span></button>
+  <button class="nav-b" data-tab="chat"><span class="np"><i data-ic="spark"></i></span><span class="nl">Фин</span></button>
   <button class="nav-b" data-tab="acc"><span class="np"><i data-ic="person"></i></span><span class="nl">Профиль</span></button>
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
