@@ -72,7 +72,7 @@ function load() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) { const s = sanitize(JSON.parse(raw)); if (s) state = s; }
-    hide = localStorage.getItem(HIDE_KEY) === '1';
+    localStorage.removeItem(HIDE_KEY); // кнопки «скрыть суммы» больше нет, прежнее скрытие сбрасываем
   } catch (e) { /* первый запуск */ }
 }
 function save() {
@@ -318,9 +318,6 @@ function renderHome() {
   { const n = userName(); $('#greetTitle').textContent = n ? `Привет, ${n}` : 'Привет'; }
   const total = totalBalance();
   setNum($('#heroSum'), moneyH, total);
-  $('#btnEye').innerHTML = icon(hide ? 'eyeoff' : 'eye');
-  $('#btnEye').setAttribute('aria-pressed', String(hide));
-  $('#btnEye').setAttribute('aria-label', hide ? 'Показать суммы' : 'Скрыть суммы');
 
   const list = monthTx(ym.y, ym.m);
   const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense'), isNow = ym.y === now0.getFullYear() && ym.m === now0.getMonth();
@@ -632,12 +629,6 @@ document.addEventListener('click', e => { const hs = e.target.closest('[data-hsh
 /* Имя в профиле: показывается в приветствии на главной */
 $('#nameIn').addEventListener('input', e => { state.name = e.target.value.replace(/\s+/g, ' ').slice(0, 30); save(); renderHome(); });
 $('#nameIn').addEventListener('blur', e => { state.name = state.name.trim(); e.target.value = state.name; save(); renderHome(); renderAccount(); });
-$('#btnEye').addEventListener('click', () => {
-  hide = !hide;
-  try { localStorage.setItem(HIDE_KEY, hide ? '1' : '0'); } catch (_) {}
-  render();
-  toast(hide ? 'Суммы скрыты' : 'Суммы показаны');
-});
 
 /* ---------- Слои (листы/диалоги) + кнопка «Назад» ---------- */
 const layers = [];

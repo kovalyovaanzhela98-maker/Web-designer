@@ -1031,3 +1031,13 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .pcard:not(.add),.pcard.paid{background:linear-gradient(135deg,color-mix(in srgb,var(--c-pay) 16%,transparent) 0%,transparent 100%),var(--surface)}
 .pcard .tx-ic,.pcard.paid .tx-ic{background:color-mix(in srgb,var(--c-pay) 18%,var(--surface))}
 .pcard .tx-ic svg{color:var(--cat-lilac-text)}
+
+/* Один радиус у всех крупных плашек */
+:root{--r-card:24px}
+.hero,.mon-bar,.pcard,.grow,.fpill,.card,.grp,.panel,.day,.goal,.save-card,.nudge,.banner,.imp-hint,.gblock,.pcard.add,.grow.add,.fpill.add{border-radius:var(--r-card)}
+.hero-acts{margin-right:0}
+
+/* Платежи: просто серый градиент */
+.pcard:not(.add),.pcard.paid,.pcard.late{background:linear-gradient(135deg,color-mix(in srgb,var(--text) 8%,transparent) 0%,transparent 100%),var(--surface)}
+.pcard .tx-ic,.pcard.paid .tx-ic{background:color-mix(in srgb,var(--text) 6%,var(--surface))}
+.pcard.late .pc-s{color:var(--exp-t)}
