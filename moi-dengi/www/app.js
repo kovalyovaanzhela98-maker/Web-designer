@@ -287,8 +287,8 @@ function renderGoalsHome() {
 /* Дни рождения и праздники: ближайшие, одной строкой */
 function renderFestHome() {
   const el = $('#festStrip'), ups = MD.events.upcoming(festList(), new Date()).slice(0, 6);
-  el.innerHTML = ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="fpill" type="button" data-ev="${esc(u.e.id)}"><span class="fp-ic" aria-hidden="true">${icon('gift')}</span><span class="fp-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}</small></span></button>`; }).join('') +
-    `<button class="fpill add" type="button" data-ev=""><span class="fp-ic" aria-hidden="true">${icon('plus')}</span><span class="fp-t"><b>Добавить</b></span></button>`;
+  el.innerHTML = `<button class="fpill add" type="button" data-ev=""><span class="fp-ic" aria-hidden="true">${icon('plus')}</span><span class="fp-t"><b>Добавить</b></span></button>` +
+    ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="fpill" type="button" data-ev="${esc(u.e.id)}"><span class="fp-ic" aria-hidden="true">${icon('gift')}</span><span class="fp-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}</small></span></button>`; }).join('');
 }
 $('#s-home').addEventListener('click', e => {
   const g = e.target.closest('[data-goal]'); if (g) { openGoal(g.dataset.goal); return; }
@@ -1110,11 +1110,12 @@ function renderGoals() {
     el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 140)}</span><h2>Пока пусто</h2><p>Нажми «Новая копилка»: Фин спросит, на что копим, посчитает, сколько откладывать в месяц, и скажет, легко это или тяжеловато.</p><button class="btn primary" type="button" data-newgoal>Новая копилка</button></div>`;
     return;
   }
-  const sum = round2(list.reduce((s, g) => s + g.saved, 0)), act = list.filter(g => g.saved < g.target).length;
+  const byCur = {}; list.forEach(g => { const c = g.cur || state.currency; byCur[c] = round2((byCur[c] || 0) + g.saved); });
+  const sumTxt = Object.entries(byCur).map(([c, v]) => `${fmt(v)} ${sym(c)}`).join(' + '), act = list.filter(g => g.saved < g.target).length;
   el.innerHTML = `<div class="goal-rows">${list.map(g => `<button class="goal" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}">
       <span class="goal-top"><span class="goal-dot" aria-hidden="true"></span><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span>
       <span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span>${goalRows(g)}
-    </button>`).join('')}</div><div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>${act} ${pluralN(act, 'копилка', 'копилки', 'копилок')} в работе</small>`, 64)}</div>`;
+    </button>`).join('')}</div><div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(sumTxt))}</em><small>${act} ${pluralN(act, 'копилка', 'копилки', 'копилок')} в работе</small>`, 64)}</div>`;
 }
 let openGoalId = null;
 const WD_CH = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -2057,7 +2058,7 @@ function renderPanel(err) {
     }
   } else if (P.kind === 'data' && P.done) {
     say = ['happy', 'Файл сохранён'];
-    html = `<div class="pn-cur"><small>Где лежит файл</small><b>${esc(P.done.path)}</b></div>` + pnBtn('exp-share', 'Поделиться', 'primary') + pnBtn('exp-done', 'Готово', 'ghost');
+    html = `<div class="pn-cur"><small>Где лежит файл</small><b>${esc(P.done.path)}</b></div>` + pnBtn('exp-share', 'Поделиться', 'primary') + (P.done.uri ? pnBtn('exp-open', 'Открыть файл', 'soft') : '') + pnBtn('exp-done', 'Готово', 'ghost');
   } else if (P.kind === 'data') {
     html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей, копилок и платежей одним файлом.</small>${pnBtn('exp-file', 'Сохранить в файл…', 'soft')}</div>
       <div class="pn-sec"><b>Импорт</b><small>Выбери файл с копией. Текущие данные заменятся, а вернуть их можно сразу после.</small>${pnBtn('imp-file', 'Выбрать файл', 'soft')}<input id="pnFile" type="file" accept=".json,application/json,text/plain" hidden>${e}</div>`;
@@ -2186,7 +2187,7 @@ $('#linkBody').addEventListener('click', async ev => {
     if (F && F.saveFile) {                             // системное окно «Сохранить как»: человек выбирает место сам
       try {
         const r = await F.saveFile({ name, data: json, mime: 'application/json' });
-        if (r && r.ok) { P.done = { path: r.path || name }; renderPanel(); }
+        if (r && r.ok) { P.done = { path: r.path || name, uri: r.uri || '' }; renderPanel(); }
       } catch (_) { renderPanel('Не получилось сохранить файл. Попробуй ещё раз или выбери другую папку.'); }
       return;
     }
@@ -2197,6 +2198,7 @@ $('#linkBody').addEventListener('click', async ev => {
     l.href = url; l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
     P.done = { path: `Загрузки / ${name}` }; renderPanel(); return;
   }
+  if (a === 'exp-open') { const F = MD.notify.native && MD.notify.native('FinNative'); try { await F.openFile({ uri: P.done.uri, mime: 'application/json' }); } catch (_) { renderPanel('Нет приложения, которое открывает такие файлы. Файл лежит по указанному пути.'); } return; }
   if (a === 'exp-done') { P.done = null; renderPanel(); return; }
   if (a === 'imp-file') { $('#pnFile').click(); return; }
 });

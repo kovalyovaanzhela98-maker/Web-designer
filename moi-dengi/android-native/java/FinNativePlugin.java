@@ -127,4 +127,18 @@ public class FinNativePlugin extends Plugin {
             call.reject("Не получилось поделиться файлом");
         }
     }
+
+    /** Открыть сохранённый файл в приложении, которое его понимает. */
+    @PluginMethod
+    public void openFile(PluginCall call) {
+        try {
+            Intent v = new Intent(Intent.ACTION_VIEW);
+            v.setDataAndType(Uri.parse(call.getString("uri", "")), call.getString("mime", "application/json"));
+            v.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(v);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("Нет приложения для открытия файла");
+        }
+    }
 }

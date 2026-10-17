@@ -931,3 +931,7 @@ input:focus,textarea:focus,input:focus-visible,textarea:focus-visible,select:foc
 .dm-card{box-shadow:none;border:var(--card-b)}
 .pcard .tx-ic,.pc-ic2,.pcard.paid .tx-ic{background:transparent!important}
 .grow.add .pc-ic2,.grow.add svg,#goalsHome .add svg{color:var(--c-save)}
+
+/* Дни рождения: «Добавить» первой, кнопки на всю ширину столбцом */
+#festStrip.pillrow{flex-direction:column;overflow:visible;margin:0;padding:0}
+#festStrip .fpill{width:100%;border-radius:var(--r-md)}
