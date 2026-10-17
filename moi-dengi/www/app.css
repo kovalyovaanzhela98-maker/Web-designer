@@ -703,3 +703,10 @@ body.kb .chat-dock{bottom:8px}
 .ins>div{display:flex;flex-direction:column;justify-content:space-between;gap:8px}
 .goal{justify-content:space-between}
 #paysBlock .pays,.pillrow{scroll-padding:0 var(--gap)}
+
+/* Кривая расходов по дням вместо круга */
+.curve-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:12px}
+.curve-h>div{display:flex;flex-direction:column}
+.curve-sum{font-family:var(--font-display);font-size:var(--fs-title);font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}
+.curve-pk{text-align:right}
+.curve-pk b{font-family:var(--font-display);font-weight:700}

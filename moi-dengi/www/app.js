@@ -424,26 +424,11 @@ function renderStats() {
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
-  dayCard.hidden = false; catList.hidden = false;
+  dayCard.hidden = true; catList.hidden = false;
   const by = {};
   list.forEach(t => { by[t.cat] = round2((by[t.cat] || 0) + t.amount); });
   const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
   if (statCat && by[statCat] == null) statCat = null;
-  const R = 56, C = 2 * Math.PI * R;
-  let off = 0;
-  const segs = rows.map(([name, sum]) => {
-    const frac = sum / total, len = Math.max(frac * C - (rows.length > 1 ? 3 : 0), 0.5);
-    const sg = `<circle class="seg${statCat && statCat !== name ? ' dim' : ''}${statCat === name ? ' on' : ''}" cx="75" cy="75" r="${R}" fill="none" stroke="${rampCol(rows.findIndex(r => r[0] === name))}" stroke-width="${statCat === name ? 24 : 20}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
-    off += frac * C;
-    return sg;
-  }).join('');
-  card.innerHTML = `<div class="cat-wrap">
-      <div class="donut" role="img" aria-label="Всего ${word} ${P.word}: ${esc(hide ? 'скрыто' : money(total))}">
-        <svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--field)" stroke-width="20"/>${segs}</svg>
-        <div class="donut-c"><b>${esc(maskT(fmt(by[statCat] != null ? by[statCat] : total)))}</b><span>${by[statCat] != null ? esc(statCat) : 'всего'}</span></div>
-      </div>
-    </div>`;
-
   // Сравнение с прошлым таким же периодом, главная категория, среднее и самая крупная
   const prev = sumOf(state.tx.filter(t => t.type === statType && inPer(t, P.pf, P.pt)), statType);
   const big = list.slice().sort((a, b) => b.amount - a.amount)[0];
@@ -460,19 +445,20 @@ function renderStats() {
   }
   insEl.innerHTML = `<div class="ins"><div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / P.elapsed))))}</b></div><div><small>${statType === 'expense' ? 'Самая крупная трата' : 'Самый крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
 
-  // Столбики: по дням (до двух месяцев), по неделям (длинный период) или по месяцам (год)
+  const shown = statCat ? list.filter(t => t.cat === statCat) : list, shownSum = sumOf(shown, statType);
+  // Кривая: по дням (до двух месяцев), по неделям (длинный период) или по месяцам (год)
   let buckets = [];
   if (per.kind === 'year') {
     buckets = Array.from({ length: 12 }, (_, i) => ({ l: MONTHS[i].slice(0, 3), v: 0, now: per.year === now0.getFullYear() && i === now0.getMonth() }));
-    list.forEach(t => { buckets[Number(t.date.slice(5, 7)) - 1].v += t.amount; });
+    shown.forEach(t => { buckets[Number(t.date.slice(5, 7)) - 1].v += t.amount; });
   } else if (P.days > 62) {
     const n = Math.ceil(P.days / 7); buckets = Array.from({ length: n }, (_, i) => ({ l: dd(addD(P.from, i * 7)), v: 0, now: false }));
-    list.forEach(t => { buckets[Math.min(n - 1, Math.floor(daysBetween(P.from, parseYmd(t.date)) / 7))].v += t.amount; });
+    shown.forEach(t => { buckets[Math.min(n - 1, Math.floor(daysBetween(P.from, parseYmd(t.date)) / 7))].v += t.amount; });
   } else {
     buckets = Array.from({ length: P.days }, (_, i) => { const d = addD(P.from, i); return { l: per.kind === 'week' ? WD_S[d.getDay()] : String(d.getDate()), v: 0, now: ymd(d) === today() }; });
-    list.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
+    shown.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
   }
-  const mx = Math.max(...buckets.map(b => b.v)) || 1, W = 300, H = 100, nb = buckets.length, bw = W / nb, col = statType === 'expense' ? 'var(--exp)' : 'var(--inc)';
+  const mx = Math.max(...buckets.map(b => b.v)) || 1, W = 300, H = 150, nb = buckets.length, bw = W / nb, col = statType === 'expense' ? 'var(--exp)' : 'var(--inc)';
   const pts = buckets.map((b, i) => [nb === 1 ? W / 2 : 8 + i * (W - 16) / (nb - 1), H - 8 - (b.v / mx) * (H - 22)]);
   let path = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
   for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], mx2 = (x0 + x1) / 2; path += ` C${mx2.toFixed(1)} ${y0.toFixed(1)} ${mx2.toFixed(1)} ${y1.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`; }
@@ -483,7 +469,10 @@ function renderStats() {
   const step = nb <= 7 ? 1 : nb <= 12 ? 1 : Math.ceil(nb / 6);
   const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${pts[i][0].toFixed(1)}" y="${H + 16}" text-anchor="${i === 0 && nb > 1 ? 'start' : i === nb - 1 && nb > 1 ? 'end' : 'middle'}">${esc(b.l)}</text>` : '').join('');
   const hi = buckets[peak];
-  dayCard.innerHTML = `<h3>${per.kind === 'year' ? 'По месяцам' : P.days > 62 ? 'По неделям' : 'По дням'}</h3><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="График ${word} ${P.word}">${curve}${labels}</svg>${hi.v > 0 ? `<div class="note">Пик: ${esc(hi.l)}, ${esc(maskT(money(round2(hi.v))))}</div>` : ''}`;
+  const grid = [0.25, 0.5, 0.75].map(f => `<line x1="0" x2="${W}" y1="${(H - 8 - f * (H - 22)).toFixed(1)}" y2="${(H - 8 - f * (H - 22)).toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`).join('');
+  card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div>${hi.v > 0 ? `<div class="curve-pk"><small class="muted">Пик</small><b>${esc(per.kind !== 'year' && P.days <= 62 ? dd(addD(P.from, peak)) : hi.l)}</b></div>` : ''}</div>
+    <svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="График ${word} ${P.word} по ${per.kind === 'year' ? 'месяцам' : P.days > 62 ? 'неделям' : 'дням'}">${grid}${curve}${labels}</svg>`;
+  dayCard.hidden = true; dayCard.innerHTML = '';
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = [0, 0, rampCol(rows.findIndex(r => r[0] === name))], pc = sum / total * 100;
