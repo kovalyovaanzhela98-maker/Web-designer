@@ -58,7 +58,7 @@
       /* Синхронизация: два слушателя (карты и операции), результат отдаём вместе, когда пришли оба */
       listen(uid, handlers) {
         let meta, txs, ids = [];
-        const emit = () => { if (meta === undefined || txs === undefined) return; handlers.onData({ exists: !!meta, currency: meta && meta.currency, accounts: (meta && meta.accounts) || [], goals: (meta && meta.goals) || [], tx: txs }); };
+        const emit = () => { if (meta === undefined || txs === undefined) return; handlers.onData({ exists: !!meta, currency: meta && meta.currency, accounts: (meta && meta.accounts) || [], goals: (meta && meta.goals) || [], nudge: meta && meta.nudge, tx: txs }); };
         F.addDocumentSnapshotListener({ reference: `users/${uid}` }, (ev, err) => {
           if (err) return handlers.onError && handlers.onError(err);
           meta = ev && ev.snapshot ? ev.snapshot.data : null; emit();
@@ -119,7 +119,7 @@
       updateEmail(email) { const u = addProv(rd('user', {}), { providerId: 'password', email }); wr('user', u); return Promise.resolve(); },
       refreshUser: () => Promise.resolve(toUser(rd('user', null))),
       listen(uid, h) {
-        const fire = () => { const c = cloudOf(uid); h.onData({ exists: !!c.meta, currency: c.meta && c.meta.currency, accounts: (c.meta && c.meta.accounts) || [], goals: (c.meta && c.meta.goals) || [], tx: Object.entries(c.tx).map(([id, d]) => Object.assign({ id }, d)) }); };
+        const fire = () => { const c = cloudOf(uid); h.onData({ exists: !!c.meta, currency: c.meta && c.meta.currency, accounts: (c.meta && c.meta.accounts) || [], goals: (c.meta && c.meta.goals) || [], nudge: c.meta && c.meta.nudge, tx: Object.entries(c.tx).map(([id, d]) => Object.assign({ id }, d)) }); };
         const l = () => setTimeout(fire, 20); listeners.add(l); setTimeout(fire, 40);
         return () => listeners.delete(l);
       },
@@ -135,16 +135,16 @@
   /* ---------- Общая обёртка ---------- */
   const backend = !enabled ? null : (native ? nativeBackend() : mockBackend());
   const txData = t => ({ type: t.type, amount: t.amount, cat: t.cat, acc: t.acc, date: t.date, note: t.note || '', ts: t.ts || Date.now() });
-  const metaData = s => ({ currency: s.currency, accounts: s.accounts, goals: s.goals || [], v: 1, updatedAt: Date.now() });
+  const metaData = s => ({ currency: s.currency, accounts: s.accounts, goals: s.goals || [], nudge: s.nudge || null, v: 1, updatedAt: Date.now() });
   const sig = t => JSON.stringify([t.type, t.amount, t.cat, t.acc, t.date, t.note || '']);
 
   /* Снимок «что уже в облаке»: нужен, чтобы отправлять только изменения */
   function snapshotOf(state) {
-    return { meta: JSON.stringify([state.currency, state.accounts, state.goals || []]), tx: new Map(state.tx.map(t => [t.id, sig(t)])) };
+    return { meta: JSON.stringify([state.currency, state.accounts, state.goals || [], state.nudge || null]), tx: new Map(state.tx.map(t => [t.id, sig(t)])) };
   }
   function diff(prev, state) {
     const ops = [];
-    const m = JSON.stringify([state.currency, state.accounts, state.goals || []]);
+    const m = JSON.stringify([state.currency, state.accounts, state.goals || [], state.nudge || null]);
     if (m !== prev.meta) ops.push({ meta: metaData(state) });
     const seen = new Set();
     for (const t of state.tx) { seen.add(t.id); if (prev.tx.get(t.id) !== sig(t)) ops.push({ id: t.id, data: txData(t) }); }

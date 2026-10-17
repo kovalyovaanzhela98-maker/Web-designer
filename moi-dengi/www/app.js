@@ -59,7 +59,7 @@ const moneyH = n => hide ? MASK : `${esc(fmt(n))}<small>${esc(sym())}</small>`;
 const maskT = s => (hide ? MASK : s);
 
 /* ---------- Хранилище ---------- */
-let state = { currency: 'BYN', accounts: [], goals: [], tx: [] };
+let state = { currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState() };
 let hide = false;
 function load() {
   try {
@@ -84,14 +84,14 @@ function pushCloud() {
   synced = cloud.snapshotOf(state);
   Promise.resolve(cloud.write(cloudUid, ops)).catch(() => { synced = prev; toast('Нет связи. Данные сохранятся на телефоне', null, null, 'oops'); });
 }
-const canon = st => JSON.stringify([st.currency, st.accounts, st.goals, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
+const canon = st => JSON.stringify([st.currency, st.accounts, st.goals, st.nudge, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
 function applyRemote(r) {
   if (!r.exists) {                               // новый аккаунт: заливаем то, что уже есть на телефоне
     synced = { meta: '', tx: new Map() };
     pushCloud();
     return;
   }
-  const st = sanitize({ currency: r.currency, accounts: r.accounts, goals: r.goals, tx: r.tx });
+  const st = sanitize({ currency: r.currency, accounts: r.accounts, goals: r.goals, nudge: r.nudge, tx: r.tx });
   if (!st) return;
   st.tx.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0)));
   synced = cloud.snapshotOf(st);
@@ -99,9 +99,10 @@ function applyRemote(r) {
   state = st;
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (_) {}
   render();
+  nudgeRefresh(true);
 }
 function wipeLocal() {
-  state = { currency: 'BYN', accounts: [], goals: [], tx: [] };
+  state = { currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState() };
   try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(UID_KEY); } catch (_) {}
 }
 function gate(signedIn) {
@@ -168,7 +169,7 @@ function sanitize(o) {
       created: parseYmd(g.created) ? g.created : today()
     });
   }
-  return { currency, accounts, goals, tx };
+  return { currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge) };
 }
 
 /* ---------- UI-состояние ---------- */
@@ -222,6 +223,7 @@ function finTips() {
   const cur = monthTx(now0.getFullYear(), now0.getMonth());
   const inc = sumOf(cur, 'income'), exp = sumOf(cur, 'expense');
   const tips = [], M = n => esc(maskT(money(n)));
+  if (state.nudge.on && state.tx.length > 0 && state.tx.length < 10) tips.push({ pose: 'think', t: esc(MD.nudges.t('few')) });
   const todayExp = round2(state.tx.filter(t => t.type === 'expense' && t.date === today()).reduce((s, t) => s + t.amount, 0));
   if (!state.tx.length) tips.push({ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Нажми «+» или скажи в микрофон, например: «кофе 5».</small>' });
   else if (!cur.length) tips.push({ pose: 'sleepy', t: V(['В этом месяце пока тихо<small>Скажи, на что ушли деньги, и я запишу.</small>', 'Пока ни одной записи за месяц<small>Нажми «+» или скажи: «кофе 5».</small>']) });
@@ -264,11 +266,13 @@ function render() {
   renderMonthBars();
   renderHome();
   renderSay();
+  renderNudge();
   if (tab === 'ops') renderOps();
   if (tab === 'stats') renderStats();
   if (tab === 'goals') renderGoals();
   if (tab === 'acc') renderAcc();
   if (tab === 'chat' && MD.chat) MD.chat.render();
+  if (tab === 'home' || tab === 'stats') nudgeRefresh(false);
 }
 
 function renderMonthBars() {
@@ -529,6 +533,7 @@ function closeLayer(el) {
   ignorePops++;
   history.back();
   if (el._onClose) { const f = el._onClose; el._onClose = null; f(); }
+  setTimeout(() => nudgeRefresh(false), 700);
 }
 window.addEventListener('popstate', () => {
   if (ignorePops > 0) { ignorePops--; return; }
@@ -650,6 +655,7 @@ $('#txForm').addEventListener('submit', e => {
   const ex = tx.editId && state.tx.find(t => t.id === tx.editId);
   const first = !state.tx.length;
   if (ex) Object.assign(ex, rec); else state.tx.push({ id: uid(), ...rec, ts: Date.now() });
+  lastAddAt = Date.now();
   save();
   const d = parseYmd(date); ym = { y: d.getFullYear(), m: d.getMonth() };
   closeLayer($('#lyTx'));
@@ -709,6 +715,7 @@ function deleteTx(id) {
   if (i < 0) { render(); return; }
   state.tx.splice(i, 1);
   save(); render(); buzz(15);
+  nudgeRefresh(true);
   toast('Запись удалена');
 }
 
@@ -1056,6 +1063,7 @@ $('#draftOk').addEventListener('click', () => {
   const latest = draft.map(d => d.date).sort().pop(), ld = parseYmd(latest);
   draft.forEach((d, i) => state.tx.push({ id: uid(), ...d, ts: Date.now() + i }));
   draft = [];
+  lastAddAt = Date.now();
   save();
   ym = { y: ld.getFullYear(), m: ld.getMonth() };
   closeLayer($('#lyDraft'));
@@ -1064,6 +1072,102 @@ $('#draftOk').addEventListener('click', () => {
   showTab('home');
   toast(`Записал: ${n}`, null, null, 'happy');
 });
+
+/* ---------- Фин заметил: подсказки по привычкам ---------- */
+const NG = MD.nudges;
+let ngAnalysis = null, ngAt = 0, ngTimer = null, lastAddAt = 0;
+const ngCtx = () => ({ now: new Date(), currency: state.currency, canShow: nudgeCanShow(), money: n => money(n), dayName: d => `${d.getDate()} ${MONTHS_G[d.getMonth()]}` });
+/* Не мешаем вводу: подсказка появляется только на Главной, когда закрыты форма, «Всё верно?» и запись голоса */
+function nudgeCanShow() { return tab === 'home' && layers.length === 0 && !MD.voice.active && Date.now() - lastAddAt > 8000 && (!cloud.enabled || !!me); }
+/* Пересчёт паттернов не чаще раза в 10 минут (удаление и импорт считают сразу), выбор подсказки лёгкий */
+function nudgeRefresh(force) {
+  clearTimeout(ngTimer);
+  ngTimer = setTimeout(() => {
+    if (cloud.enabled && !me) return;
+    const c = ngCtx();
+    if (force || !ngAnalysis || Date.now() - ngAt > 10 * 60 * 1000 || (state.nudge.active && state.nudge.active.rule === 'limit')) { ngAnalysis = NG.analyze(state.tx, state.nudge, c); ngAt = Date.now(); }
+    const r = NG.settle(state.nudge, ngAnalysis, c);
+    if (r.changed) save();
+    renderNudge();
+  }, force ? 0 : 250);
+}
+function nudgeInfo() {
+  const n = state.nudge; if (!n.active || !n.on) return null;
+  const d = NG.describe(n, state.tx, Object.assign(ngCtx(), { analysis: ngAnalysis || NG.analyze(state.tx, n, ngCtx()) }));
+  return d;
+}
+function renderNudge() {
+  const box = $('#nudgeBox'), say = $('#homeSay'), d = nudgeInfo();
+  if (state.nudge.active && !d) { state.nudge.active = null; save(); }
+  say.hidden = !!d;
+  box.innerHTML = d ? `<section class="nudge" role="region" aria-label="${esc(NG.t('aria.region'))}">
+      <div class="nudge-top"><span class="nudge-m" aria-hidden="true">${MD.mascot('think', 68)}</span><div class="nudge-t"><b>${esc(NG.t('title'))}</b><p>${esc(maskT(d.text))}</p></div></div>
+      <div class="nudge-act"><button class="btn ghost" type="button" data-nudge="ack" aria-label="${esc(NG.t('aria.ok'))}">${esc(NG.t('ok'))}</button><button class="btn primary" type="button" data-nudge="talk" aria-label="${esc(NG.t('aria.talk', { cat: d.cat }))}">${esc(d.primary)}</button></div>
+    </section>` : '';
+  const sn = $('#statNudge'), isCur = ym.y === now0.getFullYear() && ym.m === now0.getMonth();
+  sn.innerHTML = d && isCur && tab === 'stats' ? `<button class="nudge-mini" type="button" data-nudge="talk" aria-label="${esc(NG.t('aria.talk', { cat: d.cat }))}"><span aria-hidden="true">${MD.mascot('think', 44)}</span><span class="nm-t"><b>${esc(NG.t('title'))}</b><small>${esc(maskT(d.text))}</small></span>${icon('right')}</button>` : '';
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-nudge]'); if (!b) return;
+  if (b.dataset.nudge === 'ack') {
+    const r = NG.ack(state.nudge); save(); buzz(8); renderNudge();
+    if (r.auto) toast(NG.t('muted'), null, null, 'hello');
+  } else if (b.dataset.nudge === 'talk') openNudgeDlg();
+});
+
+/* Разговор «Обсудить»: две-три реплики по веткам */
+let nd = null;
+const ndSay = (pose, text) => MD.say(pose, esc(text), 76);
+const ndBtn = (act, label, cls = 'soft') => `<button class="btn ${cls} wide" type="button" data-nd="${act}">${esc(label)}</button>`;
+function openNudgeDlg() {
+  const a = state.nudge.active; if (!a) return;
+  NG.startTalk(state.nudge); save();
+  nd = { cat: a.cat, step: a.rule === 'limit' ? 'amount' : 'q1' };
+  renderNudgeDlg();
+  openLayer($('#lyNudge'));
+}
+function ndFacts() {
+  const T = new Date(), from = ymd(new Date(T.getFullYear(), T.getMonth(), T.getDate() - 29));
+  const list = state.tx.filter(t => t.type === 'expense' && t.cat === nd.cat && t.date >= from);
+  const sum = round2(list.reduce((s, t) => s + t.amount, 0));
+  const pm = new Date(T.getFullYear(), T.getMonth() - 1, 1), pk = monthKey(pm.getFullYear(), pm.getMonth());
+  const prev = round2(state.tx.filter(t => t.type === 'expense' && t.cat === nd.cat && t.date.startsWith(pk)).reduce((s, t) => s + t.amount, 0));
+  return { n: list.length, sum, cmp: prev ? (sum > prev * 1.03 ? 'more' : sum < prev * 0.97 ? 'less' : 'same') : null };
+}
+function renderNudgeDlg() {
+  if (!nd) return;
+  const t = NG.t, c = nd.cat;
+  let html = '';
+  if (nd.step === 'q1') html = ndSay('think', t('q1')) + ndBtn('once', t('once')) + ndBtn('regular', t('regular')) + ndBtn('unknown', t('unknown'));
+  else if (nd.step === 'once') html = ndSay('hello', t('onceMsg')) + ndBtn('hide', t('hide'), 'soft') + ndBtn('keep', t('keep'), 'primary');
+  else if (nd.step === 'amount') html = ndSay('think', t('askLimit', { cat: c })) + fld('ndAmt', t('amount'), { mode: 'decimal', unit: sym(), value: state.nudge.limit[c] ? String(state.nudge.limit[c]).replace('.', ',') : '' }) + '<div class="msg err" id="ndErr" hidden></div>' + ndBtn('save', t('save'), 'primary');
+  else if (nd.step === 'saved') html = ndSay('joy', t('saved')) + ndBtn('done', t('good'), 'primary');
+  else if (nd.step === 'unknown') {
+    const f = ndFacts();
+    html = ndSay('think', `${t('look', { n: f.n, trata: NG.form(f.n, NG.forms('trata')), sum: money(f.sum) })}${f.cmp ? ' ' + t(f.cmp === 'more' ? 'more' : f.cmp === 'less' ? 'less' : 'same') : ''}`) + ndBtn('done', t('ok'), 'primary') + ndBtn('hideall', t('hideAll'), 'soft');
+  }
+  $('#nudgeBody').innerHTML = `<div class="quiz-in">${html}</div>`;
+  const f = $('#ndAmt'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 80);
+}
+function ndFinish(msg) {
+  NG.finishTalk(state.nudge); save();
+  const ly = $('#lyNudge'); if (!ly.hidden) closeLayer(ly);
+  nd = null; renderNudge();
+  if (msg) toast(msg, null, null, 'happy');
+}
+$('#nudgeBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-nd]'); if (!b || !nd) return;
+  const a = b.dataset.nd, c = nd.cat;
+  if (a === 'once' || a === 'regular' || a === 'unknown') { NG.answer(state.nudge, c, a); save(); nd.step = a === 'once' ? 'once' : a === 'regular' ? 'amount' : 'unknown'; renderNudgeDlg(); return; }
+  if (a === 'hide' || a === 'hideall') { NG.hideCat(state.nudge, c); return ndFinish(`Не буду подсказывать про «${c}». Вернуть можно в Профиле.`); }
+  if (a === 'keep' || a === 'done') return ndFinish();
+  if (a === 'save') {
+    const v = parseAmount($('#ndAmt').value);
+    if (!(v > 0)) { showErr($('#ndErr'), NG.t('amountErr')); return; }
+    NG.setLimit(state.nudge, c, v); save(); nd.step = 'saved'; renderNudgeDlg(); buzz(12); nudgeRefresh(true);
+  }
+});
+$('#nudgeBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'ndAmt') { e.preventDefault(); const b = $('#nudgeBody [data-nd=save]'); if (b) b.click(); } });
 
 /* ---------- Профиль ---------- */
 const loggedIn = () => !!(cloud.enabled && me);
@@ -1096,6 +1200,10 @@ function renderAccount() {
   const rc = MD.notify.cfg();
   setPlate('#plRemind', rc.on ? `Каждый день в ${rc.times.join(', ')}` : 'Выключены', null, false);
   setPlate('#plQuick', rc.quick ? 'Кнопки на экране блокировки включены' : 'Записывай, не открывая Фин', null, false);
+  const ng = state.nudge, onCats = MD.nudges.WATCH.filter(k => ng.cats[k] !== false).length;
+  $('#plNudge').setAttribute('aria-checked', String(ng.on)); $('#plNudge .sw-t').setAttribute('aria-checked', String(ng.on));
+  $('#plNudge small').textContent = ng.on ? NG.counter(ng) : NG.t('set.off');
+  setPlate('#plNudgeCats', ng.on ? (onCats === MD.nudges.WATCH.length ? 'Все категории' : `Выбрано ${onCats} из ${MD.nudges.WATCH.length}`) : NG.t('set.off'), null, !ng.on);
   const plus = MD.sub.isPlus(), S = MD.sub.state();
   $('#acctPlus').hidden = !plus;
   $('#plusTitle').textContent = plus ? 'Фин Плюс включён' : 'Фин Плюс';
@@ -1106,7 +1214,7 @@ $('#plusCard').addEventListener('click', () => MD.sub.open('generic'));
 
 /* Одна шторка для всего в профиле: телефон, почта, стартовый баланс, валюта, копия данных */
 let panel = null;
-const PN_TITLE = { phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт', remind: 'Напоминания', quick: 'Виджет и экран блокировки' };
+const PN_TITLE = { nudge: 'Подсказки Фина', phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт', remind: 'Напоминания', quick: 'Виджет и экран блокировки' };
 const pnBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-pn="${act}" ${dis ? 'disabled' : ''}><span class="spin" aria-hidden="true"></span><span>${esc(label)}</span></button>`;
 const onlyWay = () => ((me && me.providers) || []).length <= 1;
 const normPhone = v => { let t = String(v).replace(/[\s\-()]/g, ''); if (/^8\d{10}$/.test(t)) t = '+7' + t.slice(1); return /^\+\d{9,15}$/.test(t) ? t : null; };
@@ -1158,6 +1266,11 @@ function renderPanel(err) {
   } else if (P.kind === 'currency') {
     const sel = P.cur || state.currency;
     html = `<div class="chips" role="radiogroup" aria-label="Валюта">${Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-chcur="${c}" aria-checked="${c === sel}">${c} ${CURRENCIES[c]}</button>`).join('')}</div><div class="note">Меняется только знак, суммы не пересчитываются.</div>` + pnBtn('cur-apply', 'Применить', 'primary', sel === state.currency);
+  } else if (P.kind === 'nudge') {
+    const ng = state.nudge, lims = Object.keys(ng.limit);
+    say = ['hello', `${NG.counter(ng)}<small>Выбери, по каким категориям Фин может подсказывать.</small>`];
+    html = `<div class="grp flat">${MD.nudges.WATCH.map(k => { const ci = catInfo('expense', k), on = ng.cats[k] !== false; return `<button class="row" type="button" data-pn="ng-cat:${esc(k)}" role="switch" aria-checked="${on}"><span class="rw-ic" style="color:${ci[2]}" aria-hidden="true">${cIcon(ci)}</span><span class="rw-t"><b>${esc(k)}</b><small>${ng.limit[k] ? `Порог: ${esc(money(ng.limit[k]))} в месяц` : MD.nudges.PRIO.includes(k) ? 'Привычки и рост' : 'Только сильный рост'}</small></span><span class="sw-t" aria-checked="${on}"></span></button>`; }).join('')}</div>` +
+      (lims.length ? pnBtn('ng-limits', 'Убрать пороги', 'soft') : '') + pnBtn('ng-reset', NG.t('set.reset'), 'ghost');
   } else if (P.kind === 'remind') {
     const c = MD.notify.cfg(), plus = MD.sub.isPlus();
     const DN = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -1195,6 +1308,7 @@ async function refreshMe() { try { const u = await cloud.refreshUser(); if (u) m
 $('#s-acc').addEventListener('click', e => {
   const b = e.target.closest('[data-plate]'); if (!b || b.disabled) return;
   const k = b.dataset.plate;
+  if (k === 'nudge-on') { state.nudge.on = !state.nudge.on; if (!state.nudge.on) state.nudge.active = null; save(); renderAccount(); renderNudge(); nudgeRefresh(true); buzz(8); return; }
   if (k === 'phone') me.phoneLinked ? openPanel('phone') : openPanel('phone', { step: 'new', mode: 'link' });
   else if (k === 'email') me.emailLinked ? openPanel('email') : openPanel('email', { step: 'new', mode: 'link' });
   else openPanel(k);
@@ -1210,6 +1324,9 @@ $('#linkBody').addEventListener('click', async ev => {
   if (chip) { panel.cur = chip.dataset.chcur; renderPanel(); return; }
   const b = ev.target.closest('[data-pn]'); if (!b || b.disabled || !panel) return;
   const a = b.dataset.pn, P = panel, V = id => ($(id) || {}).value || '';
+  if (a.startsWith('ng-cat:')) { const k = a.slice(7), ng = state.nudge; if (ng.cats[k] === false) delete ng.cats[k]; else ng.cats[k] = false; if (ng.active && ng.active.cat === k && ng.cats[k] === false) ng.active = null; save(); renderPanel(); renderAccount(); renderNudge(); nudgeRefresh(true); return; }
+  if (a === 'ng-limits') { state.nudge.limit = {}; save(); renderPanel(); renderNudge(); return; }
+  if (a === 'ng-reset') { NG.resetHidden(state.nudge); save(); renderPanel(); renderAccount(); toast(NG.t('set.resetDone'), null, null, 'happy'); nudgeRefresh(true); return; }
   if (a === 'rm-toggle') {
     const c = MD.notify.cfg(); c.on = !c.on; MD.notify.save(c);
     renderPanel(); renderAccount();
@@ -1312,6 +1429,7 @@ async function restoreFrom(raw) {
   const yes = await confirmDlg('Заменить данные?', `Всё текущее заменится копией: ${s.tx.length} ${pluralN(s.tx.length, 'запись', 'записи', 'записей')} и ${s.goals.length} ${pluralN(s.goals.length, 'цель', 'цели', 'целей')}.`, 'Заменить');
   if (!yes) return;
   state = s; save(); render();
+  nudgeRefresh(true);
   pnDone('Данные восстановлены');
 }
 $('#btnSignOut').addEventListener('click', async () => {
@@ -1364,7 +1482,9 @@ function addTx(items) {
   list.forEach((d, i) => state.tx.push({ id: uid(), ...d, ts: Date.now() + i }));
   const latest = parseYmd(list.map(d => d.date).sort().pop());
   ym = { y: latest.getFullYear(), m: latest.getMonth() };
+  lastAddAt = Date.now();
   save(); render(); buzz(15);
+  nudgeRefresh(true);
   return list.length;
 }
 MD.app = {

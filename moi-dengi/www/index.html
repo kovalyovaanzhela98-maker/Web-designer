@@ -45,6 +45,7 @@
 
     <div class="quick" id="quickRow" role="group" aria-label="Быстрая запись"></div>
 
+    <div id="nudgeBox"></div>
     <button class="say-btn tip" id="homeSay" aria-live="polite"></button>
 
     <section class="block" aria-labelledby="hGoals">
@@ -80,6 +81,7 @@
       <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
       <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
     </div>
+    <div id="statNudge"></div>
     <div class="say-wrap" id="statSay"></div>
     <div class="card" id="catCard"></div>
     <div id="insights"></div>
@@ -144,6 +146,12 @@
     <div class="grp">
       <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджет и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+
+    <div class="grp-t">Подсказки Фина</div>
+    <div class="grp">
+      <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Подсказывать о привычках</b><small></small></span><span class="sw-t" aria-checked="true"></span></button>
+      <button class="row" type="button" id="plNudgeCats" data-plate="nudge"><span class="rw-ic" aria-hidden="true"><i data-ic="grid"></i></span><span class="rw-t"><b>По каким категориям</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
     <div class="grp-t">Основное</div>
@@ -258,6 +266,16 @@
   </div>
 </div>
 
+<!-- Фин заметил: разговор -->
+<div class="layer" id="lyNudge" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="nudgeTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="nudgeTitle">Фин заметил</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="nudgeBody"></div>
+  </div>
+</div>
+
 <!-- Прикрепить в чате -->
 <div class="layer" id="lyAttach" hidden>
   <div class="scrim" data-close></div>
@@ -302,6 +320,7 @@
 <script src="js/categories.js"></script>
 <script src="js/parser.js"></script>
 <script src="js/goals.js"></script>
+<script src="js/nudges.js"></script>
 <script src="js/importers.js"></script>
 <script src="js/brain.js"></script>
 <script src="js/cloud.js"></script>
