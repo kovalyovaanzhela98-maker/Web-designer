@@ -1471,6 +1471,13 @@ const pnErr = (e, ctx) => {
   if (ctx === 'code') return 'Неверный код. Попробуй ещё раз';
   return 'Не получилось. Проверь связь и попробуй снова.';
 };
+/* Окно покупки не открываем поверх окна профиля: сначала закрываем его, после покупки возвращаем и делаем то, что хотели */
+function gateFromPanel(feature, ok) {
+  if (MD.sub.isPlus()) return ok();
+  const kind = panel && panel.kind;
+  closeLayer($('#lyLink')); panel = null;
+  setTimeout(() => MD.sub.open(feature, () => { openPanel(kind || 'remind'); ok(); }), 80);
+}
 function openPanel(kind, extra = {}) { panel = Object.assign({ kind, step: 'main' }, extra); renderPanel(); openLayer($('#lyLink')); }
 function renderPanel(err) {
   const P = panel; if (!P) return;
@@ -1581,11 +1588,11 @@ $('#linkBody').addEventListener('click', async ev => {
     else MD.notify.apply();
     return;
   }
-  if (a === 'rm-add') { return MD.sub.gate('remind', () => { const c = MD.notify.cfg(); const [h, m] = (c.times[c.times.length - 1] || '21:00').split(':').map(Number); c.times.push(`${pad((h + 1) % 24)}:${pad(m)}`); MD.notify.save(c); MD.notify.apply(); renderPanel(); renderAccount(); }); }
+  if (a === 'rm-add') { return gateFromPanel('remind', () => { const c = MD.notify.cfg(); const [h, m] = (c.times[c.times.length - 1] || '21:00').split(':').map(Number); c.times.push(`${pad((h + 1) % 24)}:${pad(m)}`); MD.notify.save(c); MD.notify.apply(); renderPanel(); renderAccount(); }); }
   if (a.startsWith('rm-del:')) { const c = MD.notify.cfg(); c.times.splice(Number(a.slice(7)), 1); MD.notify.save(c); MD.notify.apply(); renderPanel(); renderAccount(); return; }
   if (a.startsWith('rm-day:')) {
     const d = Number(a.slice(7)), c = MD.notify.cfg();
-    return MD.sub.gate('remind', () => {
+    return gateFromPanel('remind', () => {
       const i = c.days.indexOf(d);
       if (i >= 0) { if (c.days.length > 1) c.days.splice(i, 1); } else c.days.push(d);
       c.days.sort(); MD.notify.save(c); MD.notify.apply(); renderPanel();

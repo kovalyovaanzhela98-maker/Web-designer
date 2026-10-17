@@ -59,7 +59,9 @@
           else if (THOUSAND.test(t) && used) { total += (cur || 1) * 1000; cur = 0; lastWordIdx = j; j++; }
           else break;
         }
-        out.push(String(total + cur));
+        let half = 0;                                   // «шесть с половиной» → 6,5
+        if (toks[lastWordIdx + 2] === 'с' && /^половин(?:ой|кой)$/.test(toks[lastWordIdx + 4] || '')) { half = 0.5; lastWordIdx += 4; }
+        out.push(String(total + cur + half));
         i = lastWordIdx + 1;
       } else { out.push(w); i++; }
     }
@@ -85,6 +87,7 @@
     // 15.10 / 15.10.2026 / 15/10
     s = s.replace(/(?<![\d.])(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?(?![\d])/g, (m, d, mo, y) => {
       if (Number(mo) < 1 || Number(mo) > 12 || Number(d) < 1 || Number(d) > 31) return m;
+      if (!y && m.includes('.') && mo.length === 1) return m;      // «кофе 6.5» — это сумма, а не 6 мая
       const yy = y ? (y.length === 2 ? 2000 + Number(y) : Number(y)) : today.getFullYear();
       const dt = mk(yy, Number(mo) - 1, Number(d));
       return dt ? put(m, dt) : m;
