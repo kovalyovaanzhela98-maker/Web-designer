@@ -46,7 +46,7 @@
   const inP = (list, p) => list.filter(t => t.date >= p.from && t.date <= p.to);
   const sumOf = (list, type) => r2(list.filter(t => t.type === type).reduce((s, t) => s + t.amount, 0));
   const byCat = (list, type) => { const o = {}; list.filter(t => t.type === type).forEach(t => { o[t.cat] = r2((o[t.cat] || 0) + t.amount); }); return Object.entries(o).sort((a, b) => b[1] - a[1]); };
-  const COLORS = { Продукты: '#3B82F6', Кафе: '#F59E0B', Транспорт: '#14B8A6', Дом: '#8B5CF6', Здоровье: '#EF4444', Одежда: '#EC4899', Связь: '#06B6D4', Подписки: '#6366F1', Подарки: '#F97316', Развлечения: '#EAB308', Другое: '#94A3B8', Зарплата: '#1F8A5B', Подработка: '#14B8A6', Подарок: '#F97316', Возврат: '#3B82F6' };
+  const COLORS = { Продукты: '#FF9466', Кафе: '#FF9466', Транспорт: '#4F8CF5', Дом: '#FF9466', Здоровье: '#F25C6E', Одежда: '#4F8CF5', Связь: '#8A6BEF', Подписки: '#EE6CAF', Подарки: '#F25C6E', Развлечения: '#F5B82E', Другое: '#8A6BEF', Зарплата: '#58BB3C', Подработка: '#4F8CF5', Подарок: '#F25C6E', Возврат: '#F5B82E' };
   const cnt = n => `${n} ${plural(n, 'запись', 'записи', 'записей')}`;
 
   /* ---------- Ответы ---------- */

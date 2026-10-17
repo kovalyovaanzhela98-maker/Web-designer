@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="education-butter" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFEA9C"/><stop offset="1" stop-color="#F5B82E"/></linearGradient><linearGradient id="education-lilac" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#DDCBFF"/><stop offset="1" stop-color="#8A6BEF"/></linearGradient><linearGradient id="education-sky" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B9DEFF"/><stop offset="1" stop-color="#4F8CF5"/></linearGradient></defs>
+<path d="M34 60v24c0 10 14 18 30 18s30-8 30-18V60L64 74z" fill="url(#education-lilac)"/>
+<path d="M64 22L10 47l54 25 54-25z" fill="url(#education-sky)"/>
+<path d="M106 52v30" stroke="#F5B82E" stroke-width="5" stroke-linecap="round"/><circle cx="106" cy="86" r="7" fill="url(#education-butter)"/></svg>

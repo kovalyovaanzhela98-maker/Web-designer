@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="travel-sky" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B9DEFF"/><stop offset="1" stop-color="#4F8CF5"/></linearGradient></defs>
+<g transform="rotate(45 64 64)">
+<rect x="56" y="8" width="16" height="108" rx="8" fill="url(#travel-sky)"/>
+<path d="M64 46L12 72v12l52-12 52 12V72z" fill="url(#travel-sky)"/>
+<path d="M64 96l-20 11v7l20-4 20 4v-7z" fill="url(#travel-sky)"/>
+<rect x="60" y="18" width="8" height="10" rx="4" fill="#fff" fill-opacity=".8"/></g></svg>

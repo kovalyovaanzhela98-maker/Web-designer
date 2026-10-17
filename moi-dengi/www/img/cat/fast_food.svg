@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="fast_food-butter" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFEA9C"/><stop offset="1" stop-color="#F5B82E"/></linearGradient><linearGradient id="fast_food-green" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#CDF2A8"/><stop offset="1" stop-color="#58BB3C"/></linearGradient></defs>
+<path d="M20 58c0-24 19-38 44-38s44 14 44 38z" fill="url(#fast_food-butter)"/>
+<ellipse cx="46" cy="38" rx="4" ry="2.5" fill="#fff"/><ellipse cx="64" cy="31" rx="4" ry="2.5" fill="#fff"/><ellipse cx="82" cy="38" rx="4" ry="2.5" fill="#fff"/><ellipse cx="62" cy="46" rx="4" ry="2.5" fill="#fff"/>
+<rect x="16" y="58" width="96" height="12" rx="6" fill="url(#fast_food-green)"/>
+<rect x="20" y="68" width="88" height="17" rx="8.5" fill="#7A4A35"/>
+<path d="M22 84h84l-14 8-12-6-14 8-14-8-14 8-12-6z" fill="#FFC93D"/>
+<path d="M20 90h88v6a14 14 0 0 1-14 14H34a14 14 0 0 1-14-14z" fill="url(#fast_food-butter)"/></svg>

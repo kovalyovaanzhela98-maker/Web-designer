@@ -3,68 +3,88 @@
    Меняешь значение здесь — меняется всё приложение и брендбук.
    ============================================================ */
 
-@font-face{font-family:"Manrope";font-weight:200 800;font-display:swap;src:url(fonts/manrope-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
-@font-face{font-family:"Manrope";font-weight:200 800;font-display:swap;src:url(fonts/manrope-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(fonts/inter-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
 @font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(fonts/inter-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 
 :root{
-  /* Светлая тема: фон белый, плашки #FAFAFA с обводкой 1px, глубина цветом, без теней */
-  --bg:#FFFFFF;--surface:#FAFAFA;--float:#FFFFFF;--toast:#1E1E26;--sheet:#FFFFFF;--text:#1A1A1A;--muted:#5C5C5C;--ph:#767676;
-  --line:#EEEEEE;--field:#F3F3F3;--outline:1px solid #E0E0E0;--card-b:1px solid #EEEEEE;
-  /* Зелёный: деньги и баланс. Синий (интерактив) у «Фина» живёт в копилках */
-  --accent:#2E7D5B;--accent-d:#256249;--accent-t:#256249;--on-accent:#FFFFFF;--lime:#2E7D5B;--on-lime:#FFFFFF;
-  --btn:#2E7D5B;--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#F1F6F3;
-  --tone-mint:#F1F6F3;--tone-lime:#F4F4F4;--tone-peach:#F8F3EE;--tone-sky:#F0F3F8;--tone-lilac:#F2F2F8;--tone-sun:#FAF5EC;
-  --on-tone:#1A1A1A;
-  --inc:#2E7D5B;--inc-bg:#EEF5F1;--inc-t:#256249;
-  --exp:#D2553A;--exp-bg:#FBEEEA;--exp-t:#B5412A;
-  --r1:#2E7D5B;--r2:#C77D2E;--r3:#2F5FA8;--r4:#B85C5C;--r5:#4A4A8A;--r6:#9A9A9A;
-  /* Цвета блоков: платежи — янтарный, копилки — синий, дни рождения — коралловый, аналитика — индиго */
-  --c-pay:#C77D2E;--c-save:#2F5FA8;--c-gift:#B85C5C;--c-stat:#4A4A8A;
-  --focus:#2E7D5B;--scrim:rgba(10,10,15,.4);
-  --font-display:"Manrope","Inter",system-ui,sans-serif;
-  --font-text:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --fs-big:32px;--fs-title:28px;--fs-card:16px;--fs-cap:13px;
-  --w-body:300;--w-cap:350;--w-label:500;--w-strong:600;
-  --r-sm:10px;--r-md:12px;--r-lg:16px;--r-pill:999px;
+  /* Бренд: из персонажа Фина (оливковая зелень, росток, тёплый крем) */
+  --brand-primary:#3F6B33;--brand-primary-2:#33582A;--brand-accent:#A6C84C;--brand-warm:#F3E5D5;
+  /* Семантика отдельно от бренда */
+  --positive:#2E8B57;--positive-t:#1F6B41;--negative:#D14D41;--negative-t:#B23A2F;--warning:#C98A12;--warning-t:#85590A;--neutral:#6B7466;
+  /* Поверхности: фон слегка тонирован брендом, не чистый белый */
+  --bg:#F6F7F1;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#F6F7F1;--field:#EEF1E6;--toast:#1F2A1D;
+  --text:#1B241A;--muted:#5B6657;--ph:#737E6E;
+  --line:#E4E8DA;--outline:1px solid #D5DBC9;--card-b:1px solid #E4E8DA;
+  /* Алиасы, которыми пользуется вёрстка */
+  --accent:var(--brand-primary);--accent-d:#2F5426;--accent-t:#2F5426;--on-accent:#FFFFFF;--lime:var(--brand-accent);--on-lime:#1B2A12;
+  --btn:var(--brand-primary);--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#EAF0DD;
+  --tone-mint:#EAF0DD;--tone-lime:#F0F2E4;--tone-peach:#F8EEE4;--tone-sky:#E9EFF8;--tone-lilac:#EEEBF8;--tone-sun:#F8F0DD;--on-tone:#1B241A;
+  --inc:var(--positive);--inc-bg:color-mix(in srgb,var(--positive) 13%,var(--surface));--inc-t:var(--positive-t);
+  --exp:var(--negative);--exp-bg:color-mix(in srgb,var(--negative) 12%,var(--surface));--exp-t:var(--negative-t);
+  --r1:#3F6B33;--r2:#F5B82E;--r3:#4F8CF5;--r4:#F25C6E;--r5:#8A6BEF;--r6:#8C99B0;
+  /* Цвет блока: платежи, копилки, праздники, аналитика */
+  --c-pay:var(--cat-butter-solid);--c-save:var(--cat-sky-solid);--c-gift:var(--cat-coral-solid);--c-stat:var(--cat-lilac-solid);
+  --focus:var(--brand-primary);--scrim:rgba(18,28,14,.42);
+  /* Цвет категории: фон подложки и текст плашки */
+  --ci-a:16%;--ci-text-key:text;
+  /* Градиенты: два соседних тона, угол 160–200°, только на hero, графике, прогрессе и иконках */
+  --grad-hero:linear-gradient(170deg,#4A7C3B 0%,#3B6730 100%);
+  --hero-shadow:0 10px 28px -12px rgba(63,107,51,.55);
+  --font-display:"Inter",system-ui,-apple-system,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  --font-text:"Inter",system-ui,-apple-system,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  /* Шкала: 34 / 28 / 22 / 17 / 15 / 13 / 11 */
+  --fs-big:36px;--fs-34:34px;--fs-title:28px;--fs-22:22px;--fs-card:17px;--fs-15:15px;--fs-cap:13px;--fs-11:11px;
+  --w-body:400;--w-cap:400;--w-label:500;--w-strong:600;
+  --r-hero:28px;--r-lg:20px;--r-md:14px;--r-sm:10px;--r-pill:999px;
   --gap:16px;--pad:16px;
   --shadow:none;--shadow-2:none;
-  --ease:cubic-bezier(.2,.8,.2,1);--dur:.18s;
+  --ease:cubic-bezier(.2,.8,.2,1);--dur:.22s;
   --nav-h:80px;
   --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
   --sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
+  --cat-peach-solid:#FF9466;--cat-peach-bg:#FFF0EA;--cat-peach-text:#99593D;--cat-peach-text-dark:#FF9466;
+  --cat-coral-solid:#F25C6E;--cat-coral-bg:#FDE8EB;--cat-coral-text:#B24451;--cat-coral-text-dark:#F47887;
+  --cat-butter-solid:#F5B82E;--cat-butter-bg:#FEF5E2;--cat-butter-text:#8B691A;--cat-butter-text-dark:#F5B82E;
+  --cat-mint-solid:#2EC496;--cat-mint-bg:#E2F7F0;--cat-mint-text:#1D7C5F;--cat-mint-text-dark:#2EC496;
+  --cat-sky-solid:#4F8CF5;--cat-sky-bg:#E6EFFE;--cat-sky-text:#3A67B4;--cat-sky-text-dark:#6D9FF7;
+  --cat-lilac-solid:#8A6BEF;--cat-lilac-bg:#EFEAFD;--cat-lilac-text:#7057C3;--cat-lilac-text-dark:#A48BF3;
+  --cat-pink-solid:#EE6CAF;--cat-pink-bg:#FDEAF4;--cat-pink-text:#A64B7A;--cat-pink-text-dark:#F07DB8;
+  --cat-sand-solid:#CC9C63;--cat-sand-bg:#F8F1E9;--cat-sand-text:#876742;--cat-sand-text-dark:#CC9C63;
+  --cat-slate-solid:#8C99B0;--cat-slate-bg:#EFF1F4;--cat-slate-text:#626B7B;--cat-slate-text-dark:#99A5B9;
+  --cat-green-solid:#58BB3C;--cat-green-bg:#E8F5E4;--cat-green-text:#377626;--cat-green-text-dark:#58BB3C;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0A0A0F;--surface:#14141A;--float:#1E1E26;--toast:#1E1E26;--sheet:#14141A;--card-b:1px solid #22222A;--text:#ECECEF;--muted:#A3A3AE;--ph:#8E8E99;
-    --line:#22222A;--field:#1E1E26;--outline:1px solid #2E2E38;
-    --accent:#3A8F6B;--accent-d:#6DBF9A;--accent-t:#6DBF9A;--on-accent:#FFFFFF;--lime:#3A8F6B;--on-lime:#FFFFFF;
-    --btn:#3A8F6B;--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#17211D;
-    --tone-mint:#17211D;--tone-lime:#1B1B22;--tone-peach:#221D1B;--tone-sky:#181D26;--tone-lilac:#1C1C27;--tone-sun:#221E17;
-    --on-tone:#ECECEF;
-    --inc:#4FA583;--inc-bg:#17211D;--inc-t:#7CC7A5;
-    --exp:#D9806A;--exp-bg:#26191A;--exp-t:#E69A87;
-    --r1:#3A8F6B;--r2:#B88746;--r3:#5A81BD;--r4:#C07878;--r5:#8585C4;--r6:#6E6E7A;
-    --c-pay:#B88746;--c-save:#6D8FC8;--c-gift:#C07878;--c-stat:#8F8FD0;
-    --focus:#3A8F6B;--scrim:rgba(0,0,0,.6);
-    --shadow:none;--shadow-2:none;
+    --brand-primary:#7DB067;--brand-primary-2:#6AA055;--brand-accent:#B8D868;--brand-warm:#3A3228;
+    --positive:#4FB07A;--positive-t:#7DD0A0;--negative:#EC7A6E;--negative-t:#F4A095;--warning:#E0AE45;--warning-t:#EEC770;--neutral:#9AA595;
+    --bg:#0E1A12;--surface:#16241A;--float:#1D2D21;--sheet:#122016;--field:#1D2D21;--toast:#243528;
+    --text:#EDF3E6;--muted:#A7B5A2;--ph:#92A08D;
+    --line:rgba(255,255,255,.09);--outline:1px solid rgba(255,255,255,.16);--card-b:1px solid rgba(255,255,255,.08);
+    --accent:var(--brand-primary);--accent-d:#A5CC92;--accent-t:#A5CC92;--on-accent:#0E1A0C;--lime:var(--brand-accent);--on-lime:#16300F;
+    --btn:#7DB067;--on-btn:#0E1A0C;--cream:#FFFFFF;--accent-bg:#1D2D21;
+    --tone-mint:#1D2D21;--tone-lime:#212F1D;--tone-peach:#2B2420;--tone-sky:#1C2733;--tone-lilac:#25223A;--tone-sun:#2B2719;--on-tone:#EDF3E6;
+    --r1:#7DB067;--r2:#F5B82E;--r3:#6D9FF7;--r4:#F47887;--r5:#A48BF3;--r6:#99A5B9;
+    --scrim:rgba(0,0,0,.6);
+    --ci-a:22%;--ci-text-key:text-dark;
+    --grad-hero:linear-gradient(170deg,#2F5A2A 0%,#264A22 100%);
+    --hero-shadow:0 10px 28px -14px rgba(0,0,0,.7);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-    --bg:#0A0A0F;--surface:#14141A;--float:#1E1E26;--toast:#1E1E26;--sheet:#14141A;--card-b:1px solid #22222A;--text:#ECECEF;--muted:#A3A3AE;--ph:#8E8E99;
-    --line:#22222A;--field:#1E1E26;--outline:1px solid #2E2E38;
-    --accent:#3A8F6B;--accent-d:#6DBF9A;--accent-t:#6DBF9A;--on-accent:#FFFFFF;--lime:#3A8F6B;--on-lime:#FFFFFF;
-    --btn:#3A8F6B;--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#17211D;
-    --tone-mint:#17211D;--tone-lime:#1B1B22;--tone-peach:#221D1B;--tone-sky:#181D26;--tone-lilac:#1C1C27;--tone-sun:#221E17;
-    --on-tone:#ECECEF;
-    --inc:#4FA583;--inc-bg:#17211D;--inc-t:#7CC7A5;
-    --exp:#D9806A;--exp-bg:#26191A;--exp-t:#E69A87;
-    --r1:#3A8F6B;--r2:#B88746;--r3:#5A81BD;--r4:#C07878;--r5:#8585C4;--r6:#6E6E7A;
-    --c-pay:#B88746;--c-save:#6D8FC8;--c-gift:#C07878;--c-stat:#8F8FD0;
-    --focus:#3A8F6B;--scrim:rgba(0,0,0,.6);
-    --shadow:none;--shadow-2:none;
+    --brand-primary:#7DB067;--brand-primary-2:#6AA055;--brand-accent:#B8D868;--brand-warm:#3A3228;
+    --positive:#4FB07A;--positive-t:#7DD0A0;--negative:#EC7A6E;--negative-t:#F4A095;--warning:#E0AE45;--warning-t:#EEC770;--neutral:#9AA595;
+    --bg:#0E1A12;--surface:#16241A;--float:#1D2D21;--sheet:#122016;--field:#1D2D21;--toast:#243528;
+    --text:#EDF3E6;--muted:#A7B5A2;--ph:#92A08D;
+    --line:rgba(255,255,255,.09);--outline:1px solid rgba(255,255,255,.16);--card-b:1px solid rgba(255,255,255,.08);
+    --accent:var(--brand-primary);--accent-d:#A5CC92;--accent-t:#A5CC92;--on-accent:#0E1A0C;--lime:var(--brand-accent);--on-lime:#16300F;
+    --btn:#7DB067;--on-btn:#0E1A0C;--cream:#FFFFFF;--accent-bg:#1D2D21;
+    --tone-mint:#1D2D21;--tone-lime:#212F1D;--tone-peach:#2B2420;--tone-sky:#1C2733;--tone-lilac:#25223A;--tone-sun:#2B2719;--on-tone:#EDF3E6;
+    --r1:#7DB067;--r2:#F5B82E;--r3:#6D9FF7;--r4:#F47887;--r5:#A48BF3;--r6:#99A5B9;
+    --scrim:rgba(0,0,0,.6);
+    --ci-a:22%;--ci-text-key:text-dark;
+    --grad-hero:linear-gradient(170deg,#2F5A2A 0%,#264A22 100%);
+    --hero-shadow:0 10px 28px -14px rgba(0,0,0,.7);
     color-scheme:dark;
 }

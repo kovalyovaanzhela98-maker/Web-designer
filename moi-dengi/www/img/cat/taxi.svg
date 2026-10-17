@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="taxi-butter" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFEA9C"/><stop offset="1" stop-color="#F5B82E"/></linearGradient><linearGradient id="taxi-coral" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFB0B0"/><stop offset="1" stop-color="#F25C6E"/></linearGradient></defs>
+<rect x="50" y="16" width="28" height="14" rx="5" fill="url(#taxi-coral)"/>
+<path d="M14 80c0-10 6-17 14-19l10-21c3-6 8-9 14-9h24c6 0 11 3 14 9l10 21c8 2 14 9 14 19v12a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6z" fill="url(#taxi-butter)"/>
+<path d="M41 60l8-17c1-3 3-4 6-4h18c3 0 5 1 6 4l8 17z" fill="#fff" fill-opacity=".85"/>
+<circle cx="28" cy="76" r="5" fill="#fff"/><circle cx="100" cy="76" r="5" fill="#fff"/>
+<circle cx="36" cy="98" r="13" fill="#2B2346"/><circle cx="92" cy="98" r="13" fill="#2B2346"/>
+<circle cx="36" cy="98" r="5" fill="#C8D0DE"/><circle cx="92" cy="98" r="5" fill="#C8D0DE"/></svg>

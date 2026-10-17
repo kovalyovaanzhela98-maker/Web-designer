@@ -655,9 +655,7 @@ body.kb .chat-dock{bottom:8px}
 .pcard{flex-basis:148px}
 
 /* Цвет несёт смысл: зелёный акцент, красный для расходов и «пора записать». Остальное нейтральное.
-   Цвета категорий больше не раскрашивают значки: все значки одного зелёного оттенка на светлой подложке */
-.tx-ic,.ci,.dm-ci{--c:var(--accent-d)!important}
-.cat-tile[aria-checked=true] .ci{background:var(--accent);color:#fff}
+   Цвет категории сквозной: значок, плашка суммы, бар и сегмент графика */
 .banner .bi{background:var(--accent-bg);color:var(--accent-t)}
 .gcard{background:var(--field)}
 .goal.big{background:var(--surface);border-color:var(--line)}
@@ -837,101 +835,147 @@ button.hs{text-align:left;color:inherit;width:100%}
 .imp-act{display:flex;gap:4px}
 .imp-act button{min-height:36px;padding:0 10px;border-radius:10px;background:var(--field);font-size:var(--fs-cap);font-weight:600}
 
+
 /* ============================================================
-   Слой «Copilot-уровень»: глубина цветом, а не тенью. Фон белый, плашки #FAFAFA с обводкой 1px,
-   полоски слева 3px цветом блока, тонкий вес текста, ни градиентов, ни теней, ни заливок акцентом.
+   Дизайн-система «Фин»: тёплая и спокойная. Смелость тратим в одном месте экрана (баланс или график),
+   вокруг тихо. Глубина цветом и тоном, тени только у баланса и плавающих элементов, градиенты только где разрешено.
    ============================================================ */
-html,body{font-weight:var(--w-body);letter-spacing:0}
+html,body{font-weight:var(--w-body);background:var(--bg)}
 small,.cap,.note,.muted,.tx-s,.pc-s,.pc-d{font-weight:var(--w-cap)}
 h1,h2,h3,h4,.title,.h2{font-family:var(--font-display);font-weight:var(--w-strong);letter-spacing:-.01em}
-.title,.greet .title,.sheet-head h2{font-size:var(--fs-title);font-weight:var(--w-strong)}
-.h2,.card h3{font-size:var(--fs-card)}
+.title,.sheet-head h2{font-size:var(--fs-title)}
 .btn,.pill-btn,.chip,.link,.seg-b,.nav-b,.tx-t,.pc-n,.day-h,.fl,.grp-t,.field>span{font-weight:var(--w-label)}
 .link{color:var(--accent-t)}
-.card,.grp,.panel,.day,.goal,.save-card,.nudge,.banner,.imp-hint{box-shadow:none}
-.nav,.toast,.dm-card,.tour-card,.cq,.seg-b[aria-checked=true],.cat-tile .tick{box-shadow:none}
+.card,.grp,.panel,.day,.goal,.save-card,.nudge,.banner,.imp-hint,.gblock{background:var(--surface);border:var(--card-b);border-radius:var(--r-lg);box-shadow:none}
+.pcard,.grow,.fpill,.row,.chip,.field input,.field textarea,.btn,.seg,.tx-ic,.ci{border-radius:var(--r-md)}
+.fpill{border-radius:var(--r-md)}
+.nav,.toast,.dm-card,.tour-card,.cq,.cat-tile .tick{box-shadow:none}
 
-/* Баланс: обычная плашка без заливки, цифра Medium */
-.hero{background:var(--surface);color:var(--text);border:var(--card-b);border-left:3px solid var(--accent);border-radius:var(--r-lg);box-shadow:none}
+/* Баланс: единственная смелая плашка на главной. Градиент из двух соседних тонов, свет сверху, лёгкое зерно */
+.hero{background:var(--grad-hero);color:#fff;border:0;border-radius:var(--r-hero);padding:30px 20px 18px;margin-top:30px;overflow:visible;box-shadow:var(--hero-shadow)}
+.hero::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.06;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 .hero-deco{display:none}
-.hero-label{opacity:1;color:var(--muted);font-weight:var(--w-label)}
-.eye{color:var(--muted)}
-.hero-sum{font-family:var(--font-display);font-weight:500;font-size:var(--fs-big);letter-spacing:-.5px;line-height:1.15;color:var(--text)}
-.hero-sum small,.hs b small{opacity:1;color:var(--muted);font-weight:var(--w-cap)}
-.hs{background:var(--bg);border:var(--card-b);border-radius:var(--r-md)}
-.hs small{opacity:1;color:var(--muted);font-weight:var(--w-cap)}
-.hs.inc small svg{color:var(--inc)}.hs.exp small svg{color:var(--exp)}
-.hs b{font-weight:500;letter-spacing:-.3px}
-.hs .mo{opacity:1;color:var(--muted)}
-.hero-mon{color:var(--text);font-weight:var(--w-label)}
-.hero-mon .mb2{color:var(--accent-t);background:transparent}
+.hero-fin{position:absolute;right:20px;top:-64px;z-index:2;pointer-events:none;line-height:0;animation:fin-in .35s var(--ease)}
+@keyframes fin-in{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.hero-acts{display:flex;align-items:center;gap:6px}
+.hero-an{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px 0 10px;border-radius:var(--r-pill);background:rgba(255,255,255,.16);color:#fff;font-size:var(--fs-cap);font-weight:var(--w-label)}
+.hero-an svg{width:18px;height:18px}
+.hero-label{opacity:1;color:rgba(255,255,255,.8);font-weight:var(--w-label)}
+.eye{color:#fff;margin:0 -10px 0 0}
+.hero-sum{font-family:var(--font-display);font-weight:700;font-size:var(--fs-big);letter-spacing:-.5px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+.hero-sum small,.hs b small{font-size:.6em;font-weight:500;color:rgba(255,255,255,.72);opacity:1;letter-spacing:0;margin-left:0}
+.hero-mon{color:#fff;font-weight:var(--w-label)}
+.hero-mon .mb2{color:#fff;background:rgba(255,255,255,.14)}
 .hero-mon span{opacity:1}
+.hs{background:rgba(255,255,255,.13);border:0;border-radius:var(--r-md)}
+.hs small{opacity:1;color:rgba(255,255,255,.8);font-weight:var(--w-cap)}
+.hs.inc small svg{color:#B8E6C8}.hs.exp small svg{color:#FFC9BF}
+.hs b{font-weight:600;letter-spacing:-.3px;color:#fff}
+.hs b small{font-size:.75em}
+.hs .mo{opacity:1;color:rgba(255,255,255,.75)}
 
-/* Тонкая полоска 3px цветом блока вместо заливок */
-.pcard,.grow,.fpill,.save-card{background:var(--surface);border:var(--card-b);border-radius:var(--r-md)}
+/* Плашки сумм: капсула 26px, фон тон 12–16%, текст тот же тон; копейки и валюта мельче и светлее */
+.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:var(--r-pill);font-size:var(--fs-15);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.2px}
+.pill small{font-size:.8em;font-weight:500;opacity:.72;margin-left:0}
+.pill.cat{background:var(--cbg,var(--field));color:var(--ctx,var(--text))}
+.pill.inc{background:var(--inc-bg);color:var(--inc-t)}
+.pill.neu{background:var(--field);color:var(--muted)}
+.pill.pending{background:transparent;border:1px dashed var(--muted);color:var(--muted)}
+.tx-r{display:flex;justify-content:flex-end;min-width:104px}
+.tx-a{font-weight:600}
+
+/* Цвет категории: значок на мягкой подложке, в тёмной теме подложка = solid на 22% */
+.tx-ic,.ci{color:var(--ctx,var(--accent-t));background:var(--cbg,var(--field))}
+.rw-ic.ci{color:var(--ctx,var(--accent-t));background:var(--cbg,var(--field))}
+:root[data-theme="dark"] .tx-ic,:root[data-theme="dark"] .ci,:root[data-theme="dark"] .rw-ic.ci{color:var(--ctd,var(--accent-t));background:color-mix(in srgb,var(--c,var(--accent)) var(--ci-a),var(--surface))}
+:root[data-theme="dark"] .pill.cat{color:var(--ctd,var(--text));background:color-mix(in srgb,var(--c,var(--accent)) var(--ci-a),var(--surface))}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .tx-ic,:root:not([data-theme="light"]) .ci,:root:not([data-theme="light"]) .rw-ic.ci{color:var(--ctd,var(--accent-t));background:color-mix(in srgb,var(--c,var(--accent)) var(--ci-a),var(--surface))}
+  :root:not([data-theme="light"]) .pill.cat{color:var(--ctd,var(--text));background:color-mix(in srgb,var(--c,var(--accent)) var(--ci-a),var(--surface))}
+}
+.cat-tile[aria-checked=true] .ci{background:var(--c);color:var(--on,#fff)}
+.pcard .tx-ic,.pc-ic2{background:color-mix(in srgb,var(--c-pay) 18%,var(--surface));color:var(--warning-t)}
+.pcard.paid .tx-ic{background:var(--inc-bg);color:var(--inc-t)}
+
+/* Блоки: полоска 3px цветом блока вместо заливок */
+.pcard,.grow,.fpill,.save-card{background:var(--surface);border:var(--card-b)}
 .pcard:not(.late):not(.add){border-left:3px solid var(--c-pay)}
-.pcard.late{background:var(--surface);border-left:3px solid var(--exp)}
-.pcard .tx-ic,.pc-ic2{background:transparent;color:var(--c-pay);box-shadow:none}
-.pcard.paid .tx-ic{background:transparent;color:var(--accent)}
-.pc-a,.tx-a,.curve-sum,.am{font-family:var(--font-display);font-weight:500;letter-spacing:-.3px}
-.tx-ic,.ci,.bi,.fp-ic{box-shadow:none}
-.bubble,.nudge,.nudge-mini,.bm.bot,.banner .bi,.draft-sum{background:var(--accent-bg);font-weight:var(--w-body)}
+.pcard.late{border-left:3px solid var(--negative)}
+.pcard.paid{border-left-color:var(--positive)}
+.grow{border-left:3px solid var(--c-save)}
+.fpill{border-left:3px solid var(--c-gift)}
+.pc-a,.curve-sum,.am{font-family:var(--font-display);font-weight:600;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
+.bubble,.nudge,.nudge-mini,.bm.bot,.draft-sum{background:var(--accent-bg)}
 .bubble{font-weight:var(--w-label)}
-.bubble small{font-weight:var(--w-cap)}
-.bm.me{background:var(--accent);color:#fff}
-.panel{background:var(--surface)}
-.say-btn,.fin-say{animation-duration:var(--dur)}
+.bm.me,.btn.primary,.pill-btn,.pc-go,.cb-send,.qa-go{background:var(--btn);color:var(--on-btn)}
+.btn.soft{background:var(--accent-bg);color:var(--accent-t)}
+.btn.ghost{box-shadow:none;border:var(--outline)}
 
-/* Поля ввода: только обводка 1px #E0E0E0, при фокусе цвет блока, без свечения */
-.field input,.field textarea,input[type=text],input[type=number],input[type=date],input[type=search],input[type=email],input[type=password],textarea,select{background:var(--bg);border:var(--outline);border-radius:var(--r-md);box-shadow:none;font-weight:var(--w-body)}
+/* Поля: только обводка, при фокусе цвет блока */
+.field input,.field textarea,input[type=text],input[type=number],input[type=date],input[type=search],input[type=email],input[type=password],textarea,select{background:var(--surface);border:var(--outline);box-shadow:none}
 input:focus,textarea:focus,input:focus-visible,textarea:focus-visible,select:focus{border-color:var(--tf,var(--accent));box-shadow:none;outline:none}
 #goalsHome,#s-goals,#lyGoal,#lyQuiz{--tf:var(--c-save)}
 #paysBlock,#s-pay,#lyPay{--tf:var(--c-pay)}
 #festHome,#lyFest{--tf:var(--c-gift)}
 #s-stats{--tf:var(--c-stat)}
-.field>span{color:var(--muted)}
-.chip{background:var(--field)}
-.chip[aria-checked=true]{background:var(--bg);color:var(--text);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .seg{background:var(--field)}
-.seg-b[aria-checked=true]{background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);color:var(--text)}
-.btn.primary,.pill-btn,.pc-go,.cb-send,.qa-go{background:var(--accent);color:#fff;font-weight:var(--w-strong)}
-.btn.soft{background:var(--accent-bg);color:var(--accent-t)}
-.btn.ghost{box-shadow:none;border:var(--outline)}
+.seg-b[aria-checked=true]{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);color:var(--text)}
+.chip{background:var(--field)}
+.chip[aria-checked=true]{background:var(--surface);color:var(--text);box-shadow:inset 0 0 0 1.5px var(--accent)}
 
-/* Нижнее меню: пять кнопок, «+» по центру крупнее и приподнят. Фон по теме, обводка сверху, без тени */
-.nav{grid-template-columns:repeat(5,1fr);background:var(--bg);border-top:1px solid var(--line);border-radius:0;box-shadow:none;padding:0 var(--gap) var(--sab)}
+/* Нижнее меню: пять кнопок, «+» по центру крупнее, приподнят и зелёный */
+.nav{grid-template-columns:repeat(5,1fr);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:none;border-top:1px solid var(--line);border-radius:0;padding:0 var(--gap) var(--sab)}
 .nav-b{font-weight:var(--w-label);color:var(--muted)}
 .np{background:transparent!important}
-.nav-b[aria-current=page]{color:var(--tab,var(--accent-t));font-weight:var(--w-label)}
-.nav-b[data-tab=home]{--tab:var(--accent)}
-.nav-b[data-tab=goals]{--tab:var(--c-save)}
-.nav-b[data-tab=stats]{--tab:var(--c-stat)}
-.nav-b[data-tab=acc]{--tab:var(--accent)}
-.nav-add{width:64px;height:64px;border-radius:20px;margin-top:-28px;background:var(--accent);color:#fff;box-shadow:0 0 0 5px var(--bg)}
-.nav-add svg{width:32px;height:32px}
-.nl{font-size:11px}
+.nav-b[aria-current=page]{color:var(--tab,var(--accent-t))}
+.nav-b[data-tab=home]{--tab:var(--accent-t)}.nav-b[data-tab=goals]{--tab:var(--c-save)}.nav-b[data-tab=chat]{--tab:var(--c-stat)}.nav-b[data-tab=acc]{--tab:var(--accent-t)}
+.nav-add{width:64px;height:64px;border-radius:22px;margin-top:-28px;background:var(--grad-hero);color:#fff;box-shadow:var(--hero-shadow),0 0 0 5px var(--bg)}
+.nl{font-size:var(--fs-11)}
 
-/* Тосты: фон #1E1E26, полоска слева цветом блока, без тени */
-.toast{background:var(--toast);color:#ECECEF;border-radius:var(--r-md);box-shadow:none;font-weight:var(--w-body)}
-.toast button{color:#ECECEF}
+/* Тосты и всплывающие подсказки */
+.toast{background:var(--toast);color:#EDF3E6;border-radius:var(--r-md);box-shadow:0 8px 24px -10px rgba(10,20,8,.5)}
+.toast button{color:#EDF3E6}
 
-/* Облако тегов категорий в аналитике: лёгкий поворот, не по сетке */
+/* График: линия, градиентная заливка 22% → 0, сетка 3 линии, точка «сегодня» с ореолом и плашкой */
+.days .area{fill:url(#gArea)}
+.days .grid{stroke:var(--text);stroke-opacity:.07}
+.days .halo{fill:var(--c-stat);opacity:.22}
+.days .now-dot{fill:var(--surface);stroke:var(--c-stat);stroke-width:2.5}
+.curve-pk,.scrub-tip{display:inline-flex}
+.scrub-tip{position:absolute;pointer-events:none;transform:translate(-50%,-100%);margin-top:-8px}
+.curve-box{position:relative}
+.skel-chart{height:140px;border-radius:var(--r-md);background:var(--field)}
+
+/* Облако тегов в аналитике: цвет категории, лёгкий поворот, не по сетке */
 .cloud{display:flex;flex-wrap:wrap;gap:10px 8px;justify-content:center;padding:8px 4px 18px}
-.ctag{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--tc);color:var(--tc);background:var(--bg);font-weight:var(--w-label);font-size:var(--fs-cap);transform:translateY(var(--dy)) rotate(var(--rot));transition:transform var(--dur) ease-out}
-.ctag b{font-weight:var(--w-cap);color:var(--muted)}
+.ctag{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 14px;border-radius:var(--r-pill);background:var(--cbg);color:var(--ctx);font-weight:var(--w-label);font-size:var(--fs-cap);transform:translateY(var(--dy)) rotate(var(--rot));transition:transform var(--dur) var(--ease)}
+.ctag b{font-weight:500;opacity:.7}
 .ctag:active{transform:translateY(var(--dy)) rotate(0)}
-#s-stats .hdr .title{margin-left:0}
-#s-stats{--tc:var(--c-stat)}
-.cats li .bar i{background:var(--c)}
+:root[data-theme="dark"] .ctag{background:color-mix(in srgb,var(--c) var(--ci-a),var(--surface));color:var(--ctd)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ctag{background:color-mix(in srgb,var(--c) var(--ci-a),var(--surface));color:var(--ctd)}}
+.cats li .bar{height:8px;border-radius:6px;background:var(--field);overflow:hidden}
+.cats li .bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(180deg,var(--c),color-mix(in srgb,var(--c) 78%,#fff))}
+.cat-ico{flex:0 0 32px;width:32px;height:32px;border-radius:10px;display:grid;place-items:center}
+.cat-ico svg{width:18px;height:18px}
 
-/* Прогресс и пустые экраны: цвет живёт в линии и иконке */
-.empty .em-ic,.emp-m{color:var(--tc,var(--accent))}
-.skel .hs,.skel #recentList,.skel #opsList,.skel #catCard,.skel #insights,.skel #dayCard,.skel #catList,.skel #goalsBody,.skel #paysStrip{background:var(--field);box-shadow:none}
-.tour-hole{outline:2px solid var(--accent)}
-.dm-card{box-shadow:none;border:var(--card-b)}
-.pcard .tx-ic,.pc-ic2,.pcard.paid .tx-ic{background:transparent!important}
-.grow.add .pc-ic2,.grow.add svg,#goalsHome .add svg{color:var(--c-save)}
+/* Персонаж живёт в одном месте экрана: на главной выглядывает из-за баланса, в списках и настройках его нет */
+#s-home .save-card .mascot,#s-home .nudge-m,#s-home .banners .mascot,#s-home .fin-say-m,#s-home #recentList .emp-m,#s-home .nudge-mini .mascot{display:none}
+#lyLink .fin-say-m,#s-acc .fin-say-m,#lyImport .fin-say-m{display:none}
+.mascot{filter:none}
 
 /* Дни рождения: «Добавить» первой, кнопки на всю ширину столбцом */
 #festStrip.pillrow{flex-direction:column;overflow:visible;margin:0;padding:0}
-#festStrip .fpill{width:100%;border-radius:var(--r-md)}
+#festStrip .fpill{width:100%}
+.grow.add .pc-ic2,.grow.add svg,#goalsHome .add svg{color:var(--c-save)}
+.title,.greet .title{font-size:var(--fs-title)}
+.curve-box{touch-action:pan-y;user-select:none}
+.now-tip{position:absolute;transform:translate(-50%,-100%);pointer-events:none}
+
+/* Иллюстрации категорий: картинка на мягкой подложке тона */
+img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-events:none}
+.cat-tile .ci img.ic-cat{width:40px;height:40px}
+.cat-ico img.ic-cat{width:24px;height:24px}
+.pcard .tx-ic img.ic-cat,.fcard .tx-ic img.ic-cat{width:26px;height:26px}
+.pk img.ic-cat{width:32px;height:32px}
+.cat-tile[aria-checked=true] .ci{background:var(--cbg,var(--field));color:inherit;box-shadow:0 0 0 2px var(--c)}
+.rw-ic.ci img.ic-cat{width:28px;height:28px}

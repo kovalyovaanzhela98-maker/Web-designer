@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="books-lilac" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#DDCBFF"/><stop offset="1" stop-color="#8A6BEF"/></linearGradient><linearGradient id="books-sky" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B9DEFF"/><stop offset="1" stop-color="#4F8CF5"/></linearGradient></defs>
+<path d="M64 36C50 26 30 24 12 28v70c18-4 38-2 52 8z" fill="url(#books-sky)"/>
+<path d="M64 36c14-10 34-12 52-8v70c-18-4-38-2-52 8z" fill="url(#books-lilac)"/>
+<path d="M24 46c10-2 20-1 28 3M24 60c10-2 20-1 28 3M76 49c8-4 18-5 28-3M76 63c8-4 18-5 28-3" stroke="#fff" stroke-opacity=".7" stroke-width="4" fill="none" stroke-linecap="round"/></svg>

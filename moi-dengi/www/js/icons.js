@@ -95,8 +95,11 @@ const FILL = {
   person: '<path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/>'
 };
 
-  const icon = n => `<svg class="ic" viewBox="0 0 256 256" aria-hidden="true">${IC[n] || ''}</svg>`;
+  /* Иллюстрации категорий (img/cat/*.svg, 40 шт.) рисуем картинкой, интерфейсные значки — линейными SVG */
+  const CAT = ["c_bar", "c_beauty", "c_books", "c_cafe", "c_cashback", "c_charity", "c_clothes", "c_credit", "c_education", "c_entertainment", "c_fast_food", "c_freelance", "c_fuel", "c_games", "c_gifts", "c_groceries", "c_health", "c_hobby", "c_home", "c_hotel", "c_insurance", "c_investments", "c_kids", "c_mobile_internet", "c_other", "c_pets", "c_pharmacy", "c_repair", "c_restaurant", "c_salary", "c_savings", "c_shopping", "c_sport", "c_subscriptions", "c_taxes", "c_taxi", "c_transfer", "c_transport", "c_travel", "c_utilities"];
+  const icon = n => CAT.indexOf(n) >= 0 ? `<img class="ic ic-cat" src="img/cat/${n.slice(2)}.svg" alt="" aria-hidden="true" draggable="false">` : `<svg class="ic" viewBox="0 0 256 256" aria-hidden="true">${IC[n] || ''}</svg>`;
   root.MD = root.MD || {};
+  root.MD.CAT_SLUGS = CAT;
   root.MD.IC = IC;
   root.MD.icon = icon;
   root.MD.iconFill = n => `<svg class="ic" viewBox="0 0 256 256" aria-hidden="true">${FILL[n] || IC[n] || ''}</svg>`;

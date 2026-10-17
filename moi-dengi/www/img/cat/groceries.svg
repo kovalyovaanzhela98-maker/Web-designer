@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="groceries-coral" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFB0B0"/><stop offset="1" stop-color="#F25C6E"/></linearGradient><linearGradient id="groceries-green" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#CDF2A8"/><stop offset="1" stop-color="#58BB3C"/></linearGradient><linearGradient id="groceries-mint" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B6F2D8"/><stop offset="1" stop-color="#2EC496"/></linearGradient><linearGradient id="groceries-peach" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFD3B6"/><stop offset="1" stop-color="#FF9466"/></linearGradient><linearGradient id="groceries-sand" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#F6E3C8"/><stop offset="1" stop-color="#CC9C63"/></linearGradient></defs>
+<path d="M40 50c-10-12-2-26 12-24-1 10-5 18-12 24z" fill="url(#groceries-mint)"/>
+<path d="M70 48c2-16 17-22 28-13-6 9-15 13-28 13z" fill="url(#groceries-green)"/>
+<rect x="52" y="14" width="14" height="44" rx="7" transform="rotate(18 59 36)" fill="url(#groceries-sand)"/>
+<path d="M18 58h92l-9 46a10 10 0 0 1-10 8H37a10 10 0 0 1-10-8z" fill="url(#groceries-peach)"/>
+<rect x="12" y="50" width="104" height="14" rx="7" fill="url(#groceries-coral)"/>
+<path d="M46 76v24M64 76v24M82 76v24" stroke="#fff" stroke-opacity=".45" stroke-width="6" stroke-linecap="round"/></svg>

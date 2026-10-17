@@ -1,5 +1,6 @@
-/* Экран «Спросить Фина»: переписка, голос, чеки и выписки.
-   Ответы считает MD.brain по правилам прямо на телефоне. Нейросетей и внешних сервисов нет. */
+/* Экран «Фин»: переписка, голос, чеки, выписки и любые картинки.
+   Если в профиле подключён ИИ (MD.ai), Фин отвечает через него и читает любые фото и PDF.
+   Без ИИ ответы считает MD.brain по правилам на телефоне, а чеки читает распознавание текста на устройстве. */
 (function (root) {
   'use strict';
   const MD = root.MD = root.MD || {};
@@ -23,7 +24,7 @@
       (items.length > shown.length ? `<div class="cc-row"><span class="l"><span>и ещё ${items.length - shown.length}</span></span></div>` : '') +
       (items.length > 1 ? `<div class="cc-row"><span class="l"><span>Итого</span></span><b>${inc ? `<span class="i">+${esc(M(inc))}</span> ` : ''}${exp ? `<span class="e">−${esc(M(exp))}</span>` : ''}</b></div>` : '');
   }
-  const catColor = i => { const c = MD.CATS[i.type].find(x => x[0] === i.cat); return c ? c[2] : '#94A3B8'; };
+  const catColor = i => { const c = MD.CATS[i.type].find(x => x[0] === i.cat); return c ? c[2] : '#8C99B0'; };
 
   function html(m) {
     if (m.k === 'text') return `<div class="bm ${m.r}">${m.html}</div>`;
@@ -42,10 +43,12 @@
   function render(noScroll) {
     const feed = $('#chatFeed'); if (!feed) return;
     $('#chatAv').innerHTML = MD.mascot('hello', 46);
-    feed.innerHTML = msgs.map(html).join('');
+    feed.innerHTML = aiNote() + msgs.map(html).join('');
     $('#chatQuick').innerHTML = quick.map(q => `<button class="cq" type="button" data-q="${esc(q)}">${esc(q)}</button>`).join('');
     if (!noScroll) setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 30);
   }
+
+  const aiNote = () => MD.ai && !MD.ai.available() ? `<div class="cc ai-note"><h4>ИИ не подключён</h4><p class="cc-s">Фин отвечает по готовым правилам и читает чеки на телефоне. Подключи ИИ, и он поймёт любой вопрос, фото, скриншот или PDF.</p><div class="cc-act"><button class="btn soft" type="button" data-act="ai-setup">Подключить ИИ</button></div></div>` : '';
 
   function push(m) { m.id = m.id || uid(); msgs.push(m); save(); render(); return m; }
   function bot(htmlStr) { return push({ k: 'text', r: 'bot', html: htmlStr }); }
@@ -57,9 +60,60 @@
     quick = ['Сводка за месяц', 'Куда уходят деньги', 'Сколько можно тратить в день', 'Что ты умеешь'];
   }
 
+  /* ---------- ИИ ---------- */
+  const plain = h => String(h).replace(/<small>/g, ' ').replace(/<[^>]+>/g, '').trim();
+  const rich = t => esc(t).replace(/&lt;em&gt;/g, '<em>').replace(/&lt;\/em&gt;/g, '</em>').replace(/\n/g, '<br>');
+  const ymdOf = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  function aiCtx() {
+    const c = app.ctx(), now = new Date(), mk = ymdOf(now).slice(0, 7), st = app.state;
+    const cats = { expense: MD.CATS.expense.map(x => x[0]), income: MD.CATS.income.map(x => x[0]) };
+    const by = {}; let inc = 0, exp = 0;
+    st.tx.filter(t => t.date.slice(0, 7) === mk).forEach(t => { if (t.type === 'income') inc += t.amount; else { exp += t.amount; by[t.cat] = (by[t.cat] || 0) + t.amount; } });
+    const top = Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k} ${Math.round(v)}`).join(', ');
+    const summary = st.tx.length ? `пришло ${Math.round(inc)} ${c.cur}, потрачено ${Math.round(exp)} ${c.cur}${top ? '; по категориям: ' + top : ''}` : '';
+    const goals = (st.goals || []).map(g => `${g.name} ${g.saved} из ${g.target} ${g.cur || c.cur}`).join('; ');
+    const pays = ((st.rec && st.rec.list) || []).map(p => `${p.name} ${p.amount}`).join('; ');
+    return { cats, cur: c.cur, today: ymdOf(now), monthName: mk, summary, goals, pays };
+  }
+  const history = () => msgs.filter(m => m.k === 'text').slice(-12).map(m => ({ role: m.r === 'me' ? 'user' : 'assistant', text: plain(m.html) })).filter(m => m.text);
+
+  function showItems(items) {
+    if (!items.length) return;
+    const base = app.ctx().cur;
+    if (items.length <= 3 && items.every(i => i.cur === base)) push({ k: 'draft', items: items.map(i => ({ type: i.type, amount: i.amount, cat: i.cat, date: i.date, note: i.note })), intro: items.length > 1 ? `Нашёл операций: ${items.length}` : 'Нашёл операцию', note: 'Проверь и подтверди.' });
+    else { bot(`Нашёл операций: <em>${items.length}</em>.<small>Проверь категории, убери лишнее и подтверди.</small>`); app.openImport(items, { source: 'фото и файлы' }); }
+  }
+
+  async function askAi(text, files, label) {
+    busy = true; quick = [];
+    const hist = history();
+    if (text) push({ k: 'text', r: 'me', html: esc(text) });
+    (label || []).forEach(n => push({ k: 'file', name: n.name, icon: n.icon }));
+    const t = push({ k: 'typing' });
+    try {
+      const r = await MD.ai.ask({ text, files, history: hist, ctx: aiCtx() });
+      drop(t); bot(rich(r.text || 'Готово.')); showItems(r.items);
+      quick = r.items.length ? [] : ['Сводка за месяц', 'Куда уходят деньги'];
+    } catch (e) {
+      drop(t);
+      if (!files.length && e.code === 'offline') { const rr = MD.brain.reply(text, Object.assign(app.ctx(), { last })); rr.blocks.forEach(b => { if (b.t === 'text') push({ k: 'text', r: 'bot', html: b.html }); }); quick = rr.quick || []; }
+      else bot(esc('Не получилось: ' + e.message + '.'));
+    }
+    render(); busy = false;
+  }
+
+  async function onAiFiles(list) {
+    list = [...list].slice(0, 4); if (!list.length) return;
+    const text = $('#chatInput').value.trim(); $('#chatInput').value = ''; fit();
+    let files;
+    try { files = await Promise.all(list.map(MD.ai.fileToPart)); } catch (_) { bot('Не смог открыть файл.<small>Попробуй другое фото или PDF.</small>'); return; }
+    askAi(text, files, list.map(f => ({ name: f.name || 'Фото', icon: /^image\//.test(f.type) ? 'camera' : 'file' })));
+  }
+
   /* ---------- Диалог ---------- */
   async function send(text) {
     text = String(text || '').trim(); if (!text || busy) return;
+    if (MD.ai && MD.ai.available()) { $('#chatInput').value = ''; fit(); return askAi(text, [], []); }
     busy = true; quick = [];
     push({ k: 'text', r: 'me', html: esc(text) });
     $('#chatInput').value = ''; fit();
@@ -204,6 +258,7 @@
     $('#chatQuick').addEventListener('click', e => { const q = e.target.closest('[data-q]'); if (q) send(q.dataset.q); });
     $('#chatFeed').addEventListener('click', e => {
       const act = e.target.closest('[data-act]');
+      if (act && act.dataset.act === 'ai-setup') { app.openAiPanel(); return; }
       if (act && act.dataset.act === 'newgoal') { app.showTab('goals'); setTimeout(() => app.openQuiz(), 150); return; }
       const dr = e.target.closest('[data-dr]'); if (!dr) return;
       const card = dr.closest('[data-draft]'), m = msgs.find(x => x.id === card.dataset.draft); if (!m || m.done) return;
@@ -226,8 +281,8 @@
       app.closeLayer($('#lyAttach'));
       MD.sub.gate('receipt', () => $(id).click());
     });
-    ['#fileCamera', '#fileGallery'].forEach(id => $(id).addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) onReceipt(f); }));
-    $('#fileStmt').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) onStatement(f); });
+    ['#fileCamera', '#fileGallery'].forEach(id => $(id).addEventListener('change', e => { const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return; if (MD.ai && MD.ai.available()) onAiFiles(fs); else onReceipt(fs[0]); }));
+    $('#fileStmt').addEventListener('change', e => { const fs = [...e.target.files]; e.target.value = ''; if (!fs.length) return; if (MD.ai && MD.ai.available()) onAiFiles(fs); else onStatement(fs[0]); });
     fit();
   }
 

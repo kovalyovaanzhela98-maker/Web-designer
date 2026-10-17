@@ -4,7 +4,7 @@
 const { chromium } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..', 'www');
-const types = { '.html': 'text/html;charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.png': 'image/png', '.jpg': 'image/jpeg' };
+const types = { '.html': 'text/html;charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg' };
 const srv = http.createServer((q, r) => { let f = path.join(root, decodeURIComponent(q.url.split('?')[0])); if (f.endsWith('/')) f += 'index.html'; fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); r.end(); return; } r.writeHead(200, { 'content-type': types[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); }).listen(5198);
 let fails = 0; const ok = (n, c, i) => { if (!c) { fails++; console.log('✗', n, i === undefined ? '' : JSON.stringify(i)); } else console.log('✓', n); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -70,7 +70,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await p.click('#toast button'); await sleep(250); ok('вернули', (await S()).tx.length === cnt0);
 
   // ---- 4. аналитика
-  await p.click('[data-tab=home]'); await p.click('.gbtn'); await sleep(300);
+  await p.click('[data-tab=home]'); await p.click('.hero-an'); await sleep(300);
   for (const k of ['week', 'year', 'range', 'month']) { await p.click(`[data-pk=${k}]`); await sleep(200); ok(`аналитика: период ${k}`, (await p.textContent('#catCard')).length > 5); }
   await p.click('#s-stats [data-st=income]'); await sleep(200); ok('аналитика: доходы', (await p.textContent('#catCard')).includes('Br') || true);
   await p.click('#s-stats [data-st=expense]'); await sleep(200);
@@ -199,6 +199,31 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('чат: ответ на «сводка за месяц»', (await p.$$eval('#chatFeed .bm.bot, #chatFeed .cc', e => e.length)) >= 2);
   await p.fill('#chatInput', 'вчера купила молоко за 4 рубля и хлеб за 2'); await p.click('#chatSend'); await sleep(2200);
   ok('чат: понял запись трат', (await p.textContent('#chatFeed')).match(/молок|хлеб|Продукты/i) !== null);
+
+  // ---- 11. ИИ-Фин: без ключа плашка, с ключом ответ и чтение картинки (сеть подменена)
+  await p.evaluate(() => { MD.ai.setKey(''); MD.chat.render(true); });
+  ok('чат без ключа: плашка «Подключить ИИ»', !!(await p.$('.ai-note [data-act=ai-setup]')));
+  let aiBodies = [];
+  await p.route('https://api.anthropic.com/**', async r => {
+    const q = r.request();
+    if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
+    const body = JSON.parse(q.postData()); aiBodies.push(body);
+    const img = JSON.stringify(body).includes('"type":"image"');
+    const input = img ? { text: 'Нашёл <em>2</em> операции', transactions: [{ type: 'expense', amount: 12.4, currency: 'BYN', category: 'Продукты', date: '2026-10-15', name: 'Евроопт' }, { type: 'expense', amount: 30, currency: 'BYN', category: 'Связь', date: '2026-10-15', name: 'Life' }] } : { text: 'Привет! Я на связи.', transactions: [] };
+    r.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' }, body: JSON.stringify({ content: [{ type: 'tool_use', name: 'reply', input }] }) });
+  });
+  await p.evaluate(() => { MD.ai.setKey('sk-ant-test-1234567890abcdefghij'); MD.chat.render(true); });
+  ok('с ключом плашка исчезла', !(await p.$('.ai-note')));
+  await p.fill('#chatInput', 'как дела?'); await p.click('#chatSend'); await sleep(900);
+  ok('ИИ: ответ показан', (await p.textContent('#chatFeed')).includes('Я на связи'));
+  ok('ИИ: запрос ушёл с категориями пользователя', aiBodies.length === 1 && /Продукты/.test(aiBodies[0].system));
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  await p.setInputFiles('#fileGallery', { name: 'check.png', mimeType: 'image/png', buffer: png }); await sleep(1300);
+  ok('ИИ: картинка ушла блоком image', aiBodies.length === 2 && JSON.stringify(aiBodies[1]).includes('"media_type":"image/jpeg"'));
+  ok('ИИ: найденные операции показаны карточкой «Всё верно»', !!(await p.$('#chatFeed [data-draft] [data-dr=ok]')));
+  const aiBefore = await p.evaluate(() => MD.app.state.tx.length); await p.click('#chatFeed [data-draft] [data-dr=ok]'); await sleep(400);
+  ok('ИИ: после подтверждения записаны 2 операции', (await p.evaluate(() => MD.app.state.tx.length)) === aiBefore + 2);
+  await p.evaluate(() => MD.ai.setKey(''));
   console.log('JS-ошибки:', errs.length, errs.slice(0, 5));
   await b.close(); srv.close(); console.log(fails ? `Провалено: ${fails}` : 'ВСЁ ПРОШЛО'); process.exit(fails ? 1 : 0);
 })().catch(e => { console.log('СБОЙ', e.message.split('\n').slice(0, 40).join(' | ')); process.exit(2); });

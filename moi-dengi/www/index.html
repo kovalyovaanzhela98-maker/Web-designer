@@ -19,14 +19,14 @@
 
   <!-- ГЛАВНАЯ: баланс с итогами месяца, избранные обязательные платежи, «пора отложить», одно наблюдение, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
-    <header class="greet"><h1 class="title" id="greetTitle">Привет</h1>
-      <div class="greet-act"><button class="icon-btn gbtn" type="button" data-go="stats" aria-label="Аналитика"><i data-ic="chart"></i></button><button class="avatar-btn" type="button" data-go="acc" id="avatarBtn" aria-label="Профиль"><span id="avatarIn"></span></button></div></header>
+    <header class="greet"><h1 class="title" id="greetTitle">Привет</h1></header>
 
     <div id="nudgeBox"></div>
 
     <section class="hero" aria-labelledby="heroLabel">
       <div class="hero-deco" aria-hidden="true"></div>
-      <div class="hero-top"><span class="hero-label" id="heroLabel">Баланс</span><button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button></div>
+      <span class="hero-fin" id="heroFin" aria-hidden="true"></span>
+      <div class="hero-top"><span class="hero-label" id="heroLabel">Баланс</span><span class="hero-acts"><button class="hero-an" type="button" data-go="stats" aria-label="Открыть аналитику"><i data-ic="chart"></i><span>Аналитика</span></button><button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button></span></div>
       <button class="hero-sum hero-go" id="heroSum" type="button" data-go="stats" aria-label="Открыть аналитику за месяц"></button>
       <div class="hero-mon"><button class="mb2" type="button" data-hshift="-1" aria-label="Предыдущий месяц"><i data-ic="left"></i></button><span id="heroMon"></span><button class="mb2" type="button" data-hshift="1" aria-label="Следующий месяц"><i data-ic="right"></i></button></div>
       <div class="hero-split" id="tiles">
@@ -118,8 +118,8 @@
       </div>
     </div>
     <input id="fileCamera" type="file" accept="image/*" capture="environment" hidden>
-    <input id="fileGallery" type="file" accept="image/*" hidden>
-    <input id="fileStmt" type="file" accept=".csv,.txt,.pdf,text/csv,text/plain,application/pdf" hidden>
+    <input id="fileGallery" type="file" accept="image/*" multiple hidden>
+    <input id="fileStmt" type="file" accept=".csv,.txt,.pdf,image/*,text/csv,text/plain,application/pdf" multiple hidden>
   </section>
 
   <!-- ЦЕЛИ -->
@@ -152,6 +152,11 @@
       <div class="name-row"><label class="field"><input id="nameIn" type="text" maxlength="30" placeholder=" " autocomplete="given-name"><span>Имя</span></label></div>
       <button class="row" type="button" data-plate="phone" id="plPhone"><span class="rw-ic" aria-hidden="true"><i data-ic="phone"></i></span><span class="rw-t"><b>Телефон</b><small></small></span><span class="rw-r"></span></button>
       <button class="row" type="button" data-plate="email" id="plEmail"><span class="rw-ic" aria-hidden="true"><i data-ic="mail"></i></span><span class="rw-t"><b>Почта</b><small></small></span><span class="rw-r"></span></button>
+    </div>
+
+    <div class="grp-t">Помощник</div>
+    <div class="grp">
+      <button class="row" type="button" data-plate="ai" id="plAi"><span class="rw-ic" aria-hidden="true"><i data-ic="chat"></i></span><span class="rw-t"><b>Фин-ИИ</b><small id="plAiS">Понимает любые фото и вопросы</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
     <div class="grp-t">Деньги</div>
@@ -198,7 +203,7 @@
   <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-ic="home"></i></span><span class="nl">Главная</span></button>
   <button class="nav-b" data-tab="goals"><span class="np"><i data-ic="goal"></i></span><span class="nl">Копилки</span></button>
   <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-ic="plus"></i></button></span>
-  <button class="nav-b" data-tab="stats"><span class="np"><i data-ic="chart"></i></span><span class="nl">Аналитика</span></button>
+  <button class="nav-b" data-tab="chat"><span class="np"><i data-ic="chat"></i></span><span class="nl">Фин</span></button>
   <button class="nav-b" data-tab="acc"><span class="np"><i data-ic="person"></i></span><span class="nl">Профиль</span></button>
 </nav>
 <div class="bulkbar" id="bulkBar" hidden>
@@ -474,6 +479,7 @@
 <script src="js/sub.js"></script>
 <script src="js/notify.js"></script>
 <script src="app.js"></script>
+<script src="js/ai.js"></script>
 <script src="js/chat.js"></script>
 </body>
 </html>

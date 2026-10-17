@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="kids-pink" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFCDE6"/><stop offset="1" stop-color="#EE6CAF"/></linearGradient><linearGradient id="kids-sand" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#F6E3C8"/><stop offset="1" stop-color="#CC9C63"/></linearGradient></defs>
+<circle cx="30" cy="34" r="16" fill="url(#kids-sand)"/><circle cx="98" cy="34" r="16" fill="url(#kids-sand)"/>
+<circle cx="30" cy="34" r="8" fill="url(#kids-pink)"/><circle cx="98" cy="34" r="8" fill="url(#kids-pink)"/>
+<circle cx="64" cy="70" r="42" fill="url(#kids-sand)"/>
+<ellipse cx="64" cy="84" rx="18" ry="14" fill="#FFF3E2"/>
+<ellipse cx="64" cy="78" rx="7" ry="5" fill="#2B2346"/>
+<circle cx="48" cy="62" r="5" fill="#2B2346"/><circle cx="80" cy="62" r="5" fill="#2B2346"/>
+<circle cx="40" cy="78" r="6" fill="#FF9EB8" fill-opacity=".6"/><circle cx="88" cy="78" r="6" fill="#FF9EB8" fill-opacity=".6"/></svg>
