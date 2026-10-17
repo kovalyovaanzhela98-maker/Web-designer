@@ -771,3 +771,28 @@ button.hs{text-align:left;color:inherit;width:100%}
 .toast button{position:relative;overflow:hidden;min-height:36px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.14);color:#F2F6EC;text-decoration:none;z-index:0}
 .toast button::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(255,255,255,.26);transform-origin:left;animation:tshrink var(--tms,6s) linear forwards}
 @keyframes tshrink{to{transform:scaleX(0)}}
+
+/* Редактор категорий и пометка new */
+.newb{display:inline-block;margin-left:6px;padding:0 6px;border-radius:99px;background:var(--c-gift);color:#fff;font-style:normal;font-size:11px;font-weight:700;line-height:16px;vertical-align:2px}
+.pick-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.pk{display:grid;place-items:center;height:48px;border-radius:var(--r-md);background:var(--surface);border:var(--card-b)}
+.pk[aria-checked=true]{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+.pk svg{width:24px;height:24px}
+.pk.sw i{display:block;width:26px;height:26px;border-radius:50%}
+.rw-ic.ci{background:color-mix(in srgb,var(--c) 14%,var(--surface));color:var(--c)}
+
+/* Валюта операции, крестик в заметке, «Ещё запись» */
+.cur-row{margin-top:8px;gap:6px}
+.cur-row .chip{min-height:36px;padding:0 12px}
+.cur-note{margin-top:8px}
+.date-row .dq-wrap{display:contents}
+.chip[aria-checked=true]{background:var(--accent-bg)}
+.field .clear-x{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.field .clear-x svg{width:18px;height:18px}
+#txNoteF input{padding-right:52px}
+.tx-done{display:flex;flex-direction:column;align-items:stretch;gap:12px;text-align:center;padding:8px 0}
+.tx-done .td-ic{align-self:center;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:var(--accent-bg);color:var(--accent-t)}
+.tx-done .td-ic svg{width:32px;height:32px}
+.tx-done b{font-family:var(--font-display);font-size:var(--fs-title)}
+.tx-done small{color:var(--muted)}
+.tx-done .btn{margin:0}

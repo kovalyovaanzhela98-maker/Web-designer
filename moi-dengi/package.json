@@ -6,7 +6,7 @@
   "scripts": {
     "prepare:web": "node scripts/prepare.js",
     "serve": "node scripts/prepare.js && node scripts/serve.js",
-    "test": "node tests/parser.test.js && node tests/goals.test.js && node tests/importers.test.js && node tests/brain.test.js && node tests/nudges.test.js && node tests/events.test.js && node tests/recurring.test.js && node tests/insights.test.js",
+    "test": "node tests/parser.test.js && node tests/goals.test.js && node tests/importers.test.js && node tests/brain.test.js && node tests/nudges.test.js && node tests/events.test.js && node tests/recurring.test.js && node tests/insights.test.js && node tests/rates.test.js",
     "icons": "python3 scripts/make_icons.py",
     "brandbook": "node scripts/build-brandbook.js"
   },

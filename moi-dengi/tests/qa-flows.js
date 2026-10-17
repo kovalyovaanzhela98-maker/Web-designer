@@ -23,9 +23,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   // ---- 1. ручное добавление расхода и дохода
   await p.click('#fab'); await sleep(250);
-  await p.fill('#txAmount', '25,5'); await p.click('[data-cat="Кафе"]'); await p.click('#txSave'); await sleep(350);
+  await p.fill('#txAmount', '25,5'); await p.click('[data-cat="Кафе"]'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(350);
   let s = await S(); ok('расход вручную записан', s.tx.length === 1 && s.tx[0].amount === 25.5 && s.tx[0].cat === 'Кафе' && s.tx[0].type === 'expense', s.tx);
-  await p.click('#fab'); await sleep(250); await p.click('[data-type=income]'); await p.fill('#txAmount', '1000'); await p.click('[data-cat="Зарплата"]'); await p.click('#txSave'); await sleep(350);
+  await p.click('#fab'); await sleep(250); await p.click('[data-type=income]'); await p.fill('#txAmount', '1000'); await p.click('[data-cat="Зарплата"]'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(350);
   s = await S(); ok('доход вручную записан', s.tx.length === 2 && s.tx.some(t => t.type === 'income' && t.amount === 1000));
   // пустая сумма
   await p.click('#fab'); await sleep(250);
@@ -33,7 +33,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await p.keyboard.press('Escape'); await p.evaluate(() => document.querySelector('#lyTx [data-close].icon-btn').click()); await sleep(250);
   // правка
   await p.click('#recentList .tx >> nth=0'); await sleep(250);
-  await p.fill('#txAmount', '30'); await p.click('#txSave'); await sleep(350);
+  await p.fill('#txAmount', '30'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(350);
   s = await S(); ok('правка суммы сохранена', s.tx.some(t => t.amount === 30), s.tx.map(t => t.amount));
 
   // ---- 2. голос через кнопку микрофона: длинная живая речь
@@ -109,7 +109,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   s = await S(); ok('платёж добавлен', s.rec.list.length === 1);
   await p.click('[data-tab=home]'); await sleep(250);
   ok('платёж на главной', (await p.textContent('#paysStrip')).includes('Аренда'));
-  const wr = await p.$('#paysStrip [data-paywrite]'); if (wr) { await wr.click(); await sleep(350); await p.click('#txSave'); await sleep(400); s = await S(); ok('платёж: записали и отметился оплаченным', Object.keys(s.rec.list[0].paid).length === 1, s.rec.list[0].paid); }
+  const wr = await p.$('#paysStrip [data-paywrite]'); if (wr) { await wr.click(); await sleep(350); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(400); s = await S(); ok('платёж: записали и отметился оплаченным', Object.keys(s.rec.list[0].paid).length === 1, s.rec.list[0].paid); }
 
   // ---- 9. профиль
   await p.click('[data-tab=acc]'); await sleep(250);

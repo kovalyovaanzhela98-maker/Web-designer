@@ -134,9 +134,9 @@
 
   /* ---------- Общая обёртка ---------- */
   const backend = !enabled ? null : (native ? nativeBackend() : mockBackend());
-  const txData = t => ({ type: t.type, amount: t.amount, cat: t.cat, acc: t.acc, date: t.date, note: t.note || '', ts: t.ts || Date.now() });
+  const txData = t => ({ type: t.type, amount: t.amount, cat: t.cat, acc: t.acc, date: t.date, note: t.note || '', orig: t.orig || null, ts: t.ts || Date.now() });
   const metaData = s => ({ currency: s.currency, accounts: s.accounts, goals: s.goals || [], nudge: s.nudge || null, fest: s.fest || null, rec: s.rec || null, v: 1, updatedAt: Date.now() });
-  const sig = t => JSON.stringify([t.type, t.amount, t.cat, t.acc, t.date, t.note || '']);
+  const sig = t => JSON.stringify([t.type, t.amount, t.cat, t.acc, t.date, t.note || '', t.orig ? t.orig.cur + t.orig.a : '']);
 
   /* Снимок «что уже в облаке»: нужен, чтобы отправлять только изменения */
   function snapshotOf(state) {

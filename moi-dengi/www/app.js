@@ -18,6 +18,8 @@ const WD_S = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
 const icon = MD.icon;
 const cIcon = ci => icon(ci[1]);
+/* Цвет значка категории: свой цвет человека побеждает общий зелёный */
+const cs = ci => `--c:${ci[2]}${ci[3] && ci[3].custom ? '!important' : ''}`;
 function paintIcons(root = document) { $$('i[data-ic]', root).forEach(i => { i.innerHTML = icon(i.dataset.ic); }); }
 
 /* ---------- Утилиты ---------- */
@@ -51,7 +53,7 @@ function fmt(n) {
   const sign = n < -0.004 ? '−' : '';
   return sign + Math.abs(n).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-const sym = () => CURRENCIES[state.currency];
+const sym = c => CURRENCIES[c || state.currency];
 const money = n => `${fmt(n)} ${sym()}`;
 const signed = (n, type) => (type === 'income' ? '+' : '−') + fmt(n) + ' ' + sym();
 const MASK = '••••••';
@@ -60,7 +62,7 @@ const maskT = s => (hide ? MASK : s);
 
 /* ---------- Хранилище ---------- */
 const R = MD.rec;
-const freshState = () => ({ name: '', currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState(), fest: MD.events.defaultFest(), rec: R.defaultRec() });
+const freshState = () => ({ cats: [], name: '', currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState(), fest: MD.events.defaultFest(), rec: R.defaultRec() });
 let state = freshState();
 let hide = false;
 function load() {
@@ -98,7 +100,7 @@ function applyRemote(r) {
     pushCloud();
     return;
   }
-  const st = sanitize({ name: state.name, currency: r.currency, accounts: r.accounts, goals: r.goals, nudge: r.nudge, fest: r.fest, rec: r.rec, tx: r.tx });
+  const st = sanitize({ name: state.name, cats: state.cats, currency: r.currency, accounts: r.accounts, goals: r.goals, nudge: r.nudge, fest: r.fest, rec: r.rec, tx: r.tx });
   if (!st) return;
   st.tx.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0)));
   synced = cloud.snapshotOf(st);
@@ -164,6 +166,8 @@ function sanitize(o) {
     });
   }
   const ids = new Set(accounts.map(a => a.id));
+  const cats = (Array.isArray(o.cats) ? o.cats : []).slice(0, 80).filter(x => x && typeof x === 'object').map(x => ({ k: String(x.k || '').slice(0, 40), t: x.t === 'income' ? 'income' : 'expense', n: String(x.n || '').replace(/\s+/g, ' ').trim().slice(0, 24), i: MD.CAT_ICONS.includes(x.i) ? x.i : '', c: /^#[0-9A-Fa-f]{6}$/.test(x.c || '') ? x.c : '', custom: !!x.custom, isNew: !!x.isNew, ts: Number(x.ts) || 0 })).filter(x => x.k && (x.n || !x.custom));
+  MD.applyCats(cats);
   const tx = [];
   for (const t of o.tx) {
     if (!t || (t.type !== 'expense' && t.type !== 'income')) continue;
@@ -173,7 +177,8 @@ function sanitize(o) {
     tx.push({
       id: typeof t.id === 'string' && t.id ? t.id : uid(), type: t.type, amount: round2(amt),
       cat: list.includes(t.cat) ? t.cat : 'Другое', acc: t.acc, date: t.date,
-      note: typeof t.note === 'string' ? t.note.slice(0, 120) : '', ts: Number(t.ts) || 0
+      note: typeof t.note === 'string' ? t.note.slice(0, 120) : '', ts: Number(t.ts) || 0,
+      orig: t.orig && CURRENCIES[t.orig.cur] && parseAmount(t.orig.a) > 0 ? { a: round2(parseAmount(t.orig.a)), cur: t.orig.cur, rate: Number(t.orig.rate) || 0, est: !!t.orig.est } : null
     });
   }
   const goals = [];
@@ -191,7 +196,7 @@ function sanitize(o) {
       log: (Array.isArray(g.log) ? g.log : []).slice(-400).map(x => ({ d: x && x.d, a: parseAmount(x && x.a) })).filter(x => parseYmd(x.d) && x.a > 0).map(x => ({ d: x.d, a: round2(x.a) }))
     });
   }
-  return { name: typeof o.name === 'string' ? o.name.replace(/\s+/g, ' ').trim().slice(0, 30) : '', currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge), fest: MD.events.sanitize(o.fest), rec: R.sanitize(o.rec, CATS.expense.map(c => c[0])) };
+  return { cats, name: typeof o.name === 'string' ? o.name.replace(/\s+/g, ' ').trim().slice(0, 30) : '', currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge), fest: MD.events.sanitize(o.fest), rec: R.sanitize(o.rec, CATS.expense.map(c => c[0])) };
 }
 
 /* ---------- UI-состояние ---------- */
@@ -231,6 +236,7 @@ const pluralN = (n, a, b, c) => { const m = n % 100, k = n % 10; return m >= 11 
 
 function render() {
   ensureAccount();
+  MD.applyCats(state.cats);
   renderMonthBars();
   renderHome();
   renderNudge();
@@ -345,8 +351,8 @@ function txRow(t) {
   const ci = catInfo(t.type, t.cat), a = accById(t.acc);
   return `<div class="swipe" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}</div>
     <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить">
-      <div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</div>
-      <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}</div>
+      <div class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</div>
+      <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}${t.orig ? `<div class="tx-n tx-orig">${t.orig.est ? '≈ ' : ''}${esc(fmt(t.orig.a))} ${esc(sym(t.orig.cur))}</div>` : ''}</div>
       <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${esc(signed(t.amount, t.type))}</div></div>
     </div></div>`;
 }
@@ -657,19 +663,22 @@ const hideErr = el => { el.hidden = true; };
 
 /* ---------- Запись (добавление / правка) ---------- */
 let txBusy = false;
-const tx = { type: 'expense', cat: '', acc: null, editId: null, pay: null, draftIdx: null, catOpen: false, noteOpen: false };
+/* Десятичный разделитель один: запятая. Точку заменяем при вводе */
+document.addEventListener('input', e => { const t = e.target; if (t && t.matches && t.matches('input[inputmode=decimal]') && t.value.indexOf('.') >= 0) { const p = t.selectionStart; t.value = t.value.replace(/\./g, ','); try { t.setSelectionRange(p, p); } catch (_) {} } }, true);
+const tx = { cur: null, orig: null, last: null, type: 'expense', cat: '', acc: null, editId: null, pay: null, draftIdx: null, catOpen: false, noteOpen: false };
 const OTHER = 'Другое';
 function renderTxForm() {
   $$('#lyTx .seg-b').forEach(b => b.setAttribute('aria-checked', String(b.dataset.type === tx.type)));
-  $('#txCur').textContent = sym();
+  $('#txCur').textContent = sym(tx.cur || state.currency);
+  renderCurRow();
   /* При правке интерфейс короче: категория одной строкой («Изменить» раскрывает сетку), а не пустая форма заново */
   const editing = !!tx.editId || tx.draftIdx != null, open = !editing || tx.catOpen || !tx.cat;
   $('#txCats').hidden = !open;
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
-    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="--c:${c[2]};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
+    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="${cs(c)};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</span></button>`).join('');
   const cc = $('#txCatCur'), ci = tx.cat ? catInfo(tx.type, tx.cat) : null;
   cc.hidden = open;
-  if (ci) cc.innerHTML = `<span class="ci" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(tx.cat)}</b><span class="ch">Изменить</span>`;
+  if (ci) cc.innerHTML = `<span class="ci" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(tx.cat)}</b><span class="ch">Изменить</span>`;
   const other = tx.cat === OTHER, showNote = other || tx.noteOpen || !!$('#txNote').value;
   $('#txNoteF').hidden = !showNote; $('#txNoteBtn').hidden = showNote;
   $('#txNoteL').textContent = other ? 'Что именно? (обязательно)' : 'Заметка (необязательно)';
@@ -678,22 +687,57 @@ function renderTxForm() {
   $('#txSaveT').textContent = editing && tx.editId ? 'Сохранить изменения' : 'Сохранить';
   syncSave();
   syncDateChips();
+  $('#txNoteX').hidden = !$('#txNote').value;
 }
 $('#txCatCur').addEventListener('click', () => { tx.catOpen = true; renderTxForm(); });
 $('#txNoteBtn').addEventListener('click', () => { tx.noteOpen = true; renderTxForm(); setTimeout(() => $('#txNote').focus(), 40); });
+/* Валюта операции: подписка в долларах, евро или рублях пересчитывается в основную валюту по курсу на дату */
+function renderCurRow() {
+  const cur = tx.cur || state.currency;
+  $('#txCurRow').innerHTML = Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-txcur="${c}" aria-checked="${c === cur}">${c}</button>`).join('');
+  updateCurNote();
+}
+let curNoteSeq = 0;
+async function updateCurNote() {
+  const cur = tx.cur || state.currency, el = $('#txCurNote'), a = parseAmount($('#txAmount').value), seq = ++curNoteSeq;
+  if (cur === state.currency || !(a > 0)) { el.hidden = true; return; }
+  const date = parseYmd($('#txDate').value) ? $('#txDate').value : today();
+  const r = await MD.rates.convert(a, cur, state.currency, date);
+  if (seq !== curNoteSeq) return;
+  el.hidden = false; el.textContent = `${r.est ? '≈ ' : ''}${money(r.amount)} по курсу на ${parseYmd(date).getDate()} ${MONTHS_G[parseYmd(date).getMonth()]}${r.est ? ' (курс примерный)' : ''}`;
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-txcur]'); if (!b) return; tx.cur = b.dataset.txcur; $('#txCur').textContent = sym(tx.cur); renderCurRow(); });
 function syncSave() { $('#txSave').disabled = !(parseAmount($('#txAmount').value) > 0 && tx.cat); }
 $('#txAmount').addEventListener('input', e => {
   let v = e.target.value.replace(/[^\d.,]/g, '');
   const i = v.search(/[.,]/);
   if (i >= 0) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/[.,]/g, '').slice(0, 2);
   if (v !== e.target.value) e.target.value = v;
-  hideErr($('#txAmountErr')); syncSave();
+  hideErr($('#txAmountErr')); syncSave(); updateCurNote();
 });
-$('#txNote').addEventListener('input', () => { $('#txNoteF').classList.remove('err'); hideErr($('#txNoteErr')); });
+$('#txNote').addEventListener('input', () => { $('#txNoteF').classList.remove('err'); hideErr($('#txNoteErr')); $('#txNoteX').hidden = !$('#txNote').value; });
+$('#txNoteX').addEventListener('click', () => { $('#txNote').value = ''; $('#txNoteX').hidden = true; $('#txNote').focus(); renderTxForm(); });
 $('#dOther').addEventListener('click', () => { const d = $('#txDate'); try { d.showPicker(); } catch (_) { d.focus(); d.click(); } });
+/* Быстрые даты: те, что вносят чаще всего, и выбранная вручную, в начале списка */
+function freqDates() {
+  const t0 = today(), y = new Date(); y.setDate(y.getDate() - 1); const y0 = ymd(y);
+  const lim = new Date(); lim.setDate(lim.getDate() - 120); const l0 = ymd(lim);
+  const cnt = {};
+  state.tx.forEach(t => { if (t.date >= l0 && t.date <= t0 && t.date !== t0 && t.date !== y0) cnt[t.date] = (cnt[t.date] || 0) + 1; });
+  const list = Object.keys(cnt).filter(d => cnt[d] >= 2).sort((a, b) => cnt[b] - cnt[a] || (a < b ? 1 : -1)).slice(0, 2);
+  const v = $('#txDate').value;
+  if (v && v !== t0 && v !== y0 && !list.includes(v) && parseYmd(v) && tx.picked) list.unshift(v);
+  return list.slice(0, 3);
+}
+function renderDateQuick() {
+  const v = $('#txDate').value;
+  $('#dQuick').innerHTML = freqDates().map(d => { const dt = parseYmd(d); return `<button type="button" class="chip" data-dq="${d}" aria-checked="${v === d}">${dt.getDate()} ${MONTHS_G[dt.getMonth()]}</button>`; }).join('');
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-dq]'); if (b) { $('#txDate').value = b.dataset.dq; syncDateChips(); } });
 function syncDateChips() {
   const v = $('#txDate').value, y = new Date(); y.setDate(y.getDate() - 1);
-  const isT = v === today(), isY = v === ymd(y), other = !isT && !isY && !!parseYmd(v);
+  renderDateQuick();
+  const quick = freqDates(), isT = v === today(), isY = v === ymd(y), other = !isT && !isY && !!parseYmd(v) && !quick.includes(v);
   $('#dToday').setAttribute('aria-checked', String(isT));
   $('#dYest').setAttribute('aria-checked', String(isY));
   $('#dOther').setAttribute('aria-checked', String(other));
@@ -704,12 +748,13 @@ function openTx(id, opts = {}) {
   const t = id && state.tx.find(x => x.id === id);
   tx.editId = t ? t.id : null;
   tx.draftIdx = opts.draftIdx == null ? null : opts.draftIdx;
-  tx.pay = opts.pay || null; tx.catOpen = false;
+  tx.pay = opts.pay || null; tx.catOpen = false; tx.picked = !!opts.keepDate; tx.cur = t && t.orig ? t.orig.cur : null;
+  $('#txDone').hidden = true; $('#txForm').hidden = false;
   tx.type = t ? t.type : (opts.type || 'expense');
   tx.cat = t ? t.cat : (opts.cat && CATS[tx.type].some(c => c[0] === opts.cat) ? opts.cat : '');   // категорию выбирает человек: без неё «Сохранить» не активна
   tx.acc = t ? t.acc : state.accounts[0].id;
   $('#txTitle').textContent = t || tx.draftIdx != null ? 'Изменить запись' : tx.type === 'income' ? 'Новый доход' : 'Новая запись';
-  $('#txAmount').value = t ? String(t.amount).replace('.', ',') : opts.amount ? String(opts.amount).replace('.', ',') : '';
+  $('#txAmount').value = t ? String(t.orig ? t.orig.a : t.amount).replace('.', ',') : opts.amount ? String(opts.amount).replace('.', ',') : '';
   $('#txNote').value = t ? t.note : opts.note || ''; tx.noteOpen = !!$('#txNote').value;
   $('#txDate').value = t ? t.date : parseYmd(opts.date) ? opts.date : today();
   $('#txDelete').hidden = !t;
@@ -735,8 +780,8 @@ $('#lyTx').addEventListener('click', e => {
 });
 $('#dToday').addEventListener('click', () => { $('#txDate').value = today(); syncDateChips(); });
 $('#dYest').addEventListener('click', () => { const y = new Date(); y.setDate(y.getDate() - 1); $('#txDate').value = ymd(y); syncDateChips(); });
-$('#txDate').addEventListener('input', syncDateChips);
-$('#txForm').addEventListener('submit', e => {
+$('#txDate').addEventListener('input', () => { tx.picked = true; syncDateChips(); });
+$('#txForm').addEventListener('submit', async e => {
   e.preventDefault();
   const amt = parseAmount($('#txAmount').value);
   const err = $('#txAmountErr');
@@ -748,8 +793,15 @@ $('#txForm').addEventListener('submit', e => {
     $('#txNoteF').classList.add('err'); showErr($('#txNoteErr'), 'Напиши, что именно: например, «ремонт часов».'); $('#txNote').focus(); return;
   }
   const date = parseYmd($('#txDate').value) ? $('#txDate').value : today();
-  const rec = { type: tx.type, amount: round2(amt), cat: tx.cat, acc: tx.acc, date, note };
   if (txBusy) return; txBusy = true; setTimeout(() => { txBusy = false; }, 600);   // второе нажатие «Сохранить» подряд игнорируем
+  const cur = tx.cur || state.currency;
+  let amountBase = round2(amt), orig = null;
+  if (cur !== state.currency) {
+    const keep = tx.editId && state.tx.find(t => t.id === tx.editId);
+    if (keep && keep.orig && keep.orig.cur === cur && keep.date === date && keep.orig.rate) { amountBase = round2(amt * keep.orig.rate); orig = { a: round2(amt), cur, rate: keep.orig.rate, est: keep.orig.est }; }
+    else { const r = await MD.rates.convert(amt, cur, state.currency, date); amountBase = r.amount; orig = { a: round2(amt), cur, rate: r.rate, est: r.est }; }
+  }
+  const rec = { type: tx.type, amount: amountBase, cat: tx.cat, acc: tx.acc, date, note, orig };
   if (tx.draftIdx != null) {                       // правка строки в «Всё верно?»: возвращаемся туда
     draft[tx.draftIdx] = rec; tx.draftIdx = null;
     closeLayer($('#lyTx')); renderDraft(); openLayer($('#lyDraft')); return;
@@ -762,10 +814,31 @@ $('#txForm').addEventListener('submit', e => {
   if (added && pay) markPaid(pay.id, pay.mk, added.id);
   save();
   const d = parseYmd(date); ym = { y: d.getFullYear(), m: d.getMonth() };
-  closeLayer($('#lyTx'));
   buzz(15);
+  if (added && !pay) {                             // остаёмся в окне: можно добавить ещё на это же число
+    showTab('home');
+    const lab = `${d.getDate()} ${MONTHS_G[d.getMonth()]}`;
+    tx.firstAdd = first;
+    $('#txForm').hidden = true; $('#txDone').hidden = false;
+    $('#txDoneT').textContent = 'Записано'; $('#txDoneD').textContent = lab;
+    $('#moreExp').textContent = `Ещё расход на ${lab}`; $('#moreInc').textContent = `Ещё доход на ${lab}`;
+    afterAdd([added], false, null, true);
+    return;
+  }
+  closeLayer($('#lyTx'));
   if (!ex) showTab('home'); else render();
   if (added) afterAdd([added], first, pay); else toast('Изменения сохранены', null, null, 'joy');
+});
+document.addEventListener('click', e => {
+  const m = e.target.closest('[data-more]');
+  if (m) {
+    tx.type = m.dataset.more; tx.cat = ''; tx.editId = null; tx.pay = null; tx.cur = null; tx.catOpen = false; tx.noteOpen = false;
+    $('#txAmount').value = ''; $('#txNote').value = ''; hideErr($('#txAmountErr'));
+    $('#txTitle').textContent = tx.type === 'income' ? 'Новый доход' : 'Новая запись';
+    $('#txDone').hidden = true; $('#txForm').hidden = false; $('#txDelete').hidden = true;
+    renderTxForm(); setTimeout(() => $('#txAmount').focus(), 60); return;
+  }
+  if (e.target.closest('#txDoneOk')) { closeLayer($('#lyTx')); if (tx.firstAdd) { tx.firstAdd = false; setTimeout(offerLogin, 700); } }
 });
 $('#txDelete').addEventListener('click', () => {
   const id = tx.editId;
@@ -773,14 +846,82 @@ $('#txDelete').addEventListener('click', () => {
   closeLayer($('#lyTx')); deleteTx(id);
 });
 
+/* ---------- Категории: переименовать, значок, цвет, свои; сами заводятся из повторяющихся названий ---------- */
+const catNorm = s => String(s || '').toLowerCase().replace(/ё/g, 'е').replace(/[^а-яa-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const catExists = (type, name) => CATS[type].some(c => catNorm(c[0]) === catNorm(name));
+function catCfgFor(type, key, custom) {
+  let o = state.cats.find(x => x.t === type && x.k === key && !!x.custom === !!custom);
+  if (!o) { o = { k: key, t: type, n: '', i: '', c: '', custom: !!custom, isNew: false, ts: 0 }; state.cats.push(o); }
+  return o;
+}
+function renameInData(type, from, to) {
+  if (from === to) return;
+  state.tx.forEach(t => { if (t.type === type && t.cat === from) t.cat = to; });
+  if (type === 'expense') state.rec.list.forEach(p => { if (p.cat === from) p.cat = to; });
+}
+/* patch: { n, i, c } для встроенной или своей категории; возвращает текст ошибки или '' */
+function saveCat(type, entry, patch) {
+  const meta = entry[3] || {}, old = entry[0];
+  const name = (patch.n || old).replace(/\s+/g, ' ').trim().slice(0, 24);
+  if (!name) return 'Впиши название.';
+  if (catNorm(name) !== catNorm(old) && catExists(type, name)) return 'Такая категория уже есть.';
+  if (name === 'Другое' && old !== 'Другое') return 'Название занято.';
+  const o = catCfgFor(type, meta.key, !!meta.custom);
+  if (meta.custom) { o.n = name; } else { o.n = name === meta.key ? '' : name; }
+  if (patch.i) o.i = patch.i; if (patch.c) o.c = patch.c;
+  renameInData(type, old, name);
+  save(); MD.applyCats(state.cats); render(); return '';
+}
+function addCat(type, name, iconName, color, isNew) {
+  const nm = name.replace(/\s+/g, ' ').trim().slice(0, 24);
+  if (!nm || catExists(type, nm)) return null;
+  const o = { k: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), t: type, n: nm, i: iconName || 'grid', c: color || MD.CAT_PALETTE[state.cats.filter(x => x.custom).length % MD.CAT_PALETTE.length], custom: true, isNew: !!isNew, ts: Date.now() };
+  state.cats.push(o); MD.applyCats(state.cats); return o;
+}
+function removeCat(type, entry) {
+  const meta = entry[3] || {};
+  state.tx.forEach(t => { if (t.type === type && t.cat === entry[0]) { if (!t.note) t.note = entry[0]; t.cat = OTHER; } });
+  if (type === 'expense') state.rec.list.forEach(p => { if (p.cat === entry[0]) p.cat = OTHER; });
+  state.cats = state.cats.filter(x => !(x.t === type && x.k === meta.key && !!x.custom === !!meta.custom));
+  save(); MD.applyCats(state.cats); render();
+}
+function resetCat(type, entry) {
+  const meta = entry[3] || {}; if (meta.custom) return;
+  renameInData(type, entry[0], meta.key);
+  state.cats = state.cats.filter(x => !(x.t === type && x.k === meta.key && !x.custom));
+  save(); MD.applyCats(state.cats); render();
+}
+/* «new» гаснет, когда категорию впервые выбрали */
+function markCatUsed(type, name) {
+  const o = state.cats.find(x => x.custom && x.t === type && x.n === name && x.isNew);
+  if (o) { o.isNew = false; save(); MD.applyCats(state.cats); }
+}
+/* Одинаковые названия в «Другом» два раза и больше: Фин заводит из них категорию */
+function autoCategory(items) {
+  let made = null;
+  for (const it of items) {
+    if (it.cat !== OTHER || !it.note) continue;
+    const key = catNorm(it.note); if (key.length < 3) continue;
+    const same = state.tx.filter(t => t.type === it.type && t.cat === OTHER && catNorm(t.note) === key);
+    if (same.length < 2 || catExists(it.type, it.note)) continue;
+    const name = it.note.replace(/\s+/g, ' ').trim(); const nm = name.charAt(0).toUpperCase() + name.slice(1);
+    const o = addCat(it.type, nm, 'grid', null, true); if (!o) continue;
+    same.forEach(t => { t.cat = o.n; });
+    save(); made = o;
+  }
+  return made;
+}
+
 /* После новой записи: тост «Записано». Если она похожа на платёж, Фин предлагает отметить одним нажатием. Первая запись: предложить войти */
-function afterAdd(items, first, pay) {
+function afterAdd(items, first, pay, quiet) {
   let m = null, hit = null;
+  items.forEach(it => markCatUsed(it.type, it.cat));
+  const madeCat = autoCategory(items);
   if (pay) toast('Записано, платёж отмечен', null, null, 'joy');
   else {
     for (const it of items) { m = R.matchTx(state.rec.list, it); if (m) { hit = it; break; } }
     if (m) toast(`Записано. Это оплата «${cap(m.p.name)}»?`, 'Отметить', () => { markPaid(m.p.id, m.mk, hit.id); save(); render(); toast(`Отмечено: ${cap(m.p.name)}`, null, null, 'happy'); }, 'joy', 8000);
-    else toast(items.length > 1 ? `Записано: ${items.length}` : 'Записано', null, null, 'joy');
+    else if (!quiet || madeCat) toast(madeCat ? `Записано. Завёл категорию «${madeCat.n}»` : items.length > 1 ? `Записано: ${items.length}` : 'Записано', null, null, 'joy');
   }
   maybeAskFest(items);
   if (first) setTimeout(offerLogin, 1800);
@@ -1210,8 +1351,8 @@ function normalizeItems(items, max = 30) {
     if (!it || (it.type !== 'expense' && it.type !== 'income')) continue;
     const amount = parseAmount(it.amount);
     if (!(amount > 0)) continue;
-    const names = CATS[it.type].map(c => c[0]);
-    const cat = names.includes(it.cat) ? it.cat : 'Другое';
+    const names = CATS[it.type].map(c => c[0]), al = MD.catAlias(it.type, it.cat, state.cats);
+    const cat = names.includes(al) ? al : names.includes(it.cat) ? it.cat : 'Другое';
     const q = String(it.acc ?? '').trim().toLowerCase();
     const acc = (q && state.accounts.find(a => a.name.toLowerCase() === q)) ||
       (q && state.accounts.find(a => a.name.toLowerCase().includes(q) || (q.length >= 3 && q.includes(a.name.toLowerCase())))) ||
@@ -1224,7 +1365,7 @@ function normalizeItems(items, max = 30) {
 function renderDraft() {
   $('#draftList').innerHTML = draft.map((d, i) => {
     const ci = catInfo(d.type, d.cat);
-    return `<div class="draft-row"><button class="dr" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}, ${esc(signed(d.amount, d.type))}"><div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</div>
+    return `<div class="draft-row"><button class="dr" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}, ${esc(signed(d.amount, d.type))}"><div class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</div>
       <div class="dr-b"><div class="dr-t">${esc(d.cat)}</div>${d.note ? `<div class="tx-n">${esc(d.note)}</div>` : ''}<div class="dr-s">${esc(dayTitle(d.date))}</div></div>
       <div class="tx-a ${d.type === 'income' ? 'inc' : 'exp'}">${esc(signed(d.amount, d.type))}</div></button>
       <button class="dr-x" type="button" data-drop="${i}" aria-label="Убрать строку: ${esc(d.cat)}">${icon('close')}</button></div>`;
@@ -1460,7 +1601,7 @@ function startNewPay() {
 function payRowHtml(r, mk) {
   const p = r.p, ci = catInfo('expense', p.cat), d = r.date, late = r.status === 'late';
   const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Записать</span>` : '<span class="st">Ожидает</span>';
-  return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</span>
+  return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span>
     <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${d.getDate()} ${MONTHS_G[d.getMonth()]} · ${esc(p.cat)}</small></span>
     <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${st}</span></button>${late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать</button>` : ''}</div>`;
 }
@@ -1505,8 +1646,8 @@ function renderPaySheet() {
   $('#payPresets').innerHTML = R.PRESETS.map(x => `<button type="button" class="chip" data-pp="${esc(x[0])}" aria-checked="${pm.name === x[0]}">${esc(x[0])}</button>`).join('');
   const editing = !!pm.id, open = !editing || pm.catOpen || !pm.cat;      // при правке: короче, без быстрых названий, категория одной строкой
   $('#payPresets').hidden = editing; $('#payCats').hidden = !open; $('#payCatCur').hidden = open;
-  if (!open) { const ci = catInfo('expense', pm.cat); $('#payCatCur').innerHTML = `<span class="ci" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(pm.cat)}</b><span class="ch">Изменить</span>`; }
-  $('#payCats').innerHTML = CATS.expense.map(c => `<button type="button" role="radio" class="cat-tile" data-pcat="${esc(c[0])}" aria-checked="${c[0] === pm.cat}"><span class="ci" style="--c:${c[2]};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
+  if (!open) { const ci = catInfo('expense', pm.cat); $('#payCatCur').innerHTML = `<span class="ci" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(pm.cat)}</b><span class="ch">Изменить</span>`; }
+  $('#payCats').innerHTML = CATS.expense.map(c => `<button type="button" role="radio" class="cat-tile" data-pcat="${esc(c[0])}" aria-checked="${c[0] === pm.cat}"><span class="ci" style="${cs(c)};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
   $('#payRemind').innerHTML = R.REMIND.map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${esc(r.label)}</button>`).join('');
   $('#payTimeF').hidden = pm.remind === 'off';
 }
@@ -1625,7 +1766,7 @@ $('#loginCard').addEventListener('click', askLogin);
 
 /* Одна шторка для всего в профиле: телефон, почта, стартовый баланс, валюта, копия данных */
 let panel = null;
-const PN_TITLE = { fest: 'Праздники и подарки', nudge: 'Подсказки Фина', phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт', remind: 'Напоминания', quick: 'Виджет и экран блокировки' };
+const PN_TITLE = { cats: 'Категории', fest: 'Праздники и подарки', nudge: 'Подсказки Фина', phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт', remind: 'Напоминания', quick: 'Виджет и экран блокировки' };
 const pnBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-pn="${act}" ${dis ? 'disabled' : ''}><span class="spin" aria-hidden="true"></span><span>${esc(label)}</span></button>`;
 const onlyWay = () => ((me && me.providers) || []).length <= 1;
 const normPhone = v => { let t = String(v).replace(/[\s\-()]/g, ''); if (/^8\d{10}$/.test(t)) t = '+7' + t.slice(1); return /^\+\d{9,15}$/.test(t) ? t : null; };
@@ -1715,6 +1856,18 @@ function renderPanel(err) {
       <div class="wsel">${[['small', 'Малый', '2×1', 'Одна кнопка записи'], ['medium', 'Средний', '4×1', 'Расход, доход, голос'], ['large', 'Большой', '4×2', 'Баланс и кнопки']].map(w => `<button class="wopt" type="button" data-pn="widget:${w[0]}" ${nat ? '' : 'disabled'}><span class="wpv wpv-${w[0]}" aria-hidden="true"></span><b>${w[1]}</b><small>${w[2]}</small></button>`).join('')}</div>
       <div class="note">Нажми размер, и телефон предложит поставить виджет.</div>
       ${e}`;
+  } else if (P.kind === 'cats') {
+    const t = P.t || 'expense', list = CATS[t];
+    if (P.edit) {
+      const E = P.edit;
+      html = fld('pnCatName', 'Название', { max: 24, value: E.name }) + e +
+        `<div class="fl">Значок</div><div class="pick-grid" role="radiogroup" aria-label="Значок">${MD.CAT_ICONS.map(n => `<button type="button" role="radio" class="pk" data-pn="cat-icon:${n}" aria-checked="${E.icon === n}" aria-label="${n}"><span style="--c:${E.color};color:${E.color}">${icon(n)}</span></button>`).join('')}</div>` +
+        `<div class="fl">Цвет</div><div class="pick-grid pal" role="radiogroup" aria-label="Цвет">${MD.CAT_PALETTE.map(c => `<button type="button" role="radio" class="pk sw" data-pn="cat-col:${c}" aria-checked="${E.color === c}" aria-label="${c}"><i style="background:${c}"></i></button>`).join('')}</div>` +
+        pnBtn('cat-save', 'Сохранить') + (E.custom ? pnBtn('cat-del', 'Удалить категорию', 'danger') : E.changed ? pnBtn('cat-reset', 'Вернуть как было', 'ghost') : '') + pnBtn('cat-back', 'Назад', 'ghost');
+    } else {
+      html = `<div class="seg" role="radiogroup" aria-label="Тип">${[['expense', 'Расходы'], ['income', 'Доходы']].map(x => `<button type="button" role="radio" class="seg-b" data-pn="cat-t:${x[0]}" aria-checked="${t === x[0]}">${x[1]}</button>`).join('')}</div>
+        <div class="grp flat">${list.filter(c => c[0] !== OTHER).map((c, i) => `<button class="row" type="button" data-pn="cat-edit:${i}"><span class="rw-ic ci" style="${cs(c)}" aria-hidden="true">${cIcon(c)}</span><span class="rw-t"><b>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</b></span><span class="rw-r"><i data-ic="pencil"></i></span></button>`).join('')}</div>` + pnBtn('cat-add', 'Новая категория', 'soft');
+    }
   } else if (P.kind === 'data') {
     html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей, копилок и платежей одним файлом.</small>${pnBtn('exp-file', 'Сохранить в файл', 'soft')}</div>
       <div class="pn-sec"><b>Импорт</b><small>Выбери файл с копией. Текущие данные заменятся, а вернуть их можно сразу после.</small>${pnBtn('imp-file', 'Выбрать файл', 'soft')}<input id="pnFile" type="file" accept=".json,application/json,text/plain" hidden>${e}</div>`;
@@ -1748,6 +1901,25 @@ $('#linkBody').addEventListener('click', async ev => {
   if (a === 'ev-add' || a.startsWith('ev-edit:')) { const id = a.startsWith('ev-edit:') ? a.slice(8) : undefined; closeLayer($('#lyLink')); panel = null; setTimeout(() => openEvent(id), 60); return; }
   if (a === 'ev-ask') { state.fest.ask = !state.fest.ask; save(); renderPanel(); return; }
   if (a.startsWith('ng-cat:')) { const k = a.slice(7), ng = state.nudge; if (ng.cats[k] === false) delete ng.cats[k]; else ng.cats[k] = false; if (ng.active && ng.active.cat === k && ng.cats[k] === false) ng.active = null; save(); renderPanel(); renderAccount(); renderNudge(); nudgeRefresh(true); return; }
+  if (P.kind === 'cats') {
+    const t = P.t || 'expense';
+    if (a.startsWith('cat-t:')) { P.t = a.slice(6); P.edit = null; renderPanel(); return; }
+    if (a.startsWith('cat-edit:')) { const c = CATS[t].filter(x => x[0] !== OTHER)[Number(a.slice(9))]; if (!c) return; P.edit = { entry: c, name: c[0], icon: c[1], color: c[2], custom: !!(c[3] && c[3].custom), changed: !!(c[3] && !c[3].custom && (c[0] !== c[3].key || c[3].custom || state.cats.some(x => !x.custom && x.t === t && x.k === c[3].key))) }; renderPanel(); return; }
+    if (a === 'cat-add') { P.edit = { entry: null, name: '', icon: 'grid', color: MD.CAT_PALETTE[4], custom: true, fresh: true }; renderPanel(); return; }
+    if (a === 'cat-back') { P.edit = null; renderPanel(); return; }
+    if (a.startsWith('cat-icon:')) { P.edit.name = ($('#pnCatName') || {}).value || P.edit.name; P.edit.icon = a.slice(9); renderPanel(); return; }
+    if (a.startsWith('cat-col:')) { P.edit.name = ($('#pnCatName') || {}).value || P.edit.name; P.edit.color = a.slice(8); renderPanel(); return; }
+    if (a === 'cat-save') {
+      const E = P.edit, name = V('#pnCatName').trim();
+      let err = '';
+      if (E.fresh) { if (!name) err = 'Впиши название.'; else if (!addCat(t, name, E.icon, E.color, false)) err = 'Такая категория уже есть.'; else { save(); render(); } }
+      else err = saveCat(t, E.entry, { n: name, i: E.icon, c: E.color });
+      if (err) { P.edit.name = name; renderPanel(err); return; }
+      P.edit = null; renderPanel(); toast('Категория сохранена', null, null, 'happy'); return;
+    }
+    if (a === 'cat-del') { removeCat(t, P.edit.entry); P.edit = null; renderPanel(); toast('Категория удалена, записи перенесены в «Другое»'); return; }
+    if (a === 'cat-reset') { resetCat(t, P.edit.entry); P.edit = null; renderPanel(); return; }
+  }
   if (a === 'ng-reset') { NG.resetHidden(state.nudge); save(); renderPanel(); renderAccount(); toast(NG.t('set.resetDone'), null, null, 'happy'); nudgeRefresh(true); return; }
   if (a === 'rm-toggle') {
     const c = MD.notify.cfg(); c.on = !c.on; MD.notify.save(c);

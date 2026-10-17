@@ -156,6 +156,7 @@
 
     <div class="grp-t">Деньги</div>
     <div class="grp">
+      <button class="row" type="button" data-plate="cats" id="plCats"><span class="rw-ic" aria-hidden="true"><i data-ic="grid"></i></span><span class="rw-t"><b>Категории</b><small>Названия, значки и цвета</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
@@ -215,6 +216,7 @@
       <div class="tx-rest">
         <div class="fl">Дата</div>
         <div class="date-row">
+          <span id="dQuick" class="dq-wrap"></span>
           <button type="button" class="chip" id="dToday">Сегодня</button>
           <button type="button" class="chip" id="dYest">Вчера</button>
           <button type="button" class="chip" id="dOther">Другая дата</button>
@@ -225,12 +227,14 @@
           <label class="amt-in"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="Сумма, например 12,50" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
           <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i></button>
         </div>
+        <div class="chips cur-row" id="txCurRow" role="radiogroup" aria-label="Валюта операции"></div>
+        <div class="note cur-note" id="txCurNote" hidden></div>
         <div class="msg err" id="txAmountErr" hidden></div>
         <div class="fl">Категория</div>
         <button type="button" class="cat-cur" id="txCatCur" hidden></button>
         <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
         <button type="button" class="link note-link" id="txNoteBtn">Добавить заметку</button>
-        <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span id="txNoteL">Заметка</span></label>
+        <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span id="txNoteL">Заметка</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
         <div class="msg err" id="txNoteErr" hidden></div>
         <button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button>
         <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить запись</button>
@@ -243,6 +247,14 @@
         <button type="button" class="btn ghost wide" id="txVoiceCancel">Отмена</button>
       </div>
     </form>
+    <div class="tx-done" id="txDone" hidden>
+      <span class="td-ic" aria-hidden="true"><i data-ic="check"></i></span>
+      <b id="txDoneT">Записано</b>
+      <small id="txDoneD"></small>
+      <button class="btn primary wide" type="button" data-more="expense" id="moreExp">Ещё расход</button>
+      <button class="btn soft wide" type="button" data-more="income" id="moreInc">Ещё доход</button>
+      <button class="btn ghost wide" type="button" id="txDoneOk">Готово</button>
+    </div>
   </div>
 </div>
 
@@ -405,6 +417,7 @@
 <script src="js/events.js"></script>
 <script src="js/insights.js"></script>
 <script src="js/recurring.js"></script>
+<script src="js/rates.js"></script>
 <script src="js/importers.js"></script>
 <script src="js/brain.js"></script>
 <script src="js/cloud.js"></script>
