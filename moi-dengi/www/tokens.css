@@ -8,53 +8,57 @@
 @font-face{font-family:"Golos Text";font-weight:400 900;font-display:swap;src:url(fonts/golos-text-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 
 /* Размеры текста: ровно три. Заголовок экрана, карточка, подпись. */
+/* Размеры текста: ровно три. Заголовок экрана, карточка, подпись. */
 :root{
-  /* Цвет: поверхности и текст. Фон белый, плашки белые, отделяются тенью (карточки) или обводкой (поля) */
-  --bg:#FFFFFF;--surface:#FFFFFF;--float:#FFFFFF;--text:#1F2B20;--muted:#5F6B59;--ph:#6F7A69;
-  --line:#E6E8E4;--field:#F4F5F3;--outline:1px solid #DADDD7;
-  --btn:#1F2B20;--on-btn:#FFFFFF;
-  /* Цвет: смысл */
-  --inc:#238A5B;--inc-bg:#E3F3E8;--inc-t:#1B7449;
-  --exp:#C2413F;--exp-bg:#FAE9E5;--exp-t:#AE3533;
-  /* Акцент зелёно-кремовый: только плюс, микрофон, реплики Фина, прогресс целей и активный таб */
-  --accent:#4F6F34;--accent-t:#4F6F34;--cream:#F6EBCB;--accent-bg:#F6F3E6;
-  --focus:#1F2B20;--scrim:rgba(20,30,18,.4);
-  /* Шрифты: заголовки и суммы — Wix Madefor Display; текст интерфейса — Golos Text */
+  /* Поверхности и текст. Фон белый, плашки белые с мягкой тенью, поля с обводкой */
+  --bg:#FFFFFF;--surface:#FFFFFF;--float:#FFFFFF;--text:#16241A;--muted:#5A6B5E;--ph:#6B7A6E;
+  --line:#E7ECE7;--field:#F2F5F2;--outline:1px solid #D5DCD6;
+  /* Яркий акцент: свежий изумруд и лайм. Кнопки, баланс, активные элементы, прогресс, «+» */
+  --accent:#0E8A4F;--accent-d:#0A6B3D;--accent-t:#0A6B3D;--on-accent:#FFFFFF;--lime:#D5F26B;--on-lime:#16300F;
+  --btn:#0A6B3D;--on-btn:#FFFFFF;--cream:#FFF4D6;--accent-bg:#E6F6EC;
+  /* Весёлые плоские заливки для баннеров и плиток */
+  --tone-mint:#DDF5E5;--tone-lime:#EAF9B8;--tone-peach:#FFE6D8;--tone-sky:#DDEEFF;--tone-lilac:#ECE5FF;--tone-sun:#FFF0BF;
+  --on-tone:#16241A;
+  --inc:#12905A;--inc-bg:#DDF5E5;--inc-t:#0B6E43;
+  --exp:#D8483F;--exp-bg:#FFE6DF;--exp-t:#B3302A;
+  --focus:#0A6B3D;--scrim:rgba(14,30,20,.45);
   --font-display:"Wix Madefor Display","Golos Text",system-ui,sans-serif;
   --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --fs-title:28px;--fs-card:16px;--fs-cap:13px;
-  /* Радиусы и отступы: 16 между блоками, 12 внутри карточек */
-  --r-sm:12px;--r-md:16px;--r-lg:20px;--r-pill:999px;
-  --gap:16px;--pad:12px;
-  /* Тень карточек (одна на всё приложение) и функциональное движение */
-  --shadow:0 1px 3px rgba(0,0,0,.06);
+  --r-sm:12px;--r-md:16px;--r-lg:22px;--r-pill:999px;
+  --gap:16px;--pad:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow-2:0 1px 3px rgba(0,0,0,.08);
   --ease:cubic-bezier(.2,.8,.2,1);--dur:.18s;
-  --nav-h:64px;
+  --nav-h:68px;
   --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
   --sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0F1611;--surface:#172019;--float:#1C2820;--text:#EBF1E4;--muted:#A3B09D;--ph:#93A08D;
-    --line:rgba(255,255,255,.1);--field:#202D24;--outline:1px solid rgba(255,255,255,.16);
-    --btn:#E4EBDD;--on-btn:#0F1611;
+    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
+    --line:rgba(255,255,255,.1);--field:#212E25;--outline:1px solid rgba(255,255,255,.17);
+    --accent:#1E9D5F;--accent-d:#3DD088;--accent-t:#5FDB9B;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
+    --btn:#3DD088;--on-btn:#05230F;--cream:#FFF4D6;--accent-bg:#1C3326;
+    --tone-mint:#1B3B2A;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
+    --on-tone:#EDF3E8;
     --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --accent:#547541;--accent-t:#9DB87F;--cream:#F1E8C8;--accent-bg:#222B1E;
-    --focus:#E4EBDD;--scrim:rgba(0,0,0,.6);
-    --shadow:0 1px 3px rgba(0,0,0,.45);
+    --focus:#5FDB9B;--scrim:rgba(0,0,0,.6);
+    --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-    --bg:#0F1611;--surface:#172019;--float:#1C2820;--text:#EBF1E4;--muted:#A3B09D;--ph:#93A08D;
-    --line:rgba(255,255,255,.1);--field:#202D24;--outline:1px solid rgba(255,255,255,.16);
-    --btn:#E4EBDD;--on-btn:#0F1611;
+    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
+    --line:rgba(255,255,255,.1);--field:#212E25;--outline:1px solid rgba(255,255,255,.17);
+    --accent:#1E9D5F;--accent-d:#3DD088;--accent-t:#5FDB9B;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
+    --btn:#3DD088;--on-btn:#05230F;--cream:#FFF4D6;--accent-bg:#1C3326;
+    --tone-mint:#1B3B2A;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
+    --on-tone:#EDF3E8;
     --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --accent:#547541;--accent-t:#9DB87F;--cream:#F1E8C8;--accent-bg:#222B1E;
-    --focus:#E4EBDD;--scrim:rgba(0,0,0,.6);
-    --shadow:0 1px 3px rgba(0,0,0,.45);
+    --focus:#5FDB9B;--scrim:rgba(0,0,0,.6);
+    --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
     color-scheme:dark;
 }

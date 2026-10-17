@@ -176,12 +176,15 @@ function sanitize(o) {
   for (const g of (Array.isArray(o.goals) ? o.goals : [])) {
     if (!g || typeof g.name !== 'string' || !g.name.trim()) continue;
     const target = parseAmount(g.target); if (!(target > 0)) continue;
-    const sv = parseAmount(g.saved, true), months = Math.max(1, Math.min(600, Math.round(Number(g.months)) || 1));
+    const sv = parseAmount(g.saved, true), months = Math.max(1, Math.min(600, Math.round(Number(g.months)) || 1)), unit = g.unit === 'week' ? 'week' : 'month';
     goals.push({
       id: typeof g.id === 'string' && g.id ? g.id : uid(), name: g.name.trim().slice(0, 40), target: round2(target),
-      saved: Number.isFinite(sv) && sv > 0 ? round2(sv) : 0, months,
+      saved: Number.isFinite(sv) && sv > 0 ? round2(sv) : 0, months, unit,
       deadline: parseYmd(g.deadline) ? g.deadline : MD.goals.ymdOf(MD.goals.addMonths(new Date(), months)),
-      created: parseYmd(g.created) ? g.created : today()
+      created: parseYmd(g.created) ? g.created : today(),
+      nid: Math.max(0, Math.min(49, Math.floor(Number(g.nid)) || goals.length)),
+      remind: { on: !!(g.remind && g.remind.on), day: Math.max(1, Math.min(unit === 'week' ? 7 : 28, Math.floor(Number(g.remind && g.remind.day)) || 5)), time: /^\d{2}:\d{2}$/.test(g.remind && g.remind.time) ? g.remind.time : '10:00' },
+      log: (Array.isArray(g.log) ? g.log : []).slice(-400).map(x => ({ d: x && x.d, a: parseAmount(x && x.a) })).filter(x => parseYmd(x.d) && x.a > 0).map(x => ({ d: x.d, a: round2(x.a) }))
     });
   }
   return { currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge), fest: MD.events.sanitize(o.fest), rec: R.sanitize(o.rec, CATS.expense.map(c => c[0])) };
@@ -220,51 +223,12 @@ const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 /* Пустые экраны: не «нет данных», а что делать дальше */
 const emptyBox = (title, text, act) => `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 96)}</span><b>${esc(title)}</b>${esc(text)}${act ? `<button class="btn primary" type="button" ${act.attr}>${esc(act.label)}</button>` : ''}</div>`;
 
-/* Фин говорит: одна реплика, по касанию сменяется другой */
-let sayIdx = 0;
 const pluralN = (n, a, b, c) => { const m = n % 100, k = n % 10; return m >= 11 && m <= 14 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; };
-function finTips() {
-  const seed = Math.floor(Date.now() / 864e5);
-  const V = arr => arr[(sayIdx + seed) % arr.length];       // варианты реплик меняются по касанию и по дням
-  const cur = monthTx(now0.getFullYear(), now0.getMonth());
-  const inc = sumOf(cur, 'income'), exp = sumOf(cur, 'expense');
-  const tips = [], M = n => esc(maskT(money(n)));
-  const todayExp = round2(state.tx.filter(t => t.type === 'expense' && t.date === today()).reduce((s, t) => s + t.amount, 0));
-  if (!state.tx.length) tips.push({ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Нажми «+» или скажи в микрофон, например: «вчера кофе 6».</small>' });
-  else if (!cur.length) tips.push({ pose: 'sleepy', t: V(['В этом месяце пока тихо<small>Скажи, на что ушли деньги, и я запишу.</small>', 'Пока ни одной записи за месяц<small>Нажми «+» или скажи: «кофе 5».</small>']) });
-  else {
-    tips.push(todayExp ? { pose: 'hello', t: V([`Сегодня ушло <em>${M(todayExp)}</em><small>Всё записано.</small>`, `Сегодня потрачено <em>${M(todayExp)}</em><small>Записал, ничего не потерялось.</small>`]) } : { pose: 'joy', t: V(['Сегодня без трат<small>Так держать!</small>', 'Сегодня трат нет<small>Хороший день для копилки.</small>']) });
-    if (inc > 0 && exp > inc) tips.push({ pose: 'think', t: `Расходы обогнали доходы на <em>${M(round2(exp - inc))}</em><small>Загляни в «Аналитику»: там видно, куда уходит больше всего.</small>` });
-    else if (inc > 0) tips.push({ pose: 'happy', t: `Ты в плюсе на <em>${M(round2(inc - exp))}</em><small>Столько осталось от дохода за месяц.</small>` });
-    const pm = new Date(now0.getFullYear(), now0.getMonth() - 1, 1);
-    const prev = sumOf(monthTx(pm.getFullYear(), pm.getMonth()), 'expense');
-    if (prev > 0 && exp > 0) {
-      const pct = Math.round((exp - prev) / prev * 100);
-      if (pct <= -5) tips.push({ pose: 'joy', t: `Тратишь на <em>${-pct}%</em> меньше, чем в ${MONTHS_P[pm.getMonth()]}<small>Хороший темп.</small>` });
-      else if (pct >= 15) tips.push({ pose: 'think', t: `На <em>${pct}%</em> больше, чем в ${MONTHS_P[pm.getMonth()]}<small>Посмотри в «Аналитике», что изменилось.</small>` });
-    }
-  }
-  const gl = state.goals.filter(g => g.saved < g.target).sort((a, b) => goalPct(b) - goalPct(a))[0];
-  if (gl) {
-    const ml = G.monthsLeft(gl.deadline, new Date()), left = round2(gl.target - gl.saved);
-    tips.push({ pose: 'love', t: `До «${esc(gl.name)}» осталось <em>${M(left)}</em><small>${ml ? `${ml} ${pluralN(ml, 'месяц', 'месяца', 'месяцев')} по ${M(Math.ceil(left / ml))}` : 'Срок вышел. Загляни в «Цели»'}</small>` });
-  }
-  tips.push({ pose: 'notify', t: V(['Можно просто сказать<small>Нажми на микрофон и скажи: «вчера кофе 6».</small>', 'Записать быстрее голосом<small>Скажи: «такси 12 и обед 9».</small>']) });
-  return tips;
-}
-function renderSay() {
-  const tips = finTips(), tip = tips[sayIdx % tips.length];
-  const el = $('#homeSay');
-  el.innerHTML = MD.say(tip.pose, tip.t, 64);
-  el.setAttribute('aria-label', 'Фин говорит. Нажми, чтобы услышать другое');
-}
-$('#homeSay').addEventListener('click', () => { sayIdx++; renderSay(); buzz(8); });
 
 function render() {
   ensureAccount();
   renderMonthBars();
   renderHome();
-  renderSay();
   renderNudge();
   if (tab === 'ops') renderOps();
   if (tab === 'stats') renderStats();
@@ -294,6 +258,20 @@ function renderPayNext() {
     (n.late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${n.mk}">Записать</button>` : '');
 }
 
+/* Карточка «Пора отложить»: цель, в этом периоде ещё не откладывали. Или совет включить напоминание в лучший день */
+function renderSaveCard() {
+  const el = $('#saveCard'), c = G.homeCard(state.goals, state.tx, new Date());
+  if (!c) { el.innerHTML = ''; return; }
+  const g = c.goal, per = esc(maskT(money(c.amount))), unit = g.unit === 'week' ? 'на этой неделе' : 'в этом месяце';
+  el.innerHTML = c.kind === 'due'
+    ? `<div class="save-card due">${MD.mascot('love', 56)}<span class="sc-t"><b>Пора отложить на «${esc(g.name)}»</b><small>${per} ${unit}, как договорились</small></span><button class="btn primary" type="button" data-savenow="${esc(g.id)}">Отложил</button></div>`
+    : `<div class="save-card">${MD.mascot('think', 56)}<span class="sc-t"><b>«${esc(g.name)}»: лучше откладывать ${esc(G.dayName(g.unit === 'week' ? 'week' : 'month', c.day))}</b><small>${per} ${G.perWord(g.unit === 'week' ? 'week' : 'month')}${c.fromIncome ? ', когда у тебя обычно приходят деньги' : ''}. Напомнить?</small></span><button class="btn primary" type="button" data-remindgoal="${esc(g.id)}|${c.day}">Да</button></div>`;
+}
+/* Баннеры: пара наблюдений по записям */
+function renderBanners() {
+  const list = MD.insights.pick(MD.insights.build(state.tx, new Date(), n => maskT(money(n))), new Date(), 2);
+  $('#banners').innerHTML = list.map(b => `<article class="banner tone-${b.tone}"><span class="bi" aria-hidden="true">${icon(b.icon)}</span><b>${esc(b.title)}</b><p>${esc(b.text)}</p></article>`).join('');
+}
 function renderHome() {
   const total = totalBalance();
   setNum($('#heroSum'), moneyH, total);
@@ -302,11 +280,14 @@ function renderHome() {
   $('#btnEye').setAttribute('aria-label', hide ? 'Показать суммы' : 'Скрыть суммы');
 
   const list = monthTx(now0.getFullYear(), now0.getMonth());
-  const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense'), mn = MONTHS_P[now0.getMonth()]; void mn;
+  const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense');
   $('#tileIncL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`; $('#tileExpL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`;
   $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
   $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
+  $('#balNote').textContent = state.tx.length ? (inc - exp >= 0 ? `В этом месяце в плюсе на ${maskT(money(round2(inc - exp)))}` : `В этом месяце расходы больше доходов на ${maskT(money(round2(exp - inc)))}`) : 'Нажми «+», и запишем первую трату';
   renderPayNext();
+  renderSaveCard();
+  renderBanners();
 
   const recent = state.tx.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
@@ -355,14 +336,58 @@ function renderOps() {
   }).join('');
 }
 
+/* Период аналитики: неделя, месяц, год или свои даты. Сравниваем с предыдущим таким же периодом */
+const per = { kind: 'month', anchor: new Date(), year: new Date().getFullYear(), from: '', to: '' };
+const mondayOf = d => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+const addD = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const dd = d => `${d.getDate()} ${MONTHS_G[d.getMonth()]}`;
+const daysBetween = (a, b) => Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate()) - new Date(a.getFullYear(), a.getMonth(), a.getDate())) / 864e5);
+function periodInfo() {
+  const T = new Date();
+  let from, to, label, prevFrom, prevTo, prevPhrase, word;
+  if (per.kind === 'week') {
+    from = mondayOf(per.anchor); to = addD(from, 6); prevFrom = addD(from, -7); prevTo = addD(from, -1);
+    label = `${dd(from)} — ${dd(to)}`; prevPhrase = 'на прошлой неделе'; word = 'за неделю';
+  } else if (per.kind === 'year') {
+    from = new Date(per.year, 0, 1); to = new Date(per.year, 11, 31); prevFrom = new Date(per.year - 1, 0, 1); prevTo = new Date(per.year - 1, 11, 31);
+    label = String(per.year); prevPhrase = `в ${per.year - 1} году`; word = 'за год';
+  } else if (per.kind === 'range') {
+    to = parseYmd(per.to) || T; from = parseYmd(per.from) || addD(to, -29);
+    if (from > to) [from, to] = [to, from];
+    const n = daysBetween(from, to) + 1; prevTo = addD(from, -1); prevFrom = addD(prevTo, -(n - 1));
+    label = `${dd(from)} — ${dd(to)}`; prevPhrase = 'в предыдущем периоде'; word = 'за период';
+  } else {
+    from = new Date(ym.y, ym.m, 1); to = new Date(ym.y, ym.m + 1, 0); prevFrom = new Date(ym.y, ym.m - 1, 1); prevTo = new Date(ym.y, ym.m, 0);
+    label = `${MONTHS[ym.m]} ${ym.y}`; prevPhrase = `в ${MONTHS_P[prevFrom.getMonth()]}`; word = 'за месяц';
+  }
+  const days = daysBetween(from, to) + 1, end = to > T ? T : to, elapsed = Math.max(1, Math.min(days, daysBetween(from, end) + 1));
+  return { from, to, label, prevFrom, prevTo, prevPhrase, word, days, elapsed, f: ymd(from), t: ymd(to), pf: ymd(prevFrom), pt: ymd(prevTo) };
+}
+const inPer = (t, a, b) => t.date >= a && t.date <= b;
+function shiftPeriod(k) {
+  if (per.kind === 'range') return;
+  if (per.kind === 'week') per.anchor = addD(per.anchor, 7 * k); else if (per.kind === 'year') per.year += k; else { const d = new Date(ym.y, ym.m + k, 1); ym = { y: d.getFullYear(), m: d.getMonth() }; }
+  buzz(6); statCat = null; renderStats();
+}
+function renderPeriodBar(P) {
+  $$('#s-stats [data-pk]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.pk === per.kind)));
+  const el = $('#periodBar');
+  if (per.kind === 'range') {
+    el.innerHTML = `<div class="range-row"><label class="field t"><input id="perFrom" type="date" value="${P.f}"><span>С</span></label><label class="field t"><input id="perTo" type="date" value="${P.t}"><span>По</span></label></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="period-bar"><button class="mb" data-pshift="-1" aria-label="Назад">${icon('left')}</button><button class="pl" data-pnow aria-label="${esc(P.label)}. Нажми, чтобы вернуться к текущему периоду">${esc(P.label)}</button><button class="mb" data-pshift="1" aria-label="Вперёд">${icon('right')}</button></div>`;
+}
 function renderStats() {
+  const P = periodInfo();
+  renderPeriodBar(P);
   $$('#s-stats [data-st]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.st === statType)));
-  const list = monthTx().filter(t => t.type === statType);
+  const list = state.tx.filter(t => t.type === statType && inPer(t, P.f, P.t));
   const total = sumOf(list, statType);
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = emptyBox(`В ${MONTHS_P[ym.m]} пока пусто`, statType === 'expense' ? 'Нажми +, чтобы добавить первую трату, и Фин покажет, куда уходят деньги.' : 'Нажми +, чтобы добавить доход, и Фин покажет, откуда приходят деньги.', { attr: 'data-add', label: statType === 'expense' ? 'Добавить трату' : 'Добавить доход' });
+    card.innerHTML = emptyBox('Здесь пока пусто', statType === 'expense' ? 'Нажми +, чтобы добавить трату, или выбери другой период. Фин покажет, куда уходят деньги.' : 'Нажми +, чтобы добавить доход, или выбери другой период. Фин покажет, откуда приходят деньги.', { attr: 'data-add', label: statType === 'expense' ? 'Добавить трату' : 'Добавить доход' });
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
@@ -375,55 +400,53 @@ function renderStats() {
   let off = 0;
   const segs = rows.map(([name, sum]) => {
     const frac = sum / total, len = Math.max(frac * C - (rows.length > 1 ? 3 : 0), 0.5);
-    const s = `<circle class="seg${statCat && statCat !== name ? ' dim' : ''}${statCat === name ? ' on' : ''}" cx="75" cy="75" r="${R}" fill="none" stroke="${catInfo(statType, name)[2]}" stroke-width="${statCat === name ? 24 : 20}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
+    const sg = `<circle class="seg${statCat && statCat !== name ? ' dim' : ''}${statCat === name ? ' on' : ''}" cx="75" cy="75" r="${R}" fill="none" stroke="${catInfo(statType, name)[2]}" stroke-width="${statCat === name ? 24 : 20}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
     off += frac * C;
-    return s;
+    return sg;
   }).join('');
   card.innerHTML = `<div class="cat-wrap">
-      <div class="donut" role="img" aria-label="Всего ${word} за месяц: ${esc(hide ? 'скрыто' : money(total))}">
+      <div class="donut" role="img" aria-label="Всего ${word} ${P.word}: ${esc(hide ? 'скрыто' : money(total))}">
         <svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--field)" stroke-width="20"/>${segs}</svg>
         <div class="donut-c"><b>${esc(maskT(fmt(by[statCat] != null ? by[statCat] : total)))}</b><span>${by[statCat] != null ? esc(statCat) : 'всего'}</span></div>
       </div>
     </div>`;
 
-  // Сравнение, среднее, максимум
-  const pm = new Date(ym.y, ym.m - 1, 1);
-  const prev = sumOf(monthTx(pm.getFullYear(), pm.getMonth()).filter(t => t.type === statType), statType);
-  const isCur = ym.y === now0.getFullYear() && ym.m === now0.getMonth();
-  const dim = new Date(ym.y, ym.m + 1, 0).getDate();
-  const daysN = isCur ? now0.getDate() : dim;
+  // Сравнение с прошлым таким же периодом, главная категория, среднее и самая крупная
+  const prev = sumOf(state.tx.filter(t => t.type === statType && inPer(t, P.pf, P.pt)), statType);
   const big = list.slice().sort((a, b) => b.amount - a.amount)[0];
-  let cmp = '';
-  if (prev > 0) {
-    const pct = Math.round((total - prev) / prev * 100);
-    const better = statType === 'expense' ? pct <= 0 : pct >= 0;
-    cmp = `<div class="wide"><small>Сравнение с ${MONTHS[pm.getMonth()].toLowerCase().replace(/ь$/, 'я').replace(/т$/, 'та').replace(/й$/, 'я')}</small><b class="${better ? 'good' : 'bad'}">${pct === 0 ? `Столько же, сколько в ${MONTHS_P[pm.getMonth()]}` : `На ${Math.abs(pct)}% ${pct < 0 ? 'меньше' : 'больше'}, чем в ${MONTHS_P[pm.getMonth()]}`}</b></div>`;
-  }
   {
     const top = esc(rows[0][0]), topSum = esc(maskT(money(rows[0][1]))), share = Math.round(rows[0][1] / total * 100);
-    const main = statType === 'income' ? `Главный источник: <em>${top}</em>, ${share}% за месяц (${topSum}).` : `Больше всего ушло на <em>${top}</em>: ${share}% (${topSum}).`;
+    const main = statType === 'income' ? `Главный источник: <em>${top}</em>, ${share}% (${topSum}).` : `Больше всего ушло на <em>${top}</em>: ${share}% (${topSum}).`;
     let head, pose;
     if (prev > 0) {
-      const pct = Math.round((total - prev) / prev * 100), mon = MONTHS_P[pm.getMonth()];
-      const good = statType === 'expense' ? pct <= 0 : pct >= 0;
-      head = pct === 0 ? `Столько же, сколько в ${mon}` : `${statType === 'expense' ? 'Расходы' : 'Доходы'} на <em>${Math.abs(pct)}%</em> ${pct < 0 ? 'меньше' : 'больше'}, чем в ${mon}`;
+      const pct = Math.round((total - prev) / prev * 100), good = statType === 'expense' ? pct <= 0 : pct >= 0;
+      head = pct === 0 ? `Столько же, сколько ${P.prevPhrase}` : `${statType === 'expense' ? 'Расходы' : 'Доходы'} на <em>${Math.abs(pct)}%</em> ${pct < 0 ? 'меньше' : 'больше'}, чем ${P.prevPhrase}`;
       pose = pct === 0 ? 'hello' : good ? 'joy' : 'think';
-    } else { head = `${cap(MONTHS_P[ym.m] === MONTHS_P[now0.getMonth()] ? 'в этом месяце' : 'в ' + MONTHS_P[ym.m])} ${statType === 'expense' ? 'расходов' : 'доходов'} <em>${esc(maskT(money(total)))}</em>`; pose = 'hello'; }
+    } else { head = `${cap(statType === 'expense' ? 'расходов' : 'доходов')} ${P.word}: <em>${esc(maskT(money(total)))}</em>`; pose = 'hello'; }
     $('#statSay').innerHTML = MD.say(pose, `${head}<small>${main}</small>`, 64);
   }
-  cmp = '';
-  insEl.innerHTML = `<div class="ins">${cmp}<div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / daysN))))}</b></div><div><small>${statType === 'expense' ? 'Самая крупная трата' : 'Самый крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
+  insEl.innerHTML = `<div class="ins"><div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / P.elapsed))))}</b></div><div><small>${statType === 'expense' ? 'Самая крупная трата' : 'Самый крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
 
-  // Столбики по дням
-  const perDay = Array(dim).fill(0);
-  list.forEach(t => { perDay[Number(t.date.slice(8)) - 1] += t.amount; });
-  const mx = Math.max(...perDay), W = 300, H = 90, bw = W / dim;
-  const bars = perDay.map((v, i) => {
-    const h = v > 0 ? Math.max(4, v / mx * H) : 2, isT = isCur && i + 1 === now0.getDate();
-    return `<rect x="${(i * bw + bw * 0.14).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw * 0.72).toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(3, bw * 0.3).toFixed(1)}" fill="${v > 0 ? (statType === 'expense' ? 'var(--exp)' : 'var(--inc)') : 'var(--line)'}" opacity="${v > 0 ? (isT ? 1 : .8) : 1}"/>`;
+  // Столбики: по дням (до двух месяцев), по неделям (длинный период) или по месяцам (год)
+  let buckets = [];
+  if (per.kind === 'year') {
+    buckets = Array.from({ length: 12 }, (_, i) => ({ l: MONTHS[i].slice(0, 3), v: 0, now: per.year === now0.getFullYear() && i === now0.getMonth() }));
+    list.forEach(t => { buckets[Number(t.date.slice(5, 7)) - 1].v += t.amount; });
+  } else if (P.days > 62) {
+    const n = Math.ceil(P.days / 7); buckets = Array.from({ length: n }, (_, i) => ({ l: dd(addD(P.from, i * 7)), v: 0, now: false }));
+    list.forEach(t => { buckets[Math.min(n - 1, Math.floor(daysBetween(P.from, parseYmd(t.date)) / 7))].v += t.amount; });
+  } else {
+    buckets = Array.from({ length: P.days }, (_, i) => { const d = addD(P.from, i); return { l: per.kind === 'week' ? WD_S[d.getDay()] : String(d.getDate()), v: 0, now: ymd(d) === today() }; });
+    list.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
+  }
+  const mx = Math.max(...buckets.map(b => b.v)) || 1, W = 300, H = 90, nb = buckets.length, bw = W / nb;
+  const bars = buckets.map((b, i) => {
+    const h = b.v > 0 ? Math.max(4, b.v / mx * H) : 2;
+    return `<rect x="${(i * bw + bw * 0.14).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw * 0.72).toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(3, bw * 0.3).toFixed(1)}" fill="${b.v > 0 ? (statType === 'expense' ? 'var(--exp)' : 'var(--inc)') : 'var(--line)'}" opacity="${b.v > 0 ? (b.now ? 1 : .8) : 1}"/>`;
   }).join('');
-  const labels = [1, 8, 15, 22, dim].map(d => `<text x="${((d - 0.5) * bw).toFixed(1)}" y="${H + 16}" text-anchor="middle">${d}</text>`).join('');
-  dayCard.innerHTML = `<h3>По дням</h3><svg class="days" viewBox="0 0 ${W} ${H + 20}" role="img" aria-label="Столбики ${word} по дням месяца">${bars}${labels}</svg>`;
+  const step = nb <= 7 ? 1 : nb <= 12 ? 1 : Math.ceil(nb / 6);
+  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${((i + 0.5) * bw).toFixed(1)}" y="${H + 16}" text-anchor="middle">${esc(b.l)}</text>` : '').join('');
+  dayCard.innerHTML = `<h3>${per.kind === 'year' ? 'По месяцам' : P.days > 62 ? 'По неделям' : 'По дням'}</h3><svg class="days" viewBox="0 0 ${W} ${H + 20}" role="img" aria-label="Столбики ${word} ${P.word}">${bars}${labels}</svg>`;
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = catInfo(statType, name), pc = sum / total * 100;
@@ -455,7 +478,7 @@ function setMonth(y, m) {
   clearTimeout(skelT);
   skelT = setTimeout(() => { document.body.classList.remove('skel'); render(); }, 220);
 }
-function shiftMonth(d) { const dt = new Date(ym.y, ym.m + d, 1); setMonth(dt.getFullYear(), dt.getMonth()); buzz(6); }
+function shiftMonth(d) { if (tab === 'stats') { shiftPeriod(d); return; } const dt = new Date(ym.y, ym.m + d, 1); setMonth(dt.getFullYear(), dt.getMonth()); buzz(6); }
 (() => {
   let sx = null, sy = 0, zone = null;
   document.addEventListener('touchstart', e => {
@@ -475,6 +498,13 @@ document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]');
   if (g) showTab(g.dataset.go);
   if (e.target.closest('[data-go-pay]')) openPayScreen();
+  const sn = e.target.closest('[data-savenow]');
+  if (sn) { openGoal(sn.dataset.savenow); const g = state.goals.find(x => x.id === sn.dataset.savenow), per = g && G.perPeriodNow(g, new Date()); if (per && $('#goalAmt')) $('#goalAmt').value = String(per); }
+  const rg = e.target.closest('[data-remindgoal]');
+  if (rg) {
+    const [id, day] = rg.dataset.remindgoal.split('|'), g = state.goals.find(x => x.id === id);
+    if (g) { g.remind.on = true; g.remind.day = Number(day); save(); afterDataChange(); render(); toast(`Напомню откладывать ${G.dayName(gUnit(g), Number(day))}`, null, null, 'happy'); }
+  }
   if (e.target.closest('[data-add]')) { buzz(10); openTx(); }
   const pw = e.target.closest('[data-paywrite]');
   if (pw) { const [id, mk] = pw.dataset.paywrite.split('|'); payWrite(id, mk); }
@@ -487,8 +517,16 @@ $('#s-ops').addEventListener('click', e => {
   const f = e.target.closest('[data-ft]');
   if (f) { opsType = f.dataset.ft; renderOps(); }
 });
+$('#periodBar').addEventListener('change', e => { if (e.target.id === 'perFrom') per.from = e.target.value; if (e.target.id === 'perTo') per.to = e.target.value; renderStats(); });
 $('#opsSearch').addEventListener('input', e => { opsQuery = e.target.value; renderOps(); });
 $('#s-stats').addEventListener('click', e => {
+  const pk = e.target.closest('[data-pk]');
+  if (pk) { per.kind = pk.dataset.pk; if (per.kind === 'range' && !per.from) { per.to = today(); per.from = ymd(addD(new Date(), -29)); } statCat = null; renderStats(); return; }
+  const ps = e.target.closest('[data-pshift]');
+  if (ps) {
+    shiftPeriod(Number(ps.dataset.pshift)); return;
+  }
+  if (e.target.closest('[data-pnow]')) { per.anchor = new Date(); per.year = new Date().getFullYear(); ym = { y: now0.getFullYear(), m: now0.getMonth() }; renderStats(); return; }
   const f = e.target.closest('[data-st]');
   if (f) { statType = f.dataset.st; statCat = null; renderStats(); }
   const c = e.target.closest('[data-cat]');
@@ -505,6 +543,7 @@ $('#btnEye').addEventListener('click', () => {
 const layers = [];
 let ignorePops = 0;
 function openLayer(el, tries = 0) {
+  if (layers.includes(el)) return;                  // двойное нажатие на кнопку не открывает окно дважды
   /* Пока идёт возврат назад после закрытия другого слоя, историю не трогаем: иначе вернёмся на пустую страницу */
   if (ignorePops > 0 && tries < 20) { setTimeout(() => openLayer(el, tries + 1), 30); return; }
   $('#toast').hidden = true;
@@ -562,7 +601,7 @@ let toastT = null;
 function toast(msg, actionLabel, action, pose, ms) {
   const t = $('#toast');
   t.hidden = true; void t.offsetWidth;
-  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, 28)}</span>` : '') + `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
+  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, msg.length > 60 ? 44 : 30)}</span>` : '') + `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
   if (actionLabel) $('button', t).onclick = () => { clearTimeout(toastT); t.hidden = true; action(); };
   t.hidden = false;
   clearTimeout(toastT);
@@ -573,21 +612,31 @@ const showErr = (el, msg) => { el.textContent = msg; el.hidden = false; };
 const hideErr = el => { el.hidden = true; };
 
 /* ---------- Запись (добавление / правка) ---------- */
-const tx = { type: 'expense', cat: '', acc: null, editId: null, pay: null, draftIdx: null };
+let txBusy = false;
+const tx = { type: 'expense', cat: '', acc: null, editId: null, pay: null, draftIdx: null, catOpen: false, noteOpen: false };
 const OTHER = 'Другое';
 function renderTxForm() {
   $$('#lyTx .seg-b').forEach(b => b.setAttribute('aria-checked', String(b.dataset.type === tx.type)));
   $('#txCur').textContent = sym();
+  /* При правке интерфейс короче: категория одной строкой («Изменить» раскрывает сетку), а не пустая форма заново */
+  const editing = !!tx.editId || tx.draftIdx != null, open = !editing || tx.catOpen || !tx.cat;
+  $('#txCats').hidden = !open;
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
     `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="--c:${c[2]};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
-  const other = tx.cat === OTHER;
+  const cc = $('#txCatCur'), ci = tx.cat ? catInfo(tx.type, tx.cat) : null;
+  cc.hidden = open;
+  if (ci) cc.innerHTML = `<span class="ci" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(tx.cat)}</b><span class="ch">Изменить</span>`;
+  const other = tx.cat === OTHER, showNote = other || tx.noteOpen || !!$('#txNote').value;
+  $('#txNoteF').hidden = !showNote; $('#txNoteBtn').hidden = showNote;
   $('#txNoteL').textContent = other ? 'Что именно? (обязательно)' : 'Заметка (необязательно)';
   $('#txNoteF').classList.toggle('err', false);
   hideErr($('#txNoteErr'));
-  $('#txSaveT').textContent = tx.editId ? 'Сохранить изменения' : 'Сохранить';
+  $('#txSaveT').textContent = editing && tx.editId ? 'Сохранить изменения' : 'Сохранить';
   syncSave();
   syncDateChips();
 }
+$('#txCatCur').addEventListener('click', () => { tx.catOpen = true; renderTxForm(); });
+$('#txNoteBtn').addEventListener('click', () => { tx.noteOpen = true; renderTxForm(); setTimeout(() => $('#txNote').focus(), 40); });
 function syncSave() { $('#txSave').disabled = !(parseAmount($('#txAmount').value) > 0 && tx.cat); }
 $('#txAmount').addEventListener('input', e => {
   let v = e.target.value.replace(/[^\d.,]/g, '');
@@ -611,13 +660,13 @@ function openTx(id, opts = {}) {
   const t = id && state.tx.find(x => x.id === id);
   tx.editId = t ? t.id : null;
   tx.draftIdx = opts.draftIdx == null ? null : opts.draftIdx;
-  tx.pay = opts.pay || null;
+  tx.pay = opts.pay || null; tx.catOpen = false;
   tx.type = t ? t.type : (opts.type || 'expense');
   tx.cat = t ? t.cat : (opts.cat && CATS[tx.type].some(c => c[0] === opts.cat) ? opts.cat : '');   // категорию выбирает человек: без неё «Сохранить» не активна
   tx.acc = t ? t.acc : state.accounts[0].id;
   $('#txTitle').textContent = t || tx.draftIdx != null ? 'Изменить запись' : tx.type === 'income' ? 'Новый доход' : 'Новая запись';
   $('#txAmount').value = t ? String(t.amount).replace('.', ',') : opts.amount ? String(opts.amount).replace('.', ',') : '';
-  $('#txNote').value = t ? t.note : opts.note || '';
+  $('#txNote').value = t ? t.note : opts.note || ''; tx.noteOpen = !!$('#txNote').value;
   $('#txDate').value = t ? t.date : parseYmd(opts.date) ? opts.date : today();
   $('#txDelete').hidden = !t;
   hideErr($('#txAmountErr'));
@@ -629,14 +678,13 @@ function openTx(id, opts = {}) {
     if (tx.draftIdx != null) { tx.draftIdx = null; setTimeout(() => { if (draft.length) { renderDraft(); openLayer($('#lyDraft')); } }, 0); }   // закрыл правку строки: возвращаемся к «Всё верно?»
   };
   openLayer(ly);
-  if (t || opts.amount) $('#txAmount').removeAttribute('data-autofocus'); else $('#txAmount').setAttribute('data-autofocus', '');
   if (opts.voice) setTimeout(startTxVoice, 220);
 }
 $('#lyTx').addEventListener('click', e => {
   const t = e.target.closest('[data-type],[data-cat]');
   if (!t) return;
   if (t.dataset.type) { tx.type = t.dataset.type; if (!CATS[tx.type].some(c => c[0] === tx.cat)) tx.cat = ''; else if (tx.type === 'income' && tx.cat === 'Подарки') tx.cat = 'Подарок'; }
-  if (t.dataset.cat) tx.cat = t.dataset.cat;
+  if (t.dataset.cat) { tx.cat = t.dataset.cat; if (tx.editId || tx.draftIdx != null) tx.catOpen = false; }
   buzz(6);
   renderTxForm();
   if (t.dataset.cat === OTHER) setTimeout(() => $('#txNote').focus(), 60);
@@ -657,6 +705,7 @@ $('#txForm').addEventListener('submit', e => {
   }
   const date = parseYmd($('#txDate').value) ? $('#txDate').value : today();
   const rec = { type: tx.type, amount: round2(amt), cat: tx.cat, acc: tx.acc, date, note };
+  if (txBusy) return; txBusy = true; setTimeout(() => { txBusy = false; }, 600);   // второе нажатие «Сохранить» подряд игнорируем
   if (tx.draftIdx != null) {                       // правка строки в «Всё верно?»: возвращаемся туда
     draft[tx.draftIdx] = rec; tx.draftIdx = null;
     closeLayer($('#lyTx')); renderDraft(); openLayer($('#lyDraft')); return;
@@ -718,7 +767,7 @@ function startTxVoice() {
     onError: code => { endTxVoice(); showErr($('#txAmountErr'), MD.voiceMessage(code)); }
   });
 }
-const HINT = 'Не расслышал. Попробуй так: «вчера такси 12».';
+const HINT = 'Не разобрал. Попробуй так: «вчера такси 12».';
 /* Сказанное или написанное: после разбора всегда экран «Всё верно?», где любую строку можно изменить */
 function spoken(text, fromSheet) {
   ensureAccount();
@@ -735,13 +784,11 @@ $('#txVoiceStop').addEventListener('click', () => MD.voice.stop());
 $('#txVoiceCancel').addEventListener('click', () => { MD.voice.cancel(); endTxVoice(); });
 
 /* Быстрая запись на главной: поле «скажи или напиши» и микрофон */
-$('#qaInput').addEventListener('input', e => { $('#qaGo').hidden = !e.target.value.trim(); });
 $('#qaForm').addEventListener('submit', e => {
   e.preventDefault();
   const v = $('#qaInput').value.trim(); if (!v) return;
-  if (spoken(v, false)) { $('#qaInput').value = ''; $('#qaGo').hidden = true; }
+  if (spoken(v, false)) $('#qaInput').value = '';
 });
-$('#qaMic').addEventListener('click', () => { buzz(10); openTx(null, { voice: true }); });
 
 /* Удаление без вопросов: «Удалено» и «Вернуть» не меньше пяти секунд */
 function deleteTx(id) {
@@ -789,17 +836,18 @@ function deleteTx(id) {
 /* ---------- Цели ---------- */
 const G = MD.goals;
 const goalPct = g => Math.min(100, Math.round(g.saved / g.target * 100));
-/* Карточка цели: прогресс, остаток, ежемесячный платёж и дедлайн */
+/* Карточка цели: прогресс, остаток, взнос за период (неделя или месяц) и дедлайн */
+const gUnit = g => (g.unit === 'week' ? 'week' : 'month');
 function goalFacts(g) {
-  const done = g.saved >= g.target, left = round2(Math.max(0, g.target - g.saved)), ml = G.monthsLeft(g.deadline, new Date());
+  const done = g.saved >= g.target, left = round2(Math.max(0, g.target - g.saved)), pl = G.periodsLeft(g, new Date());
   const dl = new Date(g.deadline + 'T00:00:00');
-  return { done, left, monthly: done ? 0 : ml ? Math.ceil(left / ml) : left, dlText: `${dl.getDate()} ${MONTHS_G[dl.getMonth()]} ${dl.getFullYear()}`, over: !done && !ml };
+  return { done, left, monthly: done ? 0 : G.perPeriodNow(g, new Date()), dlText: `${dl.getDate()} ${MONTHS_G[dl.getMonth()]} ${dl.getFullYear()}`, over: !done && !pl };
 }
 const goalLeft = g => { const f = goalFacts(g); return f.done ? 'Цель достигнута' : f.over ? `Срок был ${f.dlText}` : `Дедлайн ${f.dlText}`; };
 const goalRows = g => {
   const f = goalFacts(g);
   return `<span class="goal-sub"><span>Отложено ${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</span><span>${f.done ? 'Готово' : `Осталось ${esc(maskT(money(f.left)))}`}</span></span>
-    <span class="goal-sub"><span>${f.done ? '' : `В месяц ${esc(maskT(money(f.monthly)))}`}</span><span>${esc(goalLeft(g))}</span></span>`;
+    <span class="goal-sub"><span>${f.done ? '' : `${esc(cap(G.perWord(gUnit(g))))} ${esc(maskT(money(f.monthly)))}`}</span><span>${esc(goalLeft(g))}</span></span>`;
 };
 function renderGoals() {
   const el = $('#goalsBody'), list = state.goals;
@@ -814,24 +862,48 @@ function renderGoals() {
     </button>`).join('')}</div><div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>${act} ${pluralN(act, 'цель', 'цели', 'целей')} в работе</small>`, 64)}</div>`;
 }
 let openGoalId = null;
-function openGoal(id) {
-  const g = state.goals.find(x => x.id === id); if (!g) return;
-  openGoalId = id;
-  $('#goalTitle').textContent = g.name;
-  const done = g.saved >= g.target, pct = goalPct(g);
+const WD_CH = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+/* Календарь взносов: какие недели или месяцы цели закрыты, какие пропущены, и дни текущего месяца с взносами */
+function goalCalendar(g) {
+  const U = gUnit(g), st = G.strip(g, new Date());
+  const cells = st.cells.map(c => `<span class="pcell ${c.status}${c.full ? ' full' : ''}" title="${esc(maskT(money(c.sum)))}">${c.i + 1}</span>`).join('');
+  const T = new Date(), first = new Date(T.getFullYear(), T.getMonth(), 1), dim = new Date(T.getFullYear(), T.getMonth() + 1, 0).getDate(), lead = (first.getDay() + 6) % 7;
+  const days = new Set((g.log || []).filter(x => x.d.startsWith(monthKey(T.getFullYear(), T.getMonth()))).map(x => Number(x.d.slice(8))));
+  const grid = WD_CH.map(d => `<span class="h">${d}</span>`).join('') + '<span></span>'.repeat(lead) + Array.from({ length: dim }, (_, i) => `<span class="${days.has(i + 1) ? 'on' : ''}${i + 1 === T.getDate() ? ' td' : ''}">${i + 1}</span>`).join('');
+  return `<div class="fl">Календарь взносов: ${U === 'week' ? 'недели' : 'месяцы'}</div><div class="pstrip">${cells}</div>
+    <div class="plegend"><span><i style="background:var(--accent)"></i>отложено</span><span><i style="background:var(--exp-bg);box-shadow:inset 0 0 0 1px var(--exp)"></i>пропущено${st.missed ? `: ${st.missed}` : ''}</span><span><i style="background:var(--field);box-shadow:inset 0 0 0 2px var(--accent)"></i>сейчас</span></div>
+    <div class="fl">${esc(cap(MONTHS[T.getMonth()]))}: дни, когда откладывал</div><div class="mcal" aria-label="Дни взносов в этом месяце">${grid}</div>`;
+}
+function remindBlock(g) {
+  const r = g.remind, U = gUnit(g), on = r && r.on, sd = G.suggestDay(state.tx, U);
+  const days = U === 'week' ? WD_CH.map((d, i) => `<button type="button" class="chip" data-gday="${i + 1}" aria-checked="${r.day === i + 1}">${d}</button>`).join('') : `<label class="field t" style="margin:0;flex:1"><input id="gDay" type="text" inputmode="numeric" maxlength="2" value="${r.day}"><span>Число месяца</span></label>`;
+  return `<div class="goal-remind"><button class="row" type="button" data-gremind="toggle" role="switch" aria-checked="${!!on}" style="padding:0;min-height:44px"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминать откладывать</b><small>Лучше ${esc(G.dayName(U, sd.day))}${sd.fromIncome ? ', когда приходят деньги' : ''}</small></span><span class="sw-t" aria-checked="${!!on}"></span></button>
+    ${on ? `<div class="${U === 'week' ? 'day-chips' : 'chips'}" role="group" aria-label="${U === 'week' ? 'День недели' : 'День месяца'}" style="margin-top:12px">${days}</div><label class="field t"><input id="gTime" type="time" value="${esc(r.time)}"><span>Во сколько</span></label>` : ''}</div>`;
+}
+function drawGoal(g) {
+  const done = g.saved >= g.target, pct = goalPct(g), per = G.perPeriodNow(g, new Date());
   const say = done ? ['joy', 'Цель достигнута! Можно собираться']
     : pct >= 50 ? ['happy', `Больше половины пути. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
       : pct > 0 ? ['hello', `Начало положено. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
         : ['think', 'Пока ноль. Отложи первую сумму'];
-  $('#goalDetail').innerHTML = `${MD.say(say[0], say[1], 84)}
+  $('#goalDetail').innerHTML = `${MD.say(say[0], say[1], 64)}
     <div class="goal big"><span class="goal-top"><b>${esc(maskT(money(g.saved)))}</b><span class="goal-pct">${pct}%</span></span>
     <span class="goal-bar"><i style="width:${pct}%"></i></span>${goalRows(g)}</div>
-    <form id="goalAdd" novalidate>
-      <div class="bal-row">${fld('goalAmt', 'Сколько отложил', { mode: 'decimal', unit: sym() })}<button class="btn primary" type="submit">Пополнить</button></div>
-      <div class="note">Пополнение цели — это отметка. Баланс не меняется.</div>
+    ${done ? '' : `<form id="goalAdd" novalidate>
+      <div class="bal-row">${fld('goalAmt', 'Сколько отложил', { mode: 'decimal', unit: sym() })}<button class="btn primary" type="submit">Отложить</button></div>
+      ${per ? `<div class="note">По плану ${esc(G.perWord(gUnit(g)))}: ${esc(maskT(money(per)))}. Если отложишь больше, Фин порадуется.</div>` : ''}
       <div class="msg err" id="goalErr" hidden></div>
-    </form>
+    </form>`}
+    ${goalCalendar(g)}
+    ${done ? '' : remindBlock(g)}
     <button class="btn danger wide" type="button" id="goalDel">Удалить цель</button>`;
+  paintIcons($('#goalDetail'));
+}
+function openGoal(id) {
+  const g = state.goals.find(x => x.id === id); if (!g) return;
+  openGoalId = id;
+  $('#goalTitle').textContent = g.name;
+  drawGoal(g);
   openLayer($('#lyGoal'));
 }
 function startNewGoal() {
@@ -846,16 +918,39 @@ const goalClick = e => {
 };
 $('#goalsBody').addEventListener('click', goalClick);
 $('#goalNew').addEventListener('click', startNewGoal);
+
+/* Пополнение цели вручную. Отложил больше, чем планировалось: Фин радуется */
+function topUp(g, v) {
+  const planned = G.perPeriodNow(g, new Date()), was = g.saved >= g.target;
+  g.saved = round2(g.saved + v); (g.log = g.log || []).push({ d: today(), a: round2(v) });
+  save(); render(); buzz(15); afterDataChange();
+  const doneNow = !was && g.saved >= g.target;
+  if (doneNow) toast(`Цель достигнута! Собрано ${money(g.target)}`, null, null, 'joy', 6000);
+  else if (planned > 0 && v > planned * 1.0001) toast(`Ты большой молодец! Отложил на ${money(round2(v - planned))} больше плана. Надеюсь, это не навредит твоим финансам.`, null, null, 'joy', 6500);
+  else toast('Отложено', null, null, 'happy');
+}
 $('#goalDetail').addEventListener('submit', e => {
   e.preventDefault();
   const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
   const v = parseAmount($('#goalAmt').value), err = $('#goalErr');
-  if (!(v > 0)) { showErr(err, 'Введи сумму, например 150.'); return; }
-  const was = g.saved >= g.target;
-  g.saved = round2(g.saved + v); save(); render(); buzz(15);
+  if (!(v > 0)) { showErr(err, 'Впиши сумму, например 150.'); return; }
   closeLayer($('#lyGoal'));
-  toast(!was && g.saved >= g.target ? `Цель достигнута! Собрано ${money(g.target)}` : 'Добавлено', null, null, !was && g.saved >= g.target ? 'joy' : 'happy');
+  topUp(g, v);
 });
+/* Напоминание о взносе: переключатель, день и время прямо в карточке цели */
+$('#goalDetail').addEventListener('click', e => {
+  const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
+  if (e.target.closest('[data-gremind]')) { g.remind.on = !g.remind.on; save(); afterDataChange(); openGoalKeep(g); return; }
+  const d = e.target.closest('[data-gday]');
+  if (d) { g.remind.day = Number(d.dataset.gday); save(); afterDataChange(); openGoalKeep(g); }
+});
+$('#goalDetail').addEventListener('change', e => {
+  const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
+  if (e.target.id === 'gTime' && /^\d{2}:\d{2}$/.test(e.target.value)) { g.remind.time = e.target.value; save(); afterDataChange(); }
+  if (e.target.id === 'gDay') { const v = parseInt(e.target.value, 10); if (v >= 1 && v <= 28) { g.remind.day = v; save(); afterDataChange(); } }
+});
+function openGoalKeep(g) { const sh = $('#lyGoal .sheet'), y = sh.scrollTop; drawGoal(g); sh.scrollTop = y; }
+
 $('#goalDetail').addEventListener('click', e => {
   if (!e.target.closest('#goalDel')) return;
   const i = state.goals.findIndex(x => x.id === openGoalId); if (i < 0) return;
@@ -869,7 +964,7 @@ const KINDS = [['Отпуск', 'Билеты, отель'], ['Подушка б
 const STEP_NO = { kind: 1, custom: 1, target: 2, saved: 3, term: 4, free: 5, think: 5, plan: 6, tune: 6, tuneMonthly: 6, tuneTerm: 6, tuneTarget: 6, tuneIncome: 6 };
 let quiz = null;
 function openQuiz() {
-  quiz = { step: 'kind', stack: [], name: '', target: 0, saved: 0, months: 0, free: G.freeMoney(state.tx, new Date()), extra: 0, hadFree: false };
+  quiz = { step: 'kind', stack: [], name: '', target: 0, saved: 0, term: null, free: G.freeMoney(state.tx, new Date()), extra: 0, hadFree: false };
   quiz.hadFree = quiz.free !== null;
   renderQuiz();
   openLayer($('#lyQuiz'));
@@ -877,7 +972,16 @@ function openQuiz() {
 const qGo = step => { quiz.stack.push(quiz.step); quiz.step = step; renderQuiz(); };
 const qIn = (id, label, unit) => `${fld(id, label, { mode: 'decimal', unit })}<div class="msg err" id="qErr" hidden></div>`;
 const qBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-qa="${act}" ${dis ? 'disabled' : ''}>${esc(label)}</button>`;
-function planOf() { return G.plan({ target: quiz.target, saved: quiz.saved, months: quiz.months, free: quiz.free }); }
+function planOf() { return G.planTerm({ target: quiz.target, saved: quiz.saved, n: quiz.term.n, unit: quiz.term.unit, free: quiz.free }); }
+/* Срок: быстрые варианты от двух недель до года и свой (число и неделя или месяц) */
+const TERMS = [[2, 'week', '2 недели'], [1, 'month', '1 месяц'], [3, 'month', '3 месяца'], [6, 'month', '6 месяцев'], [12, 'month', '1 год'], [24, 'month', '2 года']];
+function termHtml(act) {
+  const q = quiz, u = q.termUnit || 'month';
+  return `<div class="term-grid" role="radiogroup" aria-label="Срок">${TERMS.map(t => `<button type="button" role="radio" class="kind term" data-term="${t[0]}:${t[1]}" aria-checked="${q.termPick === t[0] + ':' + t[1]}"><b>${t[2]}</b></button>`).join('')}</div>
+    <div class="fl">Или свой срок</div>
+    <div class="term-custom">${fld('qNum', 'Сколько', { mode: 'numeric' })}<div class="seg unit-seg" role="radiogroup" aria-label="Единица срока" style="flex:1"><button type="button" role="radio" class="seg-b" data-tunit="week" aria-checked="${u === 'week'}">недель</button><button type="button" role="radio" class="seg-b" data-tunit="month" aria-checked="${u === 'month'}">месяцев</button></div></div>
+    <div class="msg err" id="qErr" hidden></div>${qBtn(act, act === 'doTerm' ? 'Пересчитать' : 'Далее')}`;
+}
 function renderQuiz() {
   const q = quiz, body = $('#quizBody');
   $('#quizBar').style.width = (STEP_NO[q.step] || 1) / 6 * 100 + '%';
@@ -902,9 +1006,8 @@ function renderQuiz() {
       html = qIn('qNum', 'Сколько уже есть', sym()) + qBtn('saved', 'Далее') + qBtn('saved0', 'Пока ноль', 'soft');
       break;
     case 'term':
-      say = ['notify', 'За сколько хочешь накопить?'];
-      html = `<div class="term-grid" role="radiogroup" aria-label="Срок">${[[3, '3 месяца'], [6, '6 месяцев'], [12, '1 год'], [24, '2 года']].map(t => `<button type="button" role="radio" class="kind term" data-term="${t[0]}" aria-checked="${q.termPick === t[0]}"><b>${t[1]}</b></button>`).join('')}</div>
-        ${qIn('qNum', 'Другой срок, месяцев')}${qBtn('term', 'Далее')}`;
+      say = ['notify', 'За сколько хочешь накопить? Хоть за две недели.'];
+      html = termHtml('term');
       break;
     case 'free':
       say = ['think', 'Пока мало записей. Сколько примерно остаётся свободным за месяц?'];
@@ -915,15 +1018,15 @@ function renderQuiz() {
       html = '<div class="dots-load" aria-hidden="true"><i></i><i></i><i></i></div>';
       break;
     case 'plan': {
-      const p = planOf(), cur = sym();
-      const until = G.addMonths(new Date(), p.months), untilTxt = `${MONTHS[until.getMonth()].toLowerCase()} ${until.getFullYear()}`;
-      const T = G.termLabel(p.months);
+      const p = planOf(), U = p.unit, per = G.perWord(U);
+      const until = G.addTerm(new Date(), p.n, U), untilTxt = `${until.getDate()} ${MONTHS_G[until.getMonth()]} ${until.getFullYear()}`;
+      const T = G.unitLabel(p.n, U);
       const fm = p.free !== null ? esc(money(p.free)) : '';
       const txt = {
-        easy: ['joy', `Легко. По <em>${esc(money(p.monthly))}</em> в месяц, и через ${T} на «${nm}» будет ${esc(money(q.target))}.<small>Останется запас.</small>`],
-        ok: ['happy', `Посильно: <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Это заметная часть твоего свободного остатка.</small>`],
-        hard: ['think', `Тяжеловато: нужно <em>${esc(money(p.monthly))}</em> в месяц, а свободно в среднем ${p.free > 0 ? fm : 'меньше нуля'}.${p.altMonths ? `<small>Могу растянуть до ${G.termLabel(p.altMonths)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
-        unknown: ['hello', `План: <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Твоих доходов я не знаю, поэтому не скажу, посильно ли это.</small>`],
+        easy: ['joy', `Легко. По <em>${esc(money(p.perPeriod))}</em> ${per}, и через ${T} на «${nm}» будет ${esc(money(q.target))}.<small>Останется запас.</small>`],
+        ok: ['happy', `Посильно: <em>${esc(money(p.perPeriod))}</em> ${per}, срок ${T}.<small>Это заметная часть твоего среднего остатка.</small>`],
+        hard: ['think', `Тяжеловато: нужно <em>${esc(money(p.perPeriod))}</em> ${per}, а в среднем остаётся ${p.free > 0 ? fm + ' в месяц' : 'меньше нуля'}.${p.altN ? `<small>Могу растянуть до ${G.unitLabel(p.altN, U)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
+        unknown: ['hello', `План: <em>${esc(money(p.perPeriod))}</em> ${per}, срок ${T}.<small>Твоих доходов я пока не знаю, поэтому не скажу, посильно ли это.</small>`],
         done: ['joy', 'Нужная сумма уже есть!<small>Сохрани цель, чтобы следить за ней.</small>']
       }[p.verdict];
       say = txt;
@@ -931,13 +1034,12 @@ function renderQuiz() {
         <div><span>Цель</span><b>${nm}</b></div>
         <div><span>Нужно</span><b>${esc(money(q.target))}</b></div>
         <div><span>Уже есть</span><b>${esc(money(q.saved))}</b></div>
-        <div class="hl"><span>В месяц</span><b>${esc(money(p.monthly))}</b></div>
+        <div class="hl"><span>${esc(cap(per))}</span><b>${esc(money(p.perPeriod))}</b></div>
         <div><span>Срок</span><b>${T}, до ${untilTxt}</b></div>
         ${p.free !== null ? `<div><span>Средний остаток</span><b>${esc(money(p.free))} в месяц</b></div>` : ''}
       </div>` + qBtn('accept', 'Согласен') +
-        (p.verdict === 'hard' && p.altMonths ? qBtn('alt', `Растянуть до ${G.termLabel(p.altMonths)}`, 'soft') : '') +
+        (p.verdict === 'hard' && p.altN ? qBtn('alt', `Растянуть до ${G.unitLabel(p.altN, U)}`, 'soft') : '') +
         qBtn('reject', 'Не подходит', 'ghost');
-      void cur;
       break;
     }
     case 'tune':
@@ -950,12 +1052,12 @@ function renderQuiz() {
         <button type="button" data-qa="restart">Начать заново</button></div>`;
       break;
     case 'tuneMonthly':
-      say = ['think', 'Сколько в месяц откладывать комфортно?'];
-      html = qIn('qNum', 'Сколько в месяц', sym()) + qBtn('doMonthly', 'Пересчитать');
+      say = ['think', `Сколько откладывать ${G.perWord(quiz.term.unit)} комфортно?`];
+      html = qIn('qNum', 'Сколько за раз', sym()) + qBtn('doMonthly', 'Пересчитать');
       break;
     case 'tuneTerm':
-      say = ['notify', 'За сколько месяцев?'];
-      html = qIn('qNum', 'Месяцев') + qBtn('doTerm', 'Пересчитать');
+      say = ['notify', 'На какой срок поменяем?'];
+      html = termHtml('doTerm');
       break;
     case 'tuneTarget':
       say = ['think', 'Какая сумма подойдёт?'];
@@ -979,7 +1081,9 @@ $('#quizBody').addEventListener('click', e => {
   const k = e.target.closest('[data-kind]');
   if (k) { q.pick = k.dataset.kind; buzz(6); renderQuiz(); return; }
   const tm = e.target.closest('[data-term]');
-  if (tm) { q.termPick = Number(tm.dataset.term); const inp = $('#qNum'); if (inp) inp.value = ''; buzz(6); $$('#quizBody [data-term]').forEach(x => x.setAttribute('aria-checked', String(Number(x.dataset.term) === q.termPick))); return; }
+  if (tm) { q.termPick = tm.dataset.term; const inp = $('#qNum'); if (inp) inp.value = ''; buzz(6); $$('#quizBody [data-term]').forEach(x => x.setAttribute('aria-checked', String(x.dataset.term === q.termPick))); return; }
+  const tu = e.target.closest('[data-tunit]');
+  if (tu) { q.termUnit = tu.dataset.tunit; q.termPick = null; $$('#quizBody [data-term]').forEach(x => x.setAttribute('aria-checked', 'false')); $$('#quizBody [data-tunit]').forEach(x => x.setAttribute('aria-checked', String(x === tu))); return; }
   const b = e.target.closest('[data-qa]'); if (!b) return;
   const a = b.dataset.qa;
   if (a === 'back') { q.step = q.stack.pop(); renderQuiz(); return; }
@@ -1000,9 +1104,11 @@ $('#quizBody').addEventListener('click', e => {
   }
   if (a === 'term' || a === 'doTerm') {
     const typed = ($('#qNum').value || '').trim();
-    const n = quizNum(false); let m = typed ? Math.round(n.v) : (a === 'term' ? q.termPick : NaN);
-    if (!(m >= 1 && m <= 600)) return n.fail(a === 'term' ? 'Выбери срок или введи свой в месяцах, например 6.' : 'Введи срок в месяцах, например 6.');
-    q.months = m; toPlan(a === 'doTerm'); return;
+    let term = null;
+    if (typed) { const v = Math.round(Number(typed.replace(',', '.'))); if (v >= 1 && v <= (q.termUnit === 'week' ? 520 : 600)) term = { n: v, unit: q.termUnit || 'month' }; }
+    else if (q.termPick) { const [n, u] = q.termPick.split(':'); term = { n: Number(n), unit: u }; }
+    if (!term) return showErr($('#qErr'), 'Выбери срок или впиши свой, например 2 недели или 6 месяцев.');
+    q.term = term; toPlan(a === 'doTerm'); return;
   }
   if (a === 'free' || a === 'free0') {
     if (a === 'free0') q.free = null;
@@ -1010,7 +1116,7 @@ $('#quizBody').addEventListener('click', e => {
     toPlan(); return;
   }
   if (a === 'accept') { saveGoal(); return; }
-  if (a === 'alt') { q.months = planOf().altMonths; q.stack.push(q.step); thinkThen(); return; }
+  if (a === 'alt') { q.term = { n: planOf().altN, unit: q.term.unit }; q.stack.push(q.step); thinkThen(); return; }
   if (a === 'reject') { qGo('tune'); return; }
   if (a === 'restart') { q.stack = []; q.step = 'kind'; renderQuiz(); return; }
   if (a === 'tuneMonthly' || a === 'tuneTerm' || a === 'tuneTarget' || a === 'tuneIncome') { qGo(a); return; }
@@ -1018,7 +1124,7 @@ $('#quizBody').addEventListener('click', e => {
     const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму, например 200.');
     const need = Math.max(q.target - q.saved, 0), m = Math.max(1, Math.ceil(need / n.v));
     if (m > 600) return n.fail('Так выйдет больше 50 лет. Давай откладывать побольше.');
-    q.months = m; toPlan(true); return;
+    q.term = { n: m, unit: q.term.unit }; toPlan(true); return;
   }
   if (a === 'doIncome') {
     const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму, например 300.');
@@ -1041,11 +1147,14 @@ function thinkThen() {
   setTimeout(() => { if (quiz !== q || q.step !== 'think') return; q.step = 'plan'; q.stack = q.stack.filter(s => s !== 'think'); renderQuiz(); buzz(10); }, 900);
 }
 function saveGoal() {
-  const q = quiz, p = planOf();
-  state.goals.push({ id: uid(), name: q.name, target: round2(q.target), saved: round2(q.saved), months: p.months, deadline: G.ymdOf(G.addMonths(new Date(), p.months)), created: today() });
+  const q = quiz, p = planOf(), now = new Date();
+  const unit = p.unit, months = unit === 'week' ? Math.max(1, Math.round(p.n * 12 / 52)) : p.n;
+  const used = new Set(state.goals.map(g => g.nid)); let nid = 0; while (used.has(nid) && nid < 49) nid++;
+  const sd = G.suggestDay(state.tx, unit);
+  state.goals.push({ id: uid(), name: q.name, target: round2(q.target), saved: round2(q.saved), months, unit, deadline: G.ymdOf(G.addTerm(now, p.n, unit)), created: today(), nid, remind: { on: false, day: sd.day, time: '10:00' }, log: q.saved > 0 ? [{ d: today(), a: round2(q.saved) }] : [] });
   save(); closeLayer($('#lyQuiz')); quiz = null; buzz(20);
-  showTab('goals');
-  toast('Цель добавлена. Пополняй, когда отложишь', null, null, 'joy');
+  showTab('goals'); afterDataChange();
+  toast('Цель добавлена. Откладывай и отмечай, а я напомню', null, null, 'joy');
 }
 
 /* ---------- Черновик: несколько записей сразу ---------- */
@@ -1096,6 +1205,7 @@ $('#draftList').addEventListener('click', e => {
 $('#draftCancel').addEventListener('click', () => closeLayer($('#lyDraft')));
 $('#draftOk').addEventListener('click', () => {
   if (!draft.length) return;
+  if (txBusy) return; txBusy = true; setTimeout(() => { txBusy = false; }, 600);
   const first = !state.tx.length;
   const added = draft.map((d, i) => ({ id: uid(), ...d, ts: Date.now() + i }));
   const latest = draft.map(d => d.date).sort().pop(), ld = parseYmd(latest);
@@ -1217,9 +1327,8 @@ function nudgeInfo() {
   return d;
 }
 function renderNudge() {
-  const box = $('#nudgeBox'), say = $('#homeSay'), d = nudgeInfo();
+  const box = $('#nudgeBox'), d = nudgeInfo();
   if (state.nudge.active && !d) { state.nudge.active = null; save(); }
-  say.hidden = !!d;
   box.innerHTML = d ? `<section class="nudge" role="region" aria-label="${esc(NG.t('aria.region'))}">
       <div class="nudge-top"><span class="nudge-m" aria-hidden="true">${MD.mascot('think', 68)}</span><div class="nudge-t"><b>${esc(NG.t('title'))}</b><p>${esc(maskT(d.text))}</p></div></div>
       <div class="nudge-act"><button class="btn ghost" type="button" data-nudge="ack" aria-label="${esc(NG.t('aria.ok'))}">${esc(NG.t('ok'))}</button><button class="btn primary" type="button" data-nudge="talk" aria-label="${esc(NG.t('aria.talk', { cat: d.cat }))}">${esc(d.primary)}</button></div>
@@ -1288,6 +1397,7 @@ $('#nudgeBody').addEventListener('click', e => {
 const payById = id => state.rec.list.find(p => p.id === id);
 function afterDataChange() {
   MD.notify.applyEvents(state.fest.list);
+  MD.notify.applyGoals(state.goals, n => money(n));
   return MD.notify.applyPayments(state.rec.list, n => money(n));
 }
 function markPaid(id, mk, txId) { const p = payById(id); if (p) p.paid[mk] = txId || 'manual'; afterDataChange(); }
@@ -1328,7 +1438,7 @@ let pm = null;
 const payDefaultDay = () => new Date().getDate();
 function openPaySheet(id) {
   const p = id && payById(id);
-  pm = p ? { id: p.id, name: p.name, amount: p.amount, day: R.curDay(p), cat: p.cat, remind: p.remind, time: p.time }
+  pm = p ? { id: p.id, name: p.name, amount: p.amount, day: R.curDay(p), cat: p.cat, remind: p.remind, time: p.time, catOpen: false }
     : { id: null, name: '', amount: '', day: payDefaultDay(), cat: '', remind: 'off', time: '10:00' };
   $('#payHead').textContent = p ? 'Платёж' : 'Новый платёж';
   $('#payName').value = pm.name; $('#payAmount').value = pm.amount ? String(pm.amount).replace('.', ',') : ''; $('#payDay').value = pm.day; $('#payTime').value = pm.time;
@@ -1346,6 +1456,9 @@ function openPaySheet(id) {
 }
 function renderPaySheet() {
   $('#payPresets').innerHTML = R.PRESETS.map(x => `<button type="button" class="chip" data-pp="${esc(x[0])}" aria-checked="${pm.name === x[0]}">${esc(x[0])}</button>`).join('');
+  const editing = !!pm.id, open = !editing || pm.catOpen || !pm.cat;      // при правке: короче, без быстрых названий, категория одной строкой
+  $('#payPresets').hidden = editing; $('#payCats').hidden = !open; $('#payCatCur').hidden = open;
+  if (!open) { const ci = catInfo('expense', pm.cat); $('#payCatCur').innerHTML = `<span class="ci" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(pm.cat)}</b><span class="ch">Изменить</span>`; }
   $('#payCats').innerHTML = CATS.expense.map(c => `<button type="button" role="radio" class="cat-tile" data-pcat="${esc(c[0])}" aria-checked="${c[0] === pm.cat}"><span class="ci" style="--c:${c[2]};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
   $('#payRemind').innerHTML = R.REMIND.map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${esc(r.label)}</button>`).join('');
   $('#payTimeF').hidden = pm.remind === 'off';
@@ -1357,9 +1470,10 @@ $('#lyPay').addEventListener('click', e => {
     pm.name = pp.dataset.pp; $('#payName').value = pm.name;
     const pre = R.PRESETS.find(x => x[0] === pm.name); if (pre && !pm.cat) pm.cat = pre[1];
     renderPaySheet(); buzz(6); if (!$('#payAmount').value) setTimeout(() => $('#payAmount').focus(), 60);
-  } else if (pc) { pm.cat = pc.dataset.pcat; renderPaySheet(); buzz(6); }
+  } else if (pc) { pm.cat = pc.dataset.pcat; if (pm.id) pm.catOpen = false; renderPaySheet(); buzz(6); }
   else if (pr) { pm.remind = pr.dataset.pr; renderPaySheet(); buzz(6); }
 });
+$('#payCatCur').addEventListener('click', () => { if (pm) { pm.catOpen = true; renderPaySheet(); } });
 $('#payName').addEventListener('input', e => { pm.name = e.target.value; hideErr($('#payErr')); });
 $('#payAmount').addEventListener('input', e => {
   let v = e.target.value.replace(/[^\d.,]/g, ''); const i = v.search(/[.,]/);

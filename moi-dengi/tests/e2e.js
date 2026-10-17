@@ -29,9 +29,12 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   for (let i = 0; i < 2; i++) { ok(`знакомство ${i + 1}: «Далее» и «Пропустить» видны`, (await vis('[data-next]')) && (await vis('[data-skip]'))); await page.click('[data-next]'); await sleep(150); }
   ok('знакомство 3: «Далее» и «Пропустить» видны', (await vis('[data-next]')) && (await vis('[data-skip]')));
   ok('знакомство: ровно 3 экрана', (await page.$$eval('.intro-t', e => e.length)) === 3);
-  await page.click('[data-skip]'); await sleep(300);
+  await page.click('[data-skip]'); await sleep(900);
+  ok('после знакомства Фин показывает тур по экрану', await vis('.tour'));
+  await page.click('[data-tour=skip]'); await sleep(200);
   ok('после пропуска: вход не требуется, видна главная', await vis('#s-home') && !(await vis('#auth')));
   ok('главная: пустое состояние с действием', (await page.textContent('#recentList')).includes('Нажми +') && await vis('#recentList [data-add]'));
+  ok('на главной нет голосового ввода (микрофон только в «+»)', !(await page.$('#s-home [data-ic=mic], #qaMic')));
 
   // ---- 2. добавление: 4 действия, кнопка активна только при сумме и категории
   await page.click('#fab'); await sleep(200);

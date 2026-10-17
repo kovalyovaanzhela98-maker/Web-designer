@@ -16,27 +16,29 @@
 
 <div id="app">
 
-  <!-- ГЛАВНАЯ: реплика Фина, баланс, ближайший платёж, плитки, быстрая запись, последние пять -->
+  <!-- ГЛАВНАЯ: важное сверху (подсказка о привычках, баланс, платёж, пора отложить), плитки, баннеры, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
-    <button class="say-btn" id="homeSay" aria-live="polite"></button>
     <div id="nudgeBox"></div>
 
-    <section class="card" aria-labelledby="heroLabel">
+    <section class="bal" aria-labelledby="heroLabel">
       <div class="bal-top"><span class="cap" id="heroLabel">Баланс</span><button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button></div>
       <div class="bal-sum" id="heroSum"></div>
+      <div class="bal-note" id="balNote"></div>
     </section>
 
     <div class="card pay-next" id="payNext" hidden></div>
+    <div id="saveCard"></div>
 
     <div class="tiles" id="tiles">
       <div class="card tile inc"><small><i data-ic="down"></i><span>Пришло</span></small><b id="sumInc"></b><small class="mo" id="tileIncL"></small></div>
       <div class="card tile exp"><small><i data-ic="up"></i><span>Потрачено</span></small><b id="sumExp"></b><small class="mo" id="tileExpL"></small></div>
     </div>
 
+    <div class="banners" id="banners" aria-label="Наблюдения Фина"></div>
+
     <form class="qadd" id="qaForm" autocomplete="off">
-      <input id="qaInput" type="text" placeholder="Скажи или напиши: вчера такси 12" aria-label="Быстрая запись: скажи или напиши">
-      <button type="submit" class="qa-go" id="qaGo" aria-label="Записать" hidden><i data-ic="check"></i></button>
-      <button type="button" class="qa-mic" id="qaMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
+      <input id="qaInput" type="text" placeholder="Напиши: вчера такси 12" aria-label="Быстрая запись фразой">
+      <button type="submit" class="qa-go" id="qaGo" aria-label="Записать"><i data-ic="check"></i></button>
     </form>
 
     <section class="block" aria-labelledby="hRecent">
@@ -62,7 +64,13 @@
   <!-- АНАЛИТИКА -->
   <section class="screen" id="s-stats" data-screen="stats" aria-label="Аналитика" hidden>
     <header class="hdr"><h1 class="title">Аналитика</h1></header>
-    <div class="monthbar-slot"></div>
+    <div class="seg period-seg" role="radiogroup" aria-label="Период">
+      <button type="button" role="radio" class="seg-b" data-pk="week" aria-checked="false">Неделя</button>
+      <button type="button" role="radio" class="seg-b" data-pk="month" aria-checked="true">Месяц</button>
+      <button type="button" role="radio" class="seg-b" data-pk="year" aria-checked="false">Год</button>
+      <button type="button" role="radio" class="seg-b" data-pk="range" aria-checked="false">Свой</button>
+    </div>
+    <div id="periodBar"></div>
     <div class="seg stats-seg" role="radiogroup" aria-label="Что показать">
       <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
       <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
@@ -174,7 +182,7 @@
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<!-- Запись -->
+<!-- Запись: тип, дата, сумма с микрофоном, категории, сохранить -->
 <div class="layer" id="lyTx" hidden>
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="txTitle">
@@ -185,19 +193,7 @@
         <button type="button" role="radio" class="seg-b" data-type="expense" aria-checked="true">Расход</button>
         <button type="button" role="radio" class="seg-b" data-type="income" aria-checked="false">Доход</button>
       </div>
-      <div class="tx-main">
-        <div class="amt">
-          <label class="amt-l" for="txAmount">Сумма</label>
-          <div class="amt-row"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></div>
-        </div>
-        <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать запись голосом"><i data-ic="mic"></i><span>Голосом</span></button>
-      </div>
-      <div class="msg err" id="txAmountErr" hidden></div>
       <div class="tx-rest">
-        <div class="fl">Категория</div>
-        <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
-        <label class="field" id="txNoteF"><input id="txNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span id="txNoteL">Заметка</span></label>
-        <div class="msg err" id="txNoteErr" hidden></div>
         <div class="fl">Дата</div>
         <div class="date-row">
           <button type="button" class="chip" id="dToday">Сегодня</button>
@@ -205,13 +201,25 @@
           <button type="button" class="chip" id="dOther">Другая дата</button>
           <input id="txDate" class="pick-hidden" type="date" aria-label="Другая дата" tabindex="-1">
         </div>
-        <button class="btn primary wide" type="submit" id="txSave"><span class="spin" aria-hidden="true"></span><span id="txSaveT">Сохранить</span></button>
+        <div class="fl">Сумма</div>
+        <div class="amt-line">
+          <label class="amt-in"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="Сумма, например 12,50" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
+          <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i></button>
+        </div>
+        <div class="msg err" id="txAmountErr" hidden></div>
+        <div class="fl">Категория</div>
+        <button type="button" class="cat-cur" id="txCatCur" hidden></button>
+        <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
+        <button type="button" class="link note-link" id="txNoteBtn">Добавить заметку</button>
+        <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span id="txNoteL">Заметка</span></label>
+        <div class="msg err" id="txNoteErr" hidden></div>
+        <button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button>
         <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить запись</button>
       </div>
       <div class="voice-live" id="txVoiceLive" hidden>
         <span class="vl-orb big" aria-hidden="true"><span class="pulse"></span><i data-ic="mic"></i></span>
         <b class="vl-h" id="txVoiceH">Слушаю</b>
-        <p class="vl-x" id="txVoiceText">Скажи, например: «кофе 6»</p>
+        <p class="vl-x" id="txVoiceText">Скажи, например: «вчера такси 12»</p>
         <button type="button" class="btn stop wide" id="txVoiceStop"><i data-ic="stop"></i><span>Остановить</span></button>
         <button type="button" class="btn ghost wide" id="txVoiceCancel">Отмена</button>
       </div>
@@ -339,7 +347,8 @@
         <label class="field unit"><input id="payAmount" type="text" inputmode="decimal" placeholder=" " autocomplete="off"><span>Сумма</span><span class="u" id="payCur"></span></label>
         <label class="field"><input id="payDay" type="text" inputmode="numeric" maxlength="2" placeholder=" " autocomplete="off"><span>День месяца</span></label>
       </div>
-      <div class="fl">Категория</div>
+      <div class="fl" id="payCatL">Категория</div>
+      <button type="button" class="cat-cur" id="payCatCur" hidden></button>
       <div class="cat-grid" id="payCats" role="radiogroup" aria-label="Категория"></div>
       <div class="fl">Напомнить</div>
       <div class="chips" id="payRemind" role="radiogroup" aria-label="Напоминание"></div>
@@ -375,12 +384,14 @@
 <script src="js/goals.js"></script>
 <script src="js/nudges.js"></script>
 <script src="js/events.js"></script>
+<script src="js/insights.js"></script>
 <script src="js/recurring.js"></script>
 <script src="js/importers.js"></script>
 <script src="js/brain.js"></script>
 <script src="js/cloud.js"></script>
 <script src="js/auth-ui.js"></script>
 <script src="js/intro.js"></script>
+<script src="js/tour.js"></script>
 <script src="js/voice.js"></script>
 <script src="js/sub.js"></script>
 <script src="js/notify.js"></script>

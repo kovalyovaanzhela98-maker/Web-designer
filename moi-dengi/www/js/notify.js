@@ -96,6 +96,27 @@
     } catch (e) { return { ok: false, reason: 'fail' }; }
   }
 
+  /* Напоминания откладывать на цель: номера 2000…2999, до 12 ближайших дат на цель */
+  async function applyGoals(goals, money) {
+    const L = plug('LocalNotifications'); if (!L) return { ok: false, reason: 'web' };
+    try {
+      const pend = await L.getPending();
+      const mine = (pend.notifications || []).filter(x => x.id >= 2000 && x.id < 3000);
+      if (mine.length) await L.cancel({ notifications: mine.map(x => ({ id: x.id })) });
+      const now = new Date(), items = [];
+      (goals || []).forEach(g => {
+        if (g.saved >= g.target) return;
+        const per = MD.goals.perPeriodNow(g, now), body = `Пора отложить на «${g.name}»${per ? `: ${money(per)}` : ''}`;
+        MD.goals.reminderDates(g, now, 12).forEach((at, i) => items.push({ id: 2000 + (g.nid || 0) * 20 + i, title: 'Фин', body, schedule: { at, allowWhileIdle: true } }));
+      });
+      if (!items.length) return { ok: true };
+      if (!(await ensurePermission())) return { ok: false, reason: 'denied' };
+      await L.createChannel({ id: 'fin_goals', name: 'Копилки', description: 'Напоминание отложить деньги на цель', importance: 3, visibility: 1 });
+      await L.schedule({ notifications: items.map(i => ({ id: i.id, title: i.title, body: i.body, schedule: i.schedule, channelId: 'fin_goals', smallIcon: 'ic_stat_fin', iconColor: '#0E8A4F' })) });
+      return { ok: true };
+    } catch (e) { return { ok: false, reason: 'fail' }; }
+  }
+
   function kindOfUrl(url) {
     const m = String(url || '').match(/^fin:\/\/add\/(expense|income|voice)/);
     return m ? m[1] : null;
@@ -121,6 +142,6 @@
     if (c.quick) { const F = plug('FinNative'); if (F) F.setQuickPin({ on: true }).catch(() => {}); }
   }
 
-  const api = { cfg, save, apply, applyEvents, applyPayments, setQuick, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
+  const api = { cfg, save, apply, applyEvents, applyPayments, applyGoals, setQuick, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
   MD.notify = api;
 })(typeof window !== 'undefined' ? window : globalThis);
