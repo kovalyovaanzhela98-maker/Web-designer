@@ -1012,3 +1012,9 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .h2-row .h2{line-height:24px}
 .h2-row .link{position:relative;min-height:24px;height:24px;padding:0 4px}
 .h2-row .link::after{content:"";position:absolute;inset:-10px -8px}
+
+/* Градиенты по заданию: баланс #20B25B → #0F4A2F, «+» #27D364 → #149342, платежи — мягкая подсветка 15% → 0 без обводки */
+.nav-add{background:var(--grad-fab)}
+.hero-label{color:#fff}
+.pcard:not(.add),.pcard.paid{background:linear-gradient(135deg,color-mix(in srgb,var(--c-pay) 15%,transparent) 0%,transparent 100%),var(--surface)}
+.pcard.late{background:linear-gradient(135deg,color-mix(in srgb,var(--negative) 15%,transparent) 0%,transparent 100%),var(--surface)}
