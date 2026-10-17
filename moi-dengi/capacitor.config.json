@@ -1,0 +1,22 @@
+{
+  "appId": "by.moidengi.app",
+  "appName": "Фин",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#FFFFFF"
+  },
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": false,
+      "providers": [
+        "google.com",
+        "apple.com",
+        "phone"
+      ]
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_fin",
+      "iconColor": "#4F6F34"
+    }
+  }
+}

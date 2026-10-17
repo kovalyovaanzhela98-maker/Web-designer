@@ -1,0 +1,30 @@
+        <receiver
+            android:name=".FinWidgetProvider"
+            android:exported="true"
+            android:label="Фин: быстрая запись">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fin_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".FinTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile"
+            android:label="@string/fin_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>

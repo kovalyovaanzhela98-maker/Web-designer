@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/fin_widget_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/w_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:text="Фин"
+        android:textColor="#3E5C2B"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/w_expense"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/fin_btn_exp"
+        android:gravity="center"
+        android:text="− Расход"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/w_income"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/fin_btn_inc"
+        android:gravity="center"
+        android:text="+ Доход"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/w_voice"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/fin_btn_voice"
+        android:contentDescription="Голосом"
+        android:padding="10dp"
+        android:src="@drawable/ic_mic" />
+</LinearLayout>

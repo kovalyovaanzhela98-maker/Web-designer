@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fin_widget_desc">Записать расход, доход или сказать голосом</string>
+    <string name="fin_tile_label">Запись в Фин</string>
+</resources>

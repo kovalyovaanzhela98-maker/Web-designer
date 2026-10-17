@@ -1,0 +1,63 @@
+/* ============================================================
+   «Фин» — токены дизайн-системы (единственный источник правды).
+   Меняешь значение здесь — меняется всё приложение и брендбук.
+   ============================================================ */
+@font-face{font-family:"Wix Madefor Display";font-weight:400 800;font-display:swap;src:url(fonts/wix-madefor-display-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Wix Madefor Display";font-weight:400 800;font-display:swap;src:url(fonts/wix-madefor-display-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Golos Text";font-weight:400 900;font-display:swap;src:url(fonts/golos-text-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Golos Text";font-weight:400 900;font-display:swap;src:url(fonts/golos-text-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{
+  /* Цвет: поверхности и текст */
+  --bg:#FFFFFF;--surface:#FFFFFF;--text:#1F2B20;--muted:#5F6B59;--line:#EDEDED;--field:#F5F6F4;
+  --ph:#6F7A69;--input-line:#8A9484;--float:#FFFFFF;--primary-t:#4F6F34;
+  /* Цвет: смысл */
+  --inc:#238A5B;--inc-bg:#DDF0E1;--inc-t:#1B7449;
+  --exp:#C2413F;--exp-bg:#FAE3DD;--exp-t:#AE3533;
+  /* Цвет: бренд (лист Фина + монета) */
+  --primary:#4F6F34;--primary-2:#6B8F46;--on-primary:#FFFFFF;
+  --fin-cream:#F6EBCB;--fin-leaf:#9DB45A;--fin-leaf-deep:#5F7F38;--fin-blush:#F4B3AA;--fin-ink:#1B2A1F;
+  --coin:#F2C230;--coin-deep:#F2B900;--ink:#1F2B20;
+  --focus:#4F6F34;--scrim:rgba(20,30,18,.45);--glass:rgba(255,255,255,.88);
+  /* Шрифты: заголовки и суммы — Wix Madefor Display; текст интерфейса — Golos Text */
+  --font-display:"Wix Madefor Display","Golos Text",system-ui,sans-serif;
+  --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  /* Радиусы */
+  --r-sm:12px;--r-md:16px;--r-lg:24px;--r-xl:28px;--r-pill:999px;
+  /* Отступы (шаг 4) */
+  --s-1:4px;--s-2:8px;--s-3:12px;--s-4:16px;--s-5:20px;--s-6:24px;--s-8:32px;
+  /* Тени и движение */
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-2:0 8px 24px rgba(0,0,0,.08);
+  --ease:cubic-bezier(.2,.8,.2,1);--dur-1:.12s;--dur-2:.28s;
+  /* Размеры */
+  --nav-h:68px;
+  /* Акценты: кремовая подсказка, золото монеты, переключатель */
+  --tip:#FBF6E6;--tip-line:#F0E6C2;--gold:#F2C230;--gold-bg:#FFF2C2;--gold-t:#6B4F00;--seg-on:#FFFFFF;
+  --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
+  --sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1611;--surface:#172019;--float:#1D2A21;--text:#EBF1E4;--muted:#9AA894;--line:rgba(255,255,255,.08);--field:#1E2A21;
+    --ph:#8C9A86;--input-line:#6F7C69;--primary-t:#8DB566;
+    --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
+    --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
+    --primary:#4F6F34;--primary-2:#6B8F46;
+    --focus:#8DB566;--scrim:rgba(0,0,0,.6);--glass:rgba(23,32,25,.9);
+    --tip:#222B1E;--tip-line:rgba(242,194,48,.2);--gold-bg:#3A3112;--gold-t:#F2D067;--seg-on:#2B3A2E;
+    --shadow:none;--shadow-2:0 8px 24px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#0F1611;--surface:#172019;--float:#1D2A21;--text:#EBF1E4;--muted:#9AA894;--line:rgba(255,255,255,.08);--field:#1E2A21;
+    --ph:#8C9A86;--input-line:#6F7C69;--primary-t:#8DB566;
+    --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
+    --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
+    --primary:#4F6F34;--primary-2:#6B8F46;
+    --focus:#8DB566;--scrim:rgba(0,0,0,.6);--glass:rgba(23,32,25,.9);
+    --tip:#222B1E;--tip-line:rgba(242,194,48,.2);--gold-bg:#3A3112;--gold-t:#F2D067;--seg-on:#2B3A2E;
+    --shadow:none;--shadow-2:0 8px 24px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }

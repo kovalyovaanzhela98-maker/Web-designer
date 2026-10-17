@@ -1,0 +1,23 @@
+{
+  "name": "moi-dengi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Фин — личный учёт расходов и доходов",
+  "scripts": {
+    "prepare:web": "node scripts/prepare.js",
+    "serve": "node scripts/prepare.js && node scripts/serve.js",
+    "test": "node tests/parser.test.js && node tests/goals.test.js && node tests/importers.test.js && node tests/brain.test.js && node tests/nudges.test.js && node tests/events.test.js",
+    "icons": "python3 scripts/make_icons.py",
+    "brandbook": "node scripts/build-brandbook.js"
+  },
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor-firebase/authentication": "^7.5.0",
+    "@capacitor-firebase/firestore": "^7.5.0",
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/local-notifications": "^7.0.7"
+  }
+}

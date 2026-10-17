@@ -1,0 +1,68 @@
+/* Иконки «Фин» — собственный двухтоновый набор.
+   Правила: сетка 24×24, заливка currentColor; class="a" — второй тон (прозрачность .4);
+   class="s" — штрих 2.2 с круглыми концами. Новые иконки добавлять сюда же. */
+(function (root) {
+const IC = {
+  home: '<path class="a" d="M5 11.2V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7.8L12 5.6z"/><path d="M12 3.1 2.9 10.9a1.1 1.1 0 0 0 1.4 1.7L12 6l7.7 6.6a1.1 1.1 0 0 0 1.4-1.7z"/><path d="M9.6 21v-4.2a1.2 1.2 0 0 1 1.2-1.2h2.4a1.2 1.2 0 0 1 1.2 1.2V21z"/>',
+  list: '<rect x="3.5" y="5" width="17" height="3.4" rx="1.7"/><rect class="a" x="3.5" y="10.3" width="11" height="3.4" rx="1.7"/><rect x="3.5" y="15.6" width="14" height="3.4" rx="1.7"/>',
+  chart: '<rect class="a" x="3.8" y="12" width="4.4" height="8" rx="1.6"/><rect x="9.8" y="4" width="4.4" height="16" rx="1.6"/><rect class="a" x="15.8" y="8.5" width="4.4" height="11.5" rx="1.6"/>',
+  spark: '<circle class="a" cx="12" cy="12" r="9.6"/><path d="M12 5.6l1.6 4.2 4.2 1.6-4.2 1.6L12 17.2l-1.6-4.2L6.2 11.4l4.2-1.6z"/>',
+  plus: '<rect x="10.8" y="4.5" width="2.4" height="15" rx="1.2"/><rect x="4.5" y="10.8" width="15" height="2.4" rx="1.2"/>',
+  mic: '<rect x="8.8" y="2.8" width="6.4" height="12" rx="3.2"/><path class="a" d="M4.8 11h2.2a5 5 0 0 0 10 0h2.2a7.2 7.2 0 0 1-6.1 7.1V21h-2.4v-2.9A7.2 7.2 0 0 1 4.8 11z"/>',
+  stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="3"/>',
+  gear: '<rect class="a" x="3" y="6" width="18" height="2.4" rx="1.2"/><circle cx="8.5" cy="7.2" r="3.1"/><rect class="a" x="3" y="15.6" width="18" height="2.4" rx="1.2"/><circle cx="15.5" cy="16.8" r="3.1"/>',
+  eye: '<path class="a" d="M12 5c5 0 8.6 4.1 9.7 6.2a1.6 1.6 0 0 1 0 1.6C20.6 14.9 17 19 12 19S3.4 14.9 2.3 12.8a1.6 1.6 0 0 1 0-1.6C3.4 9.1 7 5 12 5z"/><circle cx="12" cy="12" r="3.3"/>',
+  eyeoff: '<path class="a" d="M12 5c5 0 8.6 4.1 9.7 6.2a1.6 1.6 0 0 1 0 1.6C20.6 14.9 17 19 12 19S3.4 14.9 2.3 12.8a1.6 1.6 0 0 1 0-1.6C3.4 9.1 7 5 12 5z"/><circle cx="12" cy="12" r="3.3"/><path class="s" d="M4.5 4.5l15 15" style="stroke-width:2.6"/>',
+  down: '<path d="M12 20.5l-7.2-7.6h4.7V4h5v8.9h4.7z"/>',
+  up: '<path d="M12 3.5l7.2 7.6h-4.7V20h-5v-8.9H4.8z"/>',
+  close: '<path class="s" d="M6.5 6.5l11 11M17.5 6.5l-11 11" style="stroke-width:2.4"/>',
+  search: '<circle class="a" cx="10.5" cy="10.5" r="6.5"/><circle class="s" cx="10.5" cy="10.5" r="6.5"/><path class="s" d="M15.5 15.5 20 20"/>',
+  trash: '<path class="a" d="M6 8.4h12l-.9 10.7a2 2 0 0 1-2 1.8H8.9a2 2 0 0 1-2-1.8z"/><path d="M4 6.4a1 1 0 0 1 1-1h3.4l.7-1.4h5.8l.7 1.4H19a1 1 0 0 1 0 2H5a1 1 0 0 1-1-1z"/>',
+  left: '<path class="s" d="M14.5 5.5 8 12l6.5 6.5" style="stroke-width:2.6"/>',
+  right: '<path class="s" d="M9.5 5.5 16 12l-6.5 6.5" style="stroke-width:2.6"/>',
+  check: '<path class="s" d="M5.5 12.5l4.2 4.2L18.5 8" style="stroke-width:2.8"/>',
+  goal: '<circle class="a" cx="12" cy="12" r="9.6"/><circle class="s" cx="12" cy="12" r="5.8"/><circle cx="12" cy="12" r="2.2"/>',
+  dots: '<circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/>',
+  /* аккаунт и синхронизация */
+  mail: '<rect class="a" x="3" y="5.5" width="18" height="13" rx="3"/><path class="s" d="M4.8 8.4 12 13.4l7.2-5"/>',
+  person: '<circle cx="12" cy="8" r="4"/><path class="a" d="M4.5 20.5a7.5 7.5 0 0 1 15 0z"/>',
+  exit: '<path class="a" d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5z"/><path class="s" d="M14.5 8.5 18 12l-3.5 3.5M9.5 12H18"/>',
+  cloud: '<path d="M7 18.5A4.5 4.5 0 0 1 6.6 9.6a5.5 5.5 0 0 1 10.6 1A4 4 0 0 1 17 18.5z"/>',
+  sms: '<path class="a" d="M3.5 7a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H11l-4.5 3.5V17a3 3 0 0 1-3-3z"/><circle cx="8.5" cy="10.5" r="1.2"/><circle cx="12" cy="10.5" r="1.2"/><circle cx="15.5" cy="10.5" r="1.2"/>',
+  /* помощник, вложения, подписка, напоминания */
+  chat: '<path class="a" d="M4 6.5A3.5 3.5 0 0 1 7.5 3h9A3.5 3.5 0 0 1 20 6.5v6a3.5 3.5 0 0 1-3.5 3.5H11l-4.2 3.6a.8.8 0 0 1-1.3-.6V16A3.5 3.5 0 0 1 4 12.5z"/><path d="M12 6.2l.95 2.45 2.45.95-2.45.95L12 13l-.95-2.45L8.6 9.6l2.45-.95z"/>',
+  clip: '<path class="s" d="M19.5 11.2l-7.4 7.4a4.4 4.4 0 0 1-6.2-6.2l8-8a3 3 0 0 1 4.2 4.2l-8 8a1.6 1.6 0 0 1-2.2-2.2l7-7"/>',
+  send: '<path d="M3.3 11.1 19.7 3.5a.9.9 0 0 1 1.2 1.2l-7.6 16.4a.9.9 0 0 1-1.7-.1l-1.8-6.3-6.3-1.8a.9.9 0 0 1-.2-1.8z"/><path class="a" d="M10.8 13.9l9-9.6"/>',
+  camera: '<path class="a" d="M3 9a2.5 2.5 0 0 1 2.5-2.5h1.6l1-1.6A2 2 0 0 1 9.8 4h4.4a2 2 0 0 1 1.7.9l1 1.6h1.6A2.5 2.5 0 0 1 21 9v8.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/>',
+  image: '<rect class="a" x="3" y="4.5" width="18" height="15" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M4 17.2l4.5-4.5 3 3 3.5-4 5 5.5v.3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>',
+  file: '<path class="a" d="M6 3h8l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3l5 5h-3a2 2 0 0 1-2-2z"/><rect x="7.5" y="12" width="9" height="1.8" rx=".9"/><rect x="7.5" y="15.5" width="6" height="1.8" rx=".9"/>',
+  bell: '<path class="a" d="M12 3a6 6 0 0 0-6 6v3.5L4.5 15a1.2 1.2 0 0 0 1 1.8h13a1.2 1.2 0 0 0 1-1.8L18 12.5V9a6 6 0 0 0-6-6z"/><path d="M9.8 19h4.4a2.2 2.2 0 0 1-4.4 0z"/>',
+  crown: '<path class="a" d="M3.5 8l4.3 3.5L12 5l4.2 6.5L20.5 8l-1.6 10H5.1z"/><rect x="5" y="18.5" width="14" height="2.2" rx="1.1"/>',
+  leaf: '<path d="M20 4C11 4 5 8.5 5 15c0 1.5.4 2.8 1 3.9C7.5 14.5 11 11.5 15.5 10c-3.6 2.3-6 5.6-7 9.7 1 .2 2 .3 3 .3 5.2 0 9-4.2 8.5-16z"/>',
+  bolt: '<path class="a" d="M13.5 2.5 5 13.5h6l-1 8 8.5-11h-6z"/><path d="M13.5 2.5 9 8.5h4z"/>',
+  lock: '<rect class="a" x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path class="s" d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+  clock: '<circle class="a" cx="12" cy="12" r="9.5"/><path class="s" d="M12 7v5.5l3.5 2"/>',
+  pencil: '<path class="a" d="M4 16.5V20h3.5L18.5 9 15 5.5z"/><path d="M16.2 4.3l1-1a1.800 1.800 0 0 1 2.5 0l1 1a1.800 1.800 0 0 1 0 2.5l-1 1z"/>',
+  wave: '<rect x="3.5" y="9" width="2.6" height="6" rx="1.3"/><rect class="a" x="7.6" y="5.5" width="2.6" height="13" rx="1.3"/><rect x="11.700" y="3" width="2.6" height="18" rx="1.3"/><rect class="a" x="15.800" y="7" width="2.6" height="10" rx="1.3"/><rect x="19.5" y="10" width="2" height="4" rx="1"/>',
+  /* категории */
+  cart: '<path class="a" d="M5.6 8.2h14a1 1 0 0 1 1 1.25l-1.5 6a2 2 0 0 1-1.95 1.5H9.1a2 2 0 0 1-1.95-1.55z"/><path class="s" d="M2.8 4.2h2.1l1.5 10.2"/><circle cx="9.4" cy="19.7" r="1.7"/><circle cx="16.6" cy="19.7" r="1.7"/>',
+  cup: '<path d="M4.2 9.5h11.6v5.3A5.2 5.2 0 0 1 10.6 20H9.4a5.2 5.2 0 0 1-5.2-5.2z"/><path class="s" d="M15.8 11h1.2a2.6 2.6 0 0 1 0 5.2h-1.2"/><path class="s a" d="M8 3.2v3M12 3.2v3"/>',
+  bus: '<path fill-rule="evenodd" d="M5 5.5A3.2 3.2 0 0 1 8.2 2.3h7.6A3.2 3.2 0 0 1 19 5.5V16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2zM7.6 5.4v5h8.8v-5zM7.4 14.2a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 0 0-2.2 0zm7 0a1.1 1.1 0 1 0 2.2 0 1.1 1.1 0 0 0-2.2 0z"/><rect x="5.8" y="18.6" width="3" height="2.6" rx="1.1"/><rect x="15.2" y="18.6" width="3" height="2.6" rx="1.1"/>',
+  sofa: '<path class="a" d="M6 8.2A3 3 0 0 1 9 5.2h6a3 3 0 0 1 3 3V12H6z"/><path d="M3 12.8a2 2 0 0 1 4 0V14h10v-1.2a2 2 0 0 1 4 0V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z"/><rect x="5" y="19.4" width="1.8" height="2" rx=".9"/><rect x="17.2" y="19.4" width="1.8" height="2" rx=".9"/>',
+  heart: '<path fill-rule="evenodd" d="M12 20.6S3 15.2 3 9A4.9 4.9 0 0 1 12 6.4 4.9 4.9 0 0 1 21 9c0 6.2-9 11.6-9 11.6zM11 9.6v1.9H9.1v2H11v1.9h2v-1.9h1.9v-2H13V9.6z"/>',
+  shirt: '<path d="M8.6 3.4 3 6.1l1.9 4.6 2.6-1V20a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9.7l2.6 1L21 6.1l-5.6-2.7a3.5 3.5 0 0 1-6.8 0z"/>',
+  phone: '<path fill-rule="evenodd" d="M9.8 2.5h4.4a2.8 2.8 0 0 1 2.8 2.8v13.4a2.8 2.8 0 0 1-2.8 2.8H9.8A2.8 2.8 0 0 1 7 18.7V5.3a2.8 2.8 0 0 1 2.8-2.8zM9.2 5.2v10.4h5.6V5.2zm2.8 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>',
+  repeat: '<path class="s" d="M5 11.5a7 7 0 0 1 11.7-4.7M19 12.5a7 7 0 0 1-11.7 4.7"/><path d="M18.6 3.2v4.8h-4.8zM5.4 20.8V16h4.8z"/>',
+  gift: '<path d="M4 11h6.8v10H6.2A2.2 2.2 0 0 1 4 18.8zM13.2 11H20v7.8a2.2 2.2 0 0 1-2.2 2.2h-4.6z"/><path class="a" d="M3 7.6A1.6 1.6 0 0 1 4.6 6h6.2v3.6H3zM13.2 6h6.2A1.6 1.6 0 0 1 21 7.6v2H13.2z"/><path class="s" d="M12 6C10.4 2.8 7.2 3.2 7.6 5.2c.3 1.2 2.6.8 4.4.8zM12 6c1.6-3.2 4.8-2.8 4.4-.8-.3 1.2-2.6.8-4.4.8z" style="stroke-width:1.8"/>',
+  ticket: '<path fill-rule="evenodd" d="M3 8.2A2.2 2.2 0 0 1 5.2 6h13.6A2.2 2.2 0 0 1 21 8.2v1.9a1.9 1.9 0 0 1 0 3.8v1.9a2.2 2.2 0 0 1-2.2 2.2H5.2A2.2 2.2 0 0 1 3 15.8v-1.9a1.9 1.9 0 0 1 0-3.8zM10.2 9v6l5-3z"/>',
+  grid: '<rect x="3.8" y="3.8" width="7.4" height="7.4" rx="2.2"/><rect class="a" x="12.8" y="3.8" width="7.4" height="7.4" rx="2.2"/><rect class="a" x="3.8" y="12.8" width="7.4" height="7.4" rx="2.2"/><rect x="12.8" y="12.8" width="7.4" height="7.4" rx="2.2"/>',
+  cash: '<path fill-rule="evenodd" d="M5.2 5.5h13.6A2.2 2.2 0 0 1 21 7.7v8.6a2.2 2.2 0 0 1-2.2 2.2H5.2A2.2 2.2 0 0 1 3 16.3V7.7a2.2 2.2 0 0 1 2.2-2.2zM12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zM5.9 11.1a1 1 0 1 0 0 1.8 1 1 0 0 0 0-1.8zM18.1 11.1a1 1 0 1 0 0 1.8 1 1 0 0 0 0-1.8z"/>',
+  case: '<path fill-rule="evenodd" d="M3 9.2A2.2 2.2 0 0 1 5.2 7h13.6A2.2 2.2 0 0 1 21 9.2v8.6a2.2 2.2 0 0 1-2.2 2.2H5.2A2.2 2.2 0 0 1 3 17.8zM10.6 12v2h2.8v-2z"/><path class="s" d="M9 7V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1"/>',
+  undo: '<path class="s" d="M8.5 5.5 4 10l4.5 4.5"/><path class="s" d="M4.6 10h9.4a5.2 5.2 0 0 1 0 10.4H10.5"/>'
+};
+
+  const icon = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+  root.MD = root.MD || {};
+  root.MD.IC = IC;
+  root.MD.icon = icon;
+})(typeof window !== 'undefined' ? window : globalThis);
