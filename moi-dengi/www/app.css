@@ -1041,3 +1041,13 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .pcard:not(.add),.pcard.paid,.pcard.late{background:linear-gradient(135deg,color-mix(in srgb,var(--text) 8%,transparent) 0%,transparent 100%),var(--surface)}
 .pcard .tx-ic,.pcard.paid .tx-ic{background:color-mix(in srgb,var(--text) 6%,var(--surface))}
 .pcard.late .pc-s{color:var(--exp-t)}
+
+/* «Пришло» и «Потрачено»: светлые плашки, стрелки без кружков, толще и контрастные */
+.hs{background:rgba(255,255,255,.95)}
+.hs small{color:#4A524A}
+.hs small svg{width:20px;height:20px;padding:0;border-radius:0;background:none;stroke:currentColor;stroke-width:22;stroke-linejoin:round;stroke-linecap:round}
+.hs.inc small svg{color:#15803D}
+.hs.exp small svg{color:#D92D20}
+.hs b,.hs b small{color:#1A1A1A}
+.hs b small{opacity:.6}
+.hs .mo{color:#4A524A}
