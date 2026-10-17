@@ -1,6 +1,5 @@
-/* Экран «Помощник»: переписка с Фином, голос, чеки и выписки.
-   Ответы считает MD.brain (на телефоне). Если в cloud.config.json указан assistant.endpoint,
-   то на вопросы, которых brain не понял, отвечает ваш сервер (см. docs/ASSISTANT.md). */
+/* Экран «Спросить Фина»: переписка, голос, чеки и выписки.
+   Ответы считает MD.brain по правилам прямо на телефоне. Нейросетей и внешних сервисов нет. */
 (function (root) {
   'use strict';
   const MD = root.MD = root.MD || {};
@@ -59,18 +58,6 @@
   }
 
   /* ---------- Диалог ---------- */
-  async function remoteReply(text) {
-    const ai = root.MD_AI; if (!ai || !ai.endpoint) return null;
-    try {
-      const c = app.ctx();
-      const hist = msgs.filter(m => m.k === 'text').slice(-8).map(m => ({ role: m.r === 'me' ? 'user' : 'assistant', text: m.html.replace(/<[^>]+>/g, ' ').trim() }));
-      const res = await fetch(ai.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, history: hist, currency: c.sym, context: { month: MD.brain.reply('сводка', c).blocks.filter(b => b.t === 'text').map(b => b.html.replace(/<[^>]+>/g, ' ')).join(' ') } }) });
-      if (!res.ok) return null;
-      const j = await res.json();
-      return j && j.reply ? String(j.reply) : null;
-    } catch (_) { return null; }
-  }
-
   async function send(text) {
     text = String(text || '').trim(); if (!text || busy) return;
     busy = true; quick = [];
@@ -79,7 +66,6 @@
     const t = push({ k: 'typing' });
     const started = Date.now();
     let r = MD.brain.reply(text, Object.assign(app.ctx(), { last }));
-    if (/Пока не понял/.test((r.blocks[0] || {}).html || '')) { const rem = await remoteReply(text); if (rem) r = { blocks: [{ t: 'text', html: esc(rem) }], quick: ['Сводка за месяц'] }; }
     await new Promise(res => setTimeout(res, Math.max(0, 450 - (Date.now() - started))));
     drop(t);
     last = r.last || last;
@@ -187,7 +173,7 @@
 
   function openAttach() {
     const plus = MD.sub.isPlus();
-    $$('#lyAttach .row').forEach(b => { $('.rw-r', b).innerHTML = plus ? app.icon('right') : `<span class="badge-plus">${app.icon('crown')}Плюс</span>`; });
+    $$('#lyAttach .row').forEach(b => { $('.rw-r', b).innerHTML = plus ? app.icon('right') : `<span class="badge-plus">${app.icon('crown')}Навсегда</span>`; });
     app.openLayer($('#lyAttach'));
   }
 
@@ -203,7 +189,7 @@
     $('#chatQuick').addEventListener('click', e => { const q = e.target.closest('[data-q]'); if (q) send(q.dataset.q); });
     $('#chatFeed').addEventListener('click', e => {
       const act = e.target.closest('[data-act]');
-      if (act && act.dataset.act === 'newgoal') { app.showTab('home'); setTimeout(() => app.openQuiz(), 150); return; }
+      if (act && act.dataset.act === 'newgoal') { app.showTab('goals'); setTimeout(() => app.openQuiz(), 150); return; }
       const dr = e.target.closest('[data-dr]'); if (!dr) return;
       const card = dr.closest('[data-draft]'), m = msgs.find(x => x.id === card.dataset.draft); if (!m || m.done) return;
       if (dr.dataset.dr === 'ok') {

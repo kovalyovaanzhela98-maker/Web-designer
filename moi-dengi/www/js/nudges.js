@@ -3,7 +3,7 @@
    analyze(tx, st, ctx)  → { hits, lim }      тяжёлая часть: считает паттерны по операциям
    settle(st, an, ctx)   → { changed }         лёгкая часть: проверяет активную подсказку и выбирает новую
    describe(st, tx, ctx) → { text, cat, primary } | null    текст из свежих цифр, с текущей валютой
-   ack / answer / setLimit / resetHidden       действия человека
+   ack / answer / snooze / resetHidden         действия человека
    Состояние st хранится в данных приложения (и в облаке): только счётчики и флаги, никаких лишних персональных данных. */
 (function (root) {
   'use strict';
@@ -11,7 +11,7 @@
   const PRIO = ['Кафе', 'Транспорт', 'Развлечения', 'Одежда', 'Подписки'];
   const GROWTH_ONLY = ['Продукты', 'Дом', 'Здоровье', 'Связь'];
   const WATCH = PRIO.concat(GROWTH_ONLY);
-  const RULE_ORDER = ['freq7', 'freq30', 'growth', 'small', 'sameday', 'note'];
+  const RULE_ORDER = ['freq7', 'freq30', 'growth', 'small', 'note'];
   const SMALL_LIMIT = { BYN: 10, RUB: 300, USD: 3, EUR: 3 };       // «до 10 BYN или эквивалент»
   const pad = n => String(n).padStart(2, '0');
   const r2 = n => Math.round(n * 100) / 100;
@@ -24,23 +24,20 @@
       'tip.freq30': 'За 30 дней {n} {trata} на {what} на {sum}. {sug}',
       'tip.growth': 'На «{cat}» ушло на {pct}% больше, чем в прошлом месяце: {sum} против {prev}. {sug}',
       'tip.small': '{n} {meloch} в «{cat}» за 30 дней, вместе {sum}. По отдельности мелочь, а вместе заметная сумма.',
-      'tip.sameday': '{day}: {n} {trata} в «{cat}» за один день, на {sum}. Так задумано или вышло случайно?',
       'tip.note': '«{note}» записано {n} {raz} за 14 дней. Это привычка или так вышло?',
-      'tip.limit80': 'На «{cat}» ушло {pct}% от твоих {limit} за месяц: {sum}. Осталось {left}.',
-      'tip.limit100': 'На «{cat}» достигнут порог {limit} за месяц: потрачено {sum}.',
       'sug.Кафе': 'Может, сваришь дома пару раз?', 'sug.Транспорт': 'Часть поездок можно объединить или пройти пешком. Попробуешь на этой неделе?',
       'sug.Развлечения': 'Хочешь отложить часть на цель?', 'sug.Одежда': 'Подожди сутки перед следующей покупкой: часто желание проходит.',
       'sug.Подписки': 'Проверь, всеми ли ты пользуешься.',
       'sug.growth': 'Хочешь, поставим цель на разницу?', 'sug.growthPlain': 'Загляни в «Аналитику», что изменилось.',
-      'title': 'Фин заметил', 'ok': 'Понятно', 'talk': 'Обсудить', 'editLimit': 'Изменить порог',
+      'title': 'Фин заметил', 'ok': 'Понятно', 'talk': 'Обсудить',
       'aria.ok': 'Понятно, скрыть подсказку', 'aria.talk': 'Обсудить подсказку про {cat}', 'aria.region': 'Подсказка Фина',
       'few': 'Записывай траты, и я начну замечать закономерности.',
       'q1': 'Это разовые траты или так выходит регулярно?', 'once': 'Разово', 'regular': 'Регулярно', 'unknown': 'Не знаю',
       'onceMsg': 'Понял, тогда просто держу в курсе. Хочешь скрыть такие подсказки по этой категории?', 'hide': 'Скрыть', 'keep': 'Оставить',
-      'askLimit': 'Сколько примерно в месяц ты хочешь тратить на «{cat}»?', 'amount': 'Сумма в месяц', 'save': 'Записать',
-      'saved': 'Записал. Если приблизишься к сумме, предупрежу.', 'good': 'Хорошо',
+      'regularMsg': 'Понял, это часть жизни. Хочешь откладывать часть этой суммы на цель?', 'toGoal': 'Создать цель', 'notNeeded': 'Не нужно',
+      'regularDone': 'Хорошо, до конца месяца про это молчу.',
       'look': 'Давай посмотрим. За 30 дней {n} {trata} на сумму {sum}.', 'more': 'Это больше, чем в прошлом месяце.', 'less': 'Это меньше, чем в прошлом месяце.', 'same': 'Это столько же, сколько в прошлом месяце.',
-      'hideAll': 'Скрыть подсказки', 'muted': 'Больше не буду про это.', 'amountErr': 'Введи сумму, например 150.',
+      'hideAll': 'Скрыть подсказки', 'muted': 'Больше не буду про это.',
       'set.title': 'Подсказки Фина', 'set.counter': 'Фин подсказал {shown} {raz}, ты скрыл {hidden}', 'set.cats': 'По каким категориям', 'set.reset': 'Сбросить скрытые подсказки', 'set.resetDone': 'Скрытые подсказки сброшены',
       'set.off': 'Выключены', 'set.catsSub': 'Выбери, о чём напоминать'
     },
@@ -49,21 +46,19 @@
       'tip.freq7': '{n} {trata} on {what} this week, {sum}. {sug}', 'tip.freq30': '{n} {trata} on {what} in 30 days, {sum}. {sug}',
       'tip.growth': '"{cat}" is up {pct}% on last month: {sum} vs {prev}. {sug}',
       'tip.small': '{n} {meloch} in "{cat}" in 30 days, {sum} together. Small on their own, noticeable together.',
-      'tip.sameday': '{day}: {n} {trata} in "{cat}" in one day, {sum}. On purpose, or did it just happen?',
       'tip.note': '"{note}" logged {n} {raz} in 14 days. A habit, or just how it went?',
-      'tip.limit80': '"{cat}" is at {pct}% of your {limit} this month: {sum}. {left} left.', 'tip.limit100': '"{cat}" reached your {limit} threshold this month: {sum} spent.',
       'sug.Кафе': 'Maybe brew at home a couple of times?', 'sug.Транспорт': 'Some trips could be combined or walked. Try this week?',
       'sug.Развлечения': 'Want to put part of it towards a goal?', 'sug.Одежда': 'Wait a day before the next purchase: the urge often passes.',
       'sug.Подписки': 'Check that you use all of them.', 'sug.growth': 'Want to set a goal for the difference?', 'sug.growthPlain': 'Open Analytics to see what changed.',
-      'title': 'Fin noticed', 'ok': 'Got it', 'talk': 'Discuss', 'editLimit': 'Change threshold',
+      'title': 'Fin noticed', 'ok': 'Got it', 'talk': 'Discuss',
       'aria.ok': 'Got it, hide the tip', 'aria.talk': 'Discuss the tip about {cat}', 'aria.region': 'Fin tip',
       'few': 'Keep logging spending and I will start to notice patterns.',
       'q1': 'Is this a one-off, or does it happen regularly?', 'once': 'One-off', 'regular': 'Regularly', 'unknown': 'Not sure',
       'onceMsg': 'Got it, I will just keep you posted. Hide these tips for this category?', 'hide': 'Hide', 'keep': 'Keep',
-      'askLimit': 'Roughly how much a month do you want to spend on "{cat}"?', 'amount': 'Amount per month', 'save': 'Save',
-      'saved': 'Noted. I will warn you when you get close.', 'good': 'Good',
+      'regularMsg': 'Got it, that is part of life. Want to put part of it towards a goal?', 'toGoal': 'Create a goal', 'notNeeded': 'No need',
+      'regularDone': 'Okay, I will stay quiet about this until the end of the month.',
       'look': 'Let us look. {n} {trata} totalling {sum} in 30 days.', 'more': 'That is more than last month.', 'less': 'That is less than last month.', 'same': 'That is the same as last month.',
-      'hideAll': 'Hide tips', 'muted': 'I will not mention this again.', 'amountErr': 'Enter an amount, for example 150.',
+      'hideAll': 'Hide tips', 'muted': 'I will not mention this again.',
       'set.title': 'Fin tips', 'set.counter': 'Fin tipped {shown} {raz}, you hid {hidden}', 'set.cats': 'Categories', 'set.reset': 'Reset hidden tips', 'set.resetDone': 'Hidden tips reset',
       'set.off': 'Off', 'set.catsSub': 'Choose what to tip about'
     }
@@ -78,7 +73,7 @@
   const forms = k => raw('forms.' + k);
 
   /* ---------- Состояние ---------- */
-  const defaultState = () => ({ on: true, cats: {}, hide: {}, keyShown: {}, catShown: {}, lastDay: '', shown: 0, hidden: 0, limit: {}, warned: {}, ack: { cat: '', n: 0 }, mute: {}, answers: {}, active: null, installAt: 0 });
+  const defaultState = () => ({ on: true, cats: {}, hide: {}, keyShown: {}, catShown: {}, lastDay: '', shown: 0, hidden: 0, ack: { cat: '', n: 0 }, mute: {}, answers: {}, active: null, installAt: 0 });
   const obj = o => (o && typeof o === 'object' && !Array.isArray(o) ? o : {});
   const numMap = (o, keep) => { const r = {}; for (const [k, v] of Object.entries(obj(o))) { const n = Number(v); if (Number.isFinite(n) && n >= 0 && (!keep || keep(k))) r[String(k).slice(0, 40)] = n; } return r; };
   function sanitizeState(o) {
@@ -87,8 +82,6 @@
     for (const [k, v] of Object.entries(obj(o.cats))) if (WATCH.includes(k) && v === false) s.cats[k] = false;
     s.hide = numMap(o.hide); s.keyShown = numMap(o.keyShown); s.mute = numMap(o.mute, k => WATCH.includes(k));
     s.catShown = numMap(o.catShown, k => WATCH.includes(k));
-    s.limit = numMap(o.limit, k => WATCH.includes(k)); for (const k of Object.keys(s.limit)) if (!(s.limit[k] > 0)) delete s.limit[k];
-    s.warned = numMap(o.warned);
     s.lastDay = /^\d{4}-\d{2}-\d{2}$/.test(o.lastDay) ? o.lastDay : '';
     s.shown = Math.max(0, Math.floor(Number(o.shown)) || 0); s.hidden = Math.max(0, Math.floor(Number(o.hidden)) || 0);
     const a = obj(o.ack); s.ack = { cat: WATCH.includes(a.cat) ? a.cat : '', n: Math.max(0, Math.min(9, Math.floor(Number(a.n)) || 0)) };
@@ -131,7 +124,9 @@
     const pm = new Date(now.getFullYear(), now.getMonth() - 1, 1), mk1 = monthKey(pm.getFullYear(), pm.getMonth());
     const small = SMALL_LIMIT[ctx.currency] || SMALL_LIMIT.BYN;
     const B = {}, notes = [];
+    let first = Infinity;
     for (const x of tx) {
+      if (x.ts > 0 && x.ts < first) first = x.ts;     // когда запись создана, а не дата траты: так импорт старой выписки не считается давним знакомством
       if (x.type !== 'expense') continue;
       const age = T - dayNum(x.date);
       if (!(age >= 0)) continue;
@@ -158,9 +153,6 @@
       }
       const sm = b.d30.filter(x => x.amount <= small);
       if (sm.length >= 7) hit(cat, 'small', { n: sm.length, sum: sum(sm), limit: small });
-      const days = {}; b.d7.forEach(x => { (days[x.date] = days[x.date] || []).push(x); });
-      const dd = Object.keys(days).filter(d => days[d].length >= 3).sort().pop();
-      if (dd) hit(cat, 'sameday', { n: days[dd].length, sum: sum(days[dd]), date: dd });
     }
     // повтор заметки: группируем похожие
     const groups = [];
@@ -175,26 +167,19 @@
       if (!WATCH.includes(cat)) continue;
       hit(cat, 'note', { n: g.items.length, note: g.rep });
     }
-    // мягкий порог по категории: 80% и 100% за текущий месяц
-    const lim = [];
-    for (const cat of Object.keys(st.limit || {})) {
-      const total = sum(tx.filter(x => x.type === 'expense' && x.cat === cat && x.date.startsWith(mk0)));
-      const pct = total / st.limit[cat] * 100, level = pct >= 100 ? 100 : pct >= 80 ? 80 : 0;
-      if (level) lim.push({ cat, rule: 'limit', key: `${cat}|limit`, level, pct: Math.round(pct), sum: total, limit: st.limit[cat], mk: mk0 });
-    }
-    return { hits, lim, at: now.getTime(), total: tx.length };
+    return { hits, at: now.getTime(), total: tx.length, first: first === Infinity ? 0 : first };
   }
 
   /* ---------- Выбор подсказки ---------- */
   const prioOf = c => { const i = PRIO.indexOf(c); return i >= 0 ? i : 100 + GROWTH_ONLY.indexOf(c); };
   function isNewUser(st, now) { return !st.installAt || now.getTime() - st.installAt < 14 * DAY; }
   function eligible(an, st, now) {
-    const ms = now.getTime(), fresh = isNewUser(st, now);
+    const ms = now.getTime();
+    if (isNewUser(st, now)) return [];                 // первые 14 дней подсказок нет совсем
     const out = an.hits.filter(h => {
       if (!PRIO.includes(h.cat) && h.rule !== 'growth') return false;
       if (st.cats[h.cat] === false) return false;
       if ((st.mute[h.cat] || 0) > ms) return false;
-      if (fresh && h.rule !== 'freq7' && h.rule !== 'freq30') return false;
       if ((st.hide[h.key] || 0) > ms) return false;
       if (st.hide[h.key] !== undefined && ms - (st.keyShown[h.key] || 0) < 30 * DAY) return false;
       if (ms - (st.catShown[h.cat] || 0) < 14 * DAY) return false;
@@ -203,25 +188,18 @@
     out.sort((a, b) => prioOf(a.cat) - prioOf(b.cat) || RULE_ORDER.indexOf(a.rule) - RULE_ORDER.indexOf(b.rule));
     return out;
   }
-  const eligibleLimits = (an, st) => an.lim.filter(h => st.cats[h.cat] !== false && (st.warned[`${h.cat}|${h.mk}`] || 0) < h.level);
-
   function settle(st, an, ctx) {
     const now = ctx.now || new Date(), res = { changed: false }, day = ymd(now);
-    if (!st.installAt) { st.installAt = now.getTime(); res.changed = true; }
+    if (!st.installAt) { st.installAt = Math.min(now.getTime(), an.first || now.getTime()); res.changed = true; }
     const clear = () => { if (st.active) { st.active = null; res.changed = true; } };
-    if (!st.on || an.total < 10) { clear(); return res; }
-    if (st.active) {
-      const a = st.active;
-      const ok = a.rule === 'limit' ? an.lim.some(h => h.cat === a.cat && h.level >= (a.level || 80)) : an.hits.some(h => h.key === a.key);
-      if (!ok || st.cats[a.cat] === false) clear();
-    }
-    if (!st.active && ctx.canShow && st.lastDay !== day) {
-      const c = eligibleLimits(an, st)[0] || eligible(an, st, now)[0];
+    if (!st.on) { clear(); return res; }
+    if (st.active && (isNewUser(st, now) || !an.hits.some(h => h.key === st.active.key) || st.cats[st.active.cat] === false)) clear();
+    if (!st.active && ctx.canShow && st.lastDay !== day) {          // одна подсказка, не чаще раза в день
+      const c = eligible(an, st, now)[0];
       if (c) {
         const ms = now.getTime();
-        st.active = { cat: c.cat, rule: c.rule, key: c.key, level: c.level || 0, at: ms };
+        st.active = { cat: c.cat, rule: c.rule, key: c.key, level: 0, at: ms };
         st.shown++; st.lastDay = day; st.catShown[c.cat] = ms; st.keyShown[c.key] = ms;
-        if (c.rule === 'limit') st.warned[`${c.cat}|${c.mk}`] = c.level;
         res.changed = true;
       }
     }
@@ -234,12 +212,6 @@
     const an = ctx.analysis || analyze(tx, st, ctx), M = ctx.money || (n => String(n));
     const trata = n => form(n, forms('trata'));
     let h, text;
-    if (a.rule === 'limit') {
-      h = an.lim.find(x => x.cat === a.cat); if (!h) return null;
-      text = h.level >= 100 ? t('tip.limit100', { cat: a.cat, limit: M(h.limit), sum: M(h.sum) })
-        : t('tip.limit80', { cat: a.cat, pct: h.pct, limit: M(h.limit), sum: M(h.sum), left: M(r2(h.limit - h.sum)) });
-      return { text, cat: a.cat, rule: a.rule, primary: t('editLimit') };
-    }
     h = an.hits.find(x => x.key === a.key); if (!h) return null;
     const sug = t('sug.' + a.cat);
     const dominant = () => {
@@ -250,7 +222,6 @@
     if (h.rule === 'freq7' || h.rule === 'freq30') text = t('tip.' + h.rule, { n: h.n, trata: trata(h.n), what: dominant() || `«${a.cat}»`, sum: M(h.sum), sug });
     else if (h.rule === 'growth') text = t('tip.growth', { cat: a.cat, pct: h.pct, sum: M(h.sum), prev: M(h.prev), sug: PRIO.includes(a.cat) ? t('sug.growth') : t('sug.growthPlain') });
     else if (h.rule === 'small') text = t('tip.small', { n: h.n, meloch: form(h.n, forms('meloch')), cat: a.cat, sum: M(h.sum) });
-    else if (h.rule === 'sameday') { const d = new Date(h.date + 'T00:00:00'); text = t('tip.sameday', { day: (ctx.dayName ? ctx.dayName(d) : h.date), n: h.n, trata: trata(h.n), cat: a.cat, sum: M(h.sum) }); }
     else text = t('tip.note', { note: h.note, n: h.n, raz: form(h.n, forms('raz')) });
     return { text: text.trim(), cat: a.cat, rule: h.rule, primary: t('talk') };
   }
@@ -259,7 +230,7 @@
   function ack(st, now) {
     const a = st.active; if (!a) return {};
     const ms = (now || new Date()).getTime();
-    if (a.rule !== 'limit') st.hide[a.key] = ms + 14 * DAY;
+    st.hide[a.key] = ms + 14 * DAY;
     st.hidden++;
     st.ack = st.ack.cat === a.cat ? { cat: a.cat, n: st.ack.n + 1 } : { cat: a.cat, n: 1 };
     st.active = null;
@@ -271,12 +242,13 @@
   function finishTalk(st) { st.active = null; }
   function hideCat(st, cat) { st.cats[cat] = false; st.hidden++; }
   function answer(st, cat, kind) { if (['once', 'regular', 'unknown'].includes(kind)) st.answers[cat] = kind; }
-  function setLimit(st, cat, amount) { if (amount > 0) { st.limit[cat] = r2(amount); delete st.answers[cat + '!']; } }
+  /* Тишина по правилу на несколько дней (например, после «Регулярно»: больше не спрашиваем до конца месяца) */
+  function snooze(st, key, days, now) { st.hide[key] = (now || new Date()).getTime() + days * DAY; st.keyShown[key] = (now || new Date()).getTime(); }
   function resetHidden(st) { st.hide = {}; st.mute = {}; st.cats = {}; st.ack = { cat: '', n: 0 }; st.keyShown = {}; }
   const counter = st => t('set.counter', { shown: st.shown, raz: form(st.shown, forms('raz')), hidden: st.hidden });
   const setLang = l => { if (STR[l]) lang = l; };
 
-  const api = { analyze, settle, describe, ack, startTalk, finishTalk, hideCat, answer, setLimit, resetHidden, counter, defaultState, sanitizeState, setLang, t, form, forms, WATCH, PRIO, STR, normNote, lev, holidayWindow, isNewUser };
+  const api = { analyze, settle, describe, ack, startTalk, finishTalk, hideCat, answer, snooze, resetHidden, counter, defaultState, sanitizeState, setLang, t, form, forms, WATCH, PRIO, STR, normNote, lev, holidayWindow, isNewUser };
   root.MD = root.MD || {};
   root.MD.nudges = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

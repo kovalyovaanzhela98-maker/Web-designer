@@ -75,10 +75,9 @@ tx = filler(8).concat(Array.from({ length: 7 }, (_, i) => ex('Развлечен
 ok('RUB: 150 — мелочь', N.analyze(tx, old(N.defaultState()), Object.assign({}, ctx, { currency: 'RUB' })).hits.some(h => h.rule === 'small'));
 ok('BYN: 150 — не мелочь', !N.analyze(tx, old(N.defaultState()), ctx).hits.some(h => h.rule === 'small'));
 
-// 4. три за день
+// три траты за день сами по себе подсказку не вызывают (такого правила нет)
 tx = filler(8).concat([ex('Одежда', 50, 2), ex('Одежда', 60, 2), ex('Одежда', 70, 2)]);
-o = run(tx, old(N.defaultState()));
-eq('три за день: Одежда', [o.st.active.cat, o.st.active.rule], ['Одежда', 'sameday']);
+ok('три за день: подсказки нет', !run(tx, old(N.defaultState())).st.active);
 
 // 5. повтор заметки и опечатки
 tx = filler(8).concat([ex('Транспорт', 12, 1, 'Такси'), ex('Транспорт', 14, 3, 'такси '), ex('Транспорт', 9, 6, 'такси'), ex('Транспорт', 15, 10, 'таксси')]);
@@ -88,16 +87,20 @@ ok('заметка: текст', /«такси» записано 4 раза з�
 eq('Левенштейн', [N.lev('кофе', 'кофэ', 2), N.lev('чай', 'чат', 1)], [1, 1]);
 
 // мало данных и новый пользователь
-tx = [0, 1, 2, 3, 4, 5].map(d => ex('Кафе', 7, d));
-ok('меньше 10 операций: тишина', !run(tx, old(N.defaultState())).st.active);
-tx = filler(5).concat([0, 1, 2, 3, 4].map(d => ex('Кафе', 7, d)));
-ok('ровно 10 операций: работает', !!run(tx, old(N.defaultState())).st.active);
+tx = [0, 1, 2, 3, 4].map(d => ex('Кафе', 7, d));
+ok('пять трат за неделю даже без фона: работает', !!run(tx, old(N.defaultState())).st.active);
 st = N.defaultState();
 tx = filler(8).concat([ex('Кафе', 30, 5), ex('Кафе', 30, 9), ex('Кафе', 30, 12), ex('Кафе', 20, pmDay(5)), ex('Кафе', 20, pmDay(10)), ex('Кафе', 20, pmDay(15))]);
 ok('первые 14 дней: рост молчит', !run(tx, st).st.active, JSON.stringify(st.active));
 st = N.defaultState();
 tx = filler(8).concat([0, 1, 2, 3, 4, 5].map(d => ex('Кафе', 7, d)));
-ok('первые 14 дней: частота работает', !!run(tx, st).st.active);
+ok('первые 14 дней: молчим совсем, и по частоте тоже', !run(tx, st).st.active);
+st = N.defaultState(); st.installAt = now.getTime() - 13 * 864e5;
+ok('13-й день: ещё тихо', !run(tx, st).st.active);
+st = N.defaultState(); st.installAt = now.getTime() - 14 * 864e5;
+ok('14-й день: можно', !!run(tx, st).st.active);
+st = N.defaultState(); tx = filler(8).concat([0, 1, 2, 3, 4, 5].map(d => ex('Кафе', 7, d))).concat([Object.assign(ex('Другое', 5, 40), { ts: now.getTime() - 40 * 864e5 })]);
+run(tx, st); ok('первый запуск: срок считаем от первой созданной записи', st.installAt <= now.getTime() - 39 * 864e5);
 
 // мьют, скрытие, окно 14 дней, ack×3
 st = old(N.defaultState()); tx = filler(8).concat([0, 1, 2, 3, 4, 5].map(d => ex('Кафе', 7, d)));
@@ -123,17 +126,12 @@ N.settle(st, an2, ctx); ok('после удаления операций под�
 st = old(N.defaultState()); tx = filler(8).concat([0, 1, 2, 3, 4, 5].map(d => ex('Кафе', 7, d)));
 ok('canShow=false: не выбираем', !run(tx, st, Object.assign({}, ctx, { canShow: false })).st.active);
 
-// порог: 80% и 100%
-st = old(N.defaultState()); N.setLimit(st, 'Кафе', 100);
-tx = filler(10).concat([ex('Кафе', 45, 2), ex('Кафе', 40, 1)]);
-o = run(tx, st);
-eq('порог 85%: предупреждение 80', [st.active.rule, st.active.level], ['limit', 80]);
-ok('порог: текст', /85% от твоих 100,00 Br/.test(N.describe(st, tx, Object.assign({ analysis: o.an }, ctx)).text));
-st.active = null; st.lastDay = '';
-tx.push(ex('Кафе', 20, 0)); o = run(tx, st);
-eq('порог 105%: предупреждение 100', [st.active.rule, st.active.level], ['limit', 100]);
-st.active = null; st.lastDay = ''; o = run(tx, st);
-ok('то же предупреждение не повторяется', !st.active);
+// «Регулярно» -> ответ запоминается, правило молчит до конца месяца
+st = old(N.defaultState()); tx = filler(8).concat([0, 1, 2, 3, 4, 5].map(d => ex('Кафе', 7, d)));
+run(tx, st); N.answer(st, 'Кафе', 'regular'); N.snooze(st, st.active.key, 30, now); N.finishTalk(st);
+eq('ответ сохранён', st.answers['Кафе'], 'regular');
+st.lastDay = ''; ok('после «Регулярно» то же правило молчит', !run(tx, st).st.active);
+ok('бюджетов по категориям нет', !('limit' in N.defaultState()) && typeof N.setLimit === 'undefined');
 
 // тексты: без запретных слов и эмодзи, EN полный
 const bad = /(слишком|плохо|нарушени)/i, emo = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
@@ -142,8 +140,8 @@ ok('RU: нет запретных слов и эмодзи', ruKeys.every(k => !
 eq('EN: те же ключи', ruKeys.filter(k => !enKeys.includes(k)), []);
 
 // санитайзер
-const dirty = N.sanitizeState({ on: 'x', cats: { Кафе: false, Чужая: false }, limit: { Кафе: '150', Дом: -1 }, shown: '3', active: { cat: 'Кафе', key: 'Кафе|freq', rule: 'freq7' }, hide: { 'Кафе|freq': 'abc' } });
-eq('санитайзер', [dirty.on, dirty.cats, dirty.limit, dirty.shown, dirty.active.cat, dirty.hide], [true, { Кафе: false }, { Кафе: 150 }, 3, 'Кафе', {}]);
+const dirty = N.sanitizeState({ on: 'x', cats: { Кафе: false, Чужая: false }, limit: { Кафе: '150' }, shown: '3', active: { cat: 'Кафе', key: 'Кафе|freq', rule: 'freq7' }, hide: { 'Кафе|freq': 'abc' } });
+eq('санитайзер', [dirty.on, dirty.cats, dirty.limit, dirty.shown, dirty.active.cat, dirty.hide], [true, { Кафе: false }, undefined, 3, 'Кафе', {}]);
 
 // скорость: 90 дней, 20 000 операций
 const big = []; for (let i = 0; i < 20000; i++) big.push(ex(['Кафе', 'Продукты', 'Транспорт', 'Дом'][i % 4], 5 + (i % 30), i % 90, i % 3 ? 'кофе' : 'обед'));

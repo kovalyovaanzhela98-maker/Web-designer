@@ -1,62 +1,44 @@
-/* Знакомство с Фином: три экрана при самом первом запуске, до входа в аккаунт.
-   Фон каждого экрана — картинка img/onboard/N.jpg (Фин уже нарисован на ней), снизу панель с текстом.
-   Показывается один раз. Тем, у кого уже есть данные, не показывается. */
+/* Знакомство с Фином: три экрана при самом первом запуске, до всякого входа.
+   На каждом экране сразу видны «Пропустить» и «Далее». Показывается один раз, тем, у кого уже есть данные, не показывается.
+   1. Привет, я Фин. 2. Записывай голосом: «вчера кофе 6,5 и такси 12». 3. Замечаю привычки, подсказки без нотаций. */
 (function (root) {
   'use strict';
   const KEY = 'moidengi_intro';
   let seen = true;
   try { seen = localStorage.getItem(KEY) === '1' || !!localStorage.getItem('moidengi_v1'); } catch (_) {}
   if (seen) return;
-  const BASE = root.INTRO_BASE || 'img/onboard/';
-  const FIN = root.FIN_BASE || 'img/fin/';
-  const ic = n => (root.MD && root.MD.icon ? root.MD.icon(n) : '');
-  const ci = (n, c) => `<span class="dm-ci" style="--c:${c}">${ic(n)}</span>`;
-  /* У каждого экрана: картинка (art), заголовок, текст и маленькая живая демонстрация (demo) */
+  const MD = root.MD || {};
+  const ic = n => (MD.icon ? MD.icon(n) : '');
+  const ci = (n, c) => `<span class="ci" style="--c:${c};flex:0 0 40px;width:40px;height:40px">${ic(n)}</span>`;
   const SLIDES = [
-    { art: `url(${BASE}1.jpg) 50% 80%/cover no-repeat`, h: 'Ты записываешь, остальное делаю я', p: 'Скажи «кофе 6 и такси 12». Я разложу по категориям, посчитаю и покажу, куда уходят деньги.',
-      demo: `<div class="dm-card"><div class="dm-say">${ic('mic')}<span class="dm-typed">кофе 6 и такси 12</span></div>
-        <div class="dm-r" style="--d:1.9s">${ci('cup', '#F59E0B')}<b>Кафе</b><em>−6,00 Br</em></div>
-        <div class="dm-r" style="--d:2.3s">${ci('bus', '#14B8A6')}<b>Транспорт</b><em>−12,00 Br</em></div></div>` },
-    { art: `url(${BASE}2.jpg) 50% 78%/cover no-repeat`, h: 'Сводка без таблиц и калькулятора', p: 'Сколько потрачено за месяц и на что, в процентах и в суммах. Всё считается само.',
-      demo: `<div class="dm-card"><div class="dm-head"><span>Октябрь, потрачено</span><b>1 240,00 Br</b></div>
-        <div class="dm-bar" style="--w:38%;--c:#3B82F6;--d:.5s"><span>Продукты</span><em>38%</em><i></i></div>
-        <div class="dm-bar" style="--w:27%;--c:#F59E0B;--d:.8s"><span>Кафе</span><em>27%</em><i></i></div>
-        <div class="dm-bar" style="--w:14%;--c:#14B8A6;--d:1.1s"><span>Транспорт</span><em>14%</em><i></i></div></div>` },
-    { art: `url(${BASE}3.jpg) 50% 74%/cover no-repeat`, h: 'Замечу привычки и подскажу', p: 'Если кофе стал ежедневным, скажу по-дружески и предложу, как сократить траты.',
-      demo: `<div class="dm-card dm-nudge"><b>Фин заметил</b><p>За неделю 6 трат на кофе на 42,00 Br. Может, сваришь дома пару раз?</p>
-        <div class="dm-btns"><span>Понятно</span><span class="p">Обсудить</span></div></div>` },
-    { art: `url(${FIN}joy.png) 50% 22%/62% no-repeat, linear-gradient(165deg,#FBF1D2 0%,#E4EBC4 55%,#B7CF86 100%)`, h: 'Чек или выписка? Просто пришли', p: 'Сфотографируй чек или прикрепи файл из банка. Фин внесёт всё сам, тебе останется проверить.',
-      demo: `<div class="dm-card"><div class="dm-file" style="--d:.5s">${ci('camera', '#3B82F6')}<span><b>Чек из магазина</b><small>Продукты · 34,20 Br</small></span></div>
-        <div class="dm-file" style="--d:1s">${ci('file', '#8B5CF6')}<span><b>Выписка за октябрь</b><small>Найдено 24 операции</small></span></div></div>` }
+    { pose: 'hello', h: 'Привет, я Фин', p: 'Помогаю вести деньги: ты рассказываешь, куда они ушли, а я записываю и считаю.',
+      demo: '' },
+    { pose: 'notify', h: 'Записывай голосом', p: 'Просто скажи, как другу. Я разберу сумму, категорию и день.',
+      demo: `<div class="intro-ex"><div class="intro-quote">${ic('mic')}<span>Вчера кофе 6,5 и такси 12</span></div>
+        <div class="intro-row">${ci('cup', '#F59E0B')}<b>Кафе · вчера</b><em>−6,50</em></div>
+        <div class="intro-row">${ci('bus', '#14B8A6')}<b>Транспорт · вчера</b><em>−12,00</em></div></div>` },
+    { pose: 'think', h: 'Я замечаю привычки', p: 'Подсказываю по-дружески и коротко, без нотаций. Не нравится — одним нажатием скрыть.',
+      demo: `<div class="intro-ex"><div class="intro-tip"><b>Фин заметил</b>За неделю шесть трат на кофе. Может, сваришь дома пару раз?</div></div>` }
   ];
   const el = document.createElement('div');
   el.className = 'intro'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Знакомство');
-  el.innerHTML = `<div class="intro-art" aria-hidden="true">${SLIDES.map(s => `<i style="background:${s.art}"></i>`).join('')}
-      <div class="demo-wrap">${SLIDES.map(s => `<div class="demo">${s.demo}</div>`).join('')}</div></div>
-    <button class="intro-back" data-back aria-label="Назад" hidden><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <button class="intro-skip" data-skip>Пропустить</button>
-    <div class="intro-panel">
-      <div class="intro-text" aria-live="polite">${SLIDES.map(s => `<div class="intro-t"><h1>${s.h}</h1><p>${s.p}</p></div>`).join('')}</div>
-      <div class="intro-dots" aria-hidden="true">${SLIDES.map(() => '<i></i>').join('')}</div>
-      <button class="btn primary wide" data-next></button>
-    </div>`;
+  el.innerHTML = `<div class="intro-top"><button class="intro-skip" data-skip type="button">Пропустить</button></div>
+    <div class="intro-art">${SLIDES.map(s => `<div>${MD.mascot ? MD.mascot(s.pose, s.demo ? 96 : 200) : ''}${s.demo}</div>`).join('')}</div>
+    <div class="intro-text" aria-live="polite">${SLIDES.map(s => `<div class="intro-t"><h1>${s.h}</h1><p>${s.p}</p></div>`).join('')}</div>
+    <div class="intro-dots" aria-hidden="true">${SLIDES.map(() => '<i></i>').join('')}</div>
+    <div class="intro-btns"><button class="btn primary wide" data-next type="button">Далее</button></div>`;
   document.body.appendChild(el);
   let i = 0, pushed = 0;
   const done = () => {
     try { localStorage.setItem(KEY, '1'); } catch (_) {}
     window.removeEventListener('popstate', onPop);
     if (pushed > 0) history.go(-pushed);
-    el.classList.add('out'); setTimeout(() => el.remove(), 350);
+    el.remove();
   };
   function draw() {
-    const last = i === SLIDES.length - 1;
-    el.querySelectorAll('.intro-art i').forEach((n, k) => n.classList.toggle('on', k === i));
+    el.querySelectorAll('.intro-art > div').forEach((n, k) => n.classList.toggle('on', k === i));
     el.querySelectorAll('.intro-dots i').forEach((n, k) => n.classList.toggle('on', k === i));
     el.querySelectorAll('.intro-t').forEach((n, k) => { n.classList.toggle('on', k === i); n.setAttribute('aria-hidden', String(k !== i)); });
-    el.querySelectorAll('.demo').forEach((n, k) => n.classList.toggle('on', k === i));
-    el.querySelector('[data-next]').textContent = last ? 'Начать' : 'Дальше';
-    el.querySelector('[data-skip]').hidden = last;
-    el.querySelector('[data-back]').hidden = i === 0;
   }
   function next() { if (i >= SLIDES.length - 1) return done(); i++; history.pushState({ intro: i }, ''); pushed++; draw(); }
   function prev() { if (i > 0) history.back(); }
@@ -64,7 +46,6 @@
   window.addEventListener('popstate', onPop);
   el.addEventListener('click', e => {
     if (e.target.closest('[data-skip]')) return done();
-    if (e.target.closest('[data-back]')) return prev();
     if (e.target.closest('[data-next]')) next();
   });
   let sx = null;

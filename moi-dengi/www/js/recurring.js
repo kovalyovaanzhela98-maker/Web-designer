@@ -1,0 +1,155 @@
+/* Обязательные платежи: аренда, подписка, кредит. Фин напоминает и помогает записать, сам ничего не списывает
+   и операций сам не создаёт: человек подтверждает.
+   Чистые функции (без экрана), проверяются тестами: npm test.
+   rec = { list: [ { id, name, amount, cat, days: [{from:'YYYY-MM', day}], remind: 'off'|'0'|'1'|'3', time:'HH:MM',
+                     start:'YYYY-MM', paid: { 'YYYY-MM': 'txId' | 'manual' }, nid } ] }
+   День платежа меняется с нового месяца: старые отметки (paid) сохраняются, новый день берётся из days. */
+(function (root) {
+  'use strict';
+  const FREE_LIMIT = 10, MAX = 40, TOL = 2;
+  const pad = n => String(n).padStart(2, '0');
+  const mkOf = (y, m) => `${y}-${pad(m + 1)}`;
+  const mkOfDate = d => mkOf(d.getFullYear(), d.getMonth());
+  const parseYmd = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || '')); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+  const midnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
+  const shiftMk = (mk, n) => { const [y, m] = mk.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return mkOf(d.getFullYear(), d.getMonth()); };
+  const r2 = n => Math.round(n * 100) / 100;
+
+  const REMIND = [
+    { id: 'off', label: 'Не напоминать', lead: null },
+    { id: '0', label: 'В день платежа', lead: 0 },
+    { id: '1', label: 'За 1 день', lead: 1 },
+    { id: '3', label: 'За 3 дня', lead: 3 }
+  ];
+  const PRESETS = [['Аренда', 'Дом'], ['Подписка', 'Подписки'], ['Кредит', 'Другое'], ['Связь', 'Связь']];
+
+  const defaultRec = () => ({ list: [] });
+  const str = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+  function sanitize(o, cats) {
+    const rec = defaultRec();
+    if (!o || typeof o !== 'object') return rec;
+    const used = new Set();
+    for (const p of Array.isArray(o.list) ? o.list.slice(0, MAX) : []) {
+      if (!p || typeof p !== 'object') continue;
+      const name = str(p.name, 30), amount = Number(p.amount);
+      if (!name || !(amount > 0)) continue;
+      const days = (Array.isArray(p.days) ? p.days : []).map(d => ({ from: /^\d{4}-\d{2}$/.test(d && d.from) ? d.from : '0000-00', day: Math.max(1, Math.min(31, Math.floor(Number(d && d.day)) || 0)) })).filter(d => d.day >= 1).sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0));
+      if (!days.length) continue;
+      let nid = Math.floor(Number(p.nid)); if (!(nid >= 0 && nid < MAX) || used.has(nid)) { nid = 0; while (used.has(nid)) nid++; } used.add(nid);
+      const paid = {};
+      Object.keys(p.paid && typeof p.paid === 'object' ? p.paid : {}).sort().slice(-36).forEach(k => { if (/^\d{4}-\d{2}$/.test(k)) paid[k] = str(p.paid[k], 60) || 'manual'; });
+      const remind = REMIND.some(r => r.id === p.remind) ? p.remind : 'off';
+      rec.list.push({
+        id: typeof p.id === 'string' && p.id ? p.id.slice(0, 40) : 'p' + nid + Date.now().toString(36),
+        name, amount: r2(amount), cat: cats && !cats.includes(p.cat) ? 'Другое' : str(p.cat, 30) || 'Другое', days,
+        remind, time: /^\d{2}:\d{2}$/.test(p.time) ? p.time : '10:00',
+        start: /^\d{4}-\d{2}$/.test(p.start) ? p.start : '0000-00', paid, nid
+      });
+    }
+    return rec;
+  }
+  const freeNid = list => { const used = new Set(list.map(p => p.nid)); let n = 0; while (used.has(n)) n++; return n; };
+
+  /* День платежа в нужном месяце: 31-е в коротком месяце уходит на последний день */
+  function dayFor(p, mk) { let d = p.days[0].day; for (const x of p.days) if (x.from <= mk) d = x.day; return d; }
+  const curDay = p => p.days[p.days.length - 1].day;
+  function dateOf(p, mk) { const [y, m] = mk.split('-').map(Number); return new Date(y, m - 1, Math.min(dayFor(p, mk), daysIn(y, m - 1))); }
+  const isPaid = (p, mk) => !!p.paid[mk];
+  const dayDiff = (a, b) => Math.round((midnight(a) - midnight(b)) / 864e5);
+
+  /* С какого месяца платёж действует: если день этого месяца уже прошёл, ждём следующий */
+  function startMonth(day, today) {
+    const mk = mkOfDate(today);
+    return day >= today.getDate() ? mk : shiftMk(mk, 1);
+  }
+  /* Смена дня: новый день действует со следующего месяца, прошлые отметки остаются */
+  function setDay(p, day, today) {
+    const from = shiftMk(mkOfDate(today), 1), last = p.days[p.days.length - 1];
+    if (last.day === day) return;
+    if (last.from === from) last.day = day; else p.days.push({ from, day });
+  }
+
+  /* Статус в месяце: paid | late (день прошёл, операции нет) | wait */
+  function statusOf(p, mk, today) {
+    if (isPaid(p, mk)) return 'paid';
+    const d = dateOf(p, mk), cur = mkOfDate(today);
+    return mk === cur && dayDiff(d, today) < 0 ? 'late' : 'wait';
+  }
+  /* Строки списка на месяц (платежи, которые в этом месяце уже действуют), по дате */
+  function monthRows(list, mk, today) {
+    return list.filter(p => p.start <= mk).map(p => ({ p, date: dateOf(p, mk), status: statusOf(p, mk, today) })).sort((a, b) => a.date - b.date || a.p.name.localeCompare(b.p.name));
+  }
+  /* Ближайший: сначала то, что в этом месяце ещё не закрыто (в том числе вчерашнее), потом следующий месяц */
+  function nextDue(list, today) {
+    const cur = mkOfDate(today), nxt = shiftMk(cur, 1), out = [];
+    for (const p of list) {
+      if (p.start <= cur && !isPaid(p, cur)) out.push({ p, mk: cur, date: dateOf(p, cur) });
+      else if (p.start <= nxt && !isPaid(p, nxt)) out.push({ p, mk: nxt, date: dateOf(p, nxt) });
+    }
+    out.sort((a, b) => a.date - b.date);
+    const f = out[0]; if (!f) return null;
+    const days = dayDiff(f.date, today);
+    return Object.assign(f, { days, late: days < 0 });
+  }
+
+  /* Совпала ли новая операция с неоплаченным платежом: та же категория и сумма, дата в пределах ±2 дней */
+  function matchTx(list, t) {
+    if (!t || t.type !== 'expense') return null;
+    const td = parseYmd(t.date); if (!td) return null;
+    const base = mkOfDate(td);
+    let best = null;
+    for (const p of list) {
+      if (p.cat !== t.cat || Math.abs(p.amount - t.amount) > 0.005) continue;
+      for (const mk of [shiftMk(base, -1), base, shiftMk(base, 1)]) {
+        if (p.start > mk || isPaid(p, mk)) continue;
+        const diff = Math.abs(dayDiff(dateOf(p, mk), td));
+        if (diff <= TOL && (!best || diff < best.diff)) best = { p, mk, diff };
+      }
+    }
+    return best;
+  }
+
+  const pl = (n, a, b, c) => { const m = n % 100, k = n % 10; return m >= 11 && m <= 14 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; };
+  /* «сегодня», «завтра», «через 3 дня», «вчера», «5 дней назад» */
+  function whenText(days) {
+    if (days === 0) return 'сегодня';
+    if (days === 1) return 'завтра';
+    if (days === -1) return 'вчера';
+    return days > 0 ? `через ${days} ${pl(days, 'день', 'дня', 'дней')}` : `${-days} ${pl(-days, 'день', 'дня', 'дней')} назад`;
+  }
+  const lowerFirst = s => (/^[А-ЯЁ][а-яё\s]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s);
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  /* «Аренда 500 Br через 3 дня» */
+  const dueLine = (p, days, money) => `${cap(p.name)} ${money(p.amount)} ${whenText(days)}`;
+  /* Текст уведомления: «Завтра аренда 500 Br, записать» */
+  function pushBody(p, lead, money) {
+    const w = lead === 0 ? 'Сегодня' : lead === 1 ? 'Завтра' : `Через ${lead} ${pl(lead, 'день', 'дня', 'дней')}`;
+    return `${w} ${lowerFirst(p.name)} ${money(p.amount)}, записать`;
+  }
+  /* Локальные уведомления на год вперёд: только для включённых напоминаний и неоплаченных месяцев. Номера 1000…1479 */
+  function notifications(list, now, money) {
+    const out = [], cur = mkOfDate(now);
+    for (const p of list) {
+      const r = REMIND.find(x => x.id === p.remind); if (!r || r.lead === null) continue;
+      const [h, mi] = p.time.split(':').map(Number);
+      for (let i = 0; i < 12; i++) {
+        const mk = shiftMk(cur, i);
+        if (p.start > mk || isPaid(p, mk)) continue;
+        const d = dateOf(p, mk), at = new Date(d.getFullYear(), d.getMonth(), d.getDate() - r.lead, h, mi, 0);
+        if (at <= now) continue;
+        out.push({ id: 1000 + p.nid * 12 + i, title: 'Фин', body: pushBody(p, r.lead, money), at, pid: p.id, mk });
+      }
+    }
+    return out;
+  }
+  const summary = (list, mk, today) => {
+    const rows = monthRows(list, mk, today), paid = rows.filter(r => r.status === 'paid');
+    return { n: rows.length, paid: paid.length, total: r2(rows.reduce((s, r) => s + r.p.amount, 0)), left: r2(rows.filter(r => r.status !== 'paid').reduce((s, r) => s + r.p.amount, 0)) };
+  };
+
+  const api = { FREE_LIMIT, MAX, REMIND, PRESETS, defaultRec, sanitize, freeNid, dayFor, curDay, dateOf, isPaid, startMonth, setDay, statusOf, monthRows, nextDue, matchTx, whenText, dueLine, pushBody, notifications, summary, mkOf, mkOfDate, shiftMk };
+  root.MD = root.MD || {};
+  root.MD.rec = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);

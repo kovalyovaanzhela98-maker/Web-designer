@@ -9,52 +9,38 @@
 <title>Фин</title>
 <link rel="icon" href="icon.png">
 <link rel="stylesheet" href="tokens.css">
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
 <div id="auth" class="auth" hidden></div>
 
 <div id="app">
 
-  <!-- ГЛАВНАЯ -->
+  <!-- ГЛАВНАЯ: реплика Фина, баланс, ближайший платёж, плитки, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
-    <header class="hdr">
-      <div class="hdr-who">
-        <div>
-          <div class="hello" id="hello">Привет!</div>
-          <div class="date" id="todayLabel"></div>
-        </div>
-      </div>
-      <button class="streak" id="streak" type="button" hidden><i data-ic="leaf"></i><b id="streakN">0</b></button>
-    </header>
-
-    <section class="hero" aria-labelledby="heroLabel">
-      <div class="hero-deco" aria-hidden="true"></div>
-      <div class="hero-top">
-        <div class="monthbar-slot"></div>
-        <button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button>
-      </div>
-      <div class="hero-label" id="heroLabel">Баланс</div>
-      <div class="hero-sum" id="heroSum"></div>
-      <div class="hero-split">
-        <div class="hs inc"><span class="hs-t"><small><i data-ic="down"></i>Пришло</small><b id="sumInc"></b></span></div>
-        <div class="hs exp"><span class="hs-t"><small><i data-ic="up"></i>Потрачено</small><b id="sumExp"></b></span></div>
-      </div>
-    </section>
-
-    <div class="quick" id="quickRow" role="group" aria-label="Быстрая запись"></div>
-
+    <button class="say-btn" id="homeSay" aria-live="polite"></button>
     <div id="nudgeBox"></div>
-    <button class="say-btn tip" id="homeSay" aria-live="polite"></button>
 
-    <section class="block" aria-labelledby="hGoals">
-      <div class="h2-row"><h2 class="h2" id="hGoals">Цели</h2><button class="link" data-go="goals" id="goalsAll" aria-label="Все цели">Все</button></div>
-      <div class="goal-strip" id="goalStrip"></div>
+    <section class="card" aria-labelledby="heroLabel">
+      <div class="bal-top"><span class="cap" id="heroLabel">Баланс</span><button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button></div>
+      <div class="bal-sum" id="heroSum"></div>
     </section>
+
+    <div class="card pay-next" id="payNext" hidden></div>
+
+    <div class="tiles" id="tiles">
+      <div class="card tile inc"><small><i data-ic="down"></i><span>Пришло</span></small><b id="sumInc"></b><small class="mo" id="tileIncL"></small></div>
+      <div class="card tile exp"><small><i data-ic="up"></i><span>Потрачено</span></small><b id="sumExp"></b><small class="mo" id="tileExpL"></small></div>
+    </div>
+
+    <form class="qadd" id="qaForm" autocomplete="off">
+      <input id="qaInput" type="text" placeholder="Скажи или напиши: вчера такси 12" aria-label="Быстрая запись: скажи или напиши">
+      <button type="submit" class="qa-go" id="qaGo" aria-label="Записать" hidden><i data-ic="check"></i></button>
+      <button type="button" class="qa-mic" id="qaMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
+    </form>
 
     <section class="block" aria-labelledby="hRecent">
-      <div class="h2-row"><h2 class="h2" id="hRecent">Недавние</h2><button class="link" data-go="ops" aria-label="Вся история">Все</button></div>
+      <div class="h2-row"><h2 class="h2" id="hRecent">Последние операции</h2><button class="link" data-go="ops" aria-label="Вся история">Все</button></div>
       <div id="recentList"></div>
     </section>
   </section>
@@ -81,17 +67,17 @@
       <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
       <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
     </div>
-    <div id="statNudge"></div>
-    <div class="say-wrap" id="statSay"></div>
     <div class="card" id="catCard"></div>
+    <div class="card" id="catList"></div>
+    <div class="say-wrap" id="statSay"></div>
     <div id="insights"></div>
     <div class="card" id="dayCard"></div>
-    <div class="card" id="catList"></div>
   </section>
 
   <!-- ПОМОЩНИК -->
   <section class="screen chat" id="s-chat" data-screen="chat" aria-label="Помощник" hidden>
     <header class="hdr chat-hdr">
+      <button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button>
       <div class="chat-who"><span class="chat-av" id="chatAv" aria-hidden="true"></span><div><h1 class="title">Помощник</h1><small>Фин считает и подсказывает</small></div></div>
       <button class="icon-btn sm" id="chatClear" type="button" aria-label="Очистить переписку"><i data-ic="trash"></i></button>
     </header>
@@ -117,8 +103,14 @@
 
   <!-- ЦЕЛИ -->
   <section class="screen" id="s-goals" data-screen="goals" aria-label="Цели" hidden>
-    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Цели</h1><button class="pill-btn" id="goalNew"><i data-ic="plus"></i><span>Новая</span></button></header>
+    <header class="hdr"><h1 class="title">Цели</h1><button class="pill-btn" id="goalNew"><i data-ic="plus"></i><span>Новая</span></button></header>
     <div id="goalsBody"></div>
+  </section>
+
+  <!-- ОБЯЗАТЕЛЬНЫЕ ПЛАТЕЖИ: отдельный экран, открывается из Профиля и с плашки на Главной -->
+  <section class="screen" id="s-pay" data-screen="pay" aria-label="Обязательные платежи" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Платежи</h1><button class="pill-btn" type="button" data-newpay><i data-ic="plus"></i><span>Добавить</span></button></header>
+    <div id="payBody"></div>
   </section>
 
   <!-- ПРОФИЛЬ -->
@@ -127,13 +119,12 @@
     <div class="acct" id="acctBox">
       <div class="acct-m" id="acctMascot" aria-hidden="true"></div>
       <div class="acct-t"><b id="acctName">Профиль</b><span id="acctSub"></span></div>
-      <span class="badge-plus" id="acctPlus" hidden><i data-ic="crown"></i>Плюс</span>
+      <span class="badge-plus" id="acctPlus" hidden><i data-ic="check"></i>Навсегда</span>
     </div>
-
-    <button class="plus-card" id="plusCard" type="button">
-      <span class="pc-ic" aria-hidden="true"><i data-ic="crown"></i></span>
-      <span class="pc-t"><b id="plusTitle">Фин Плюс</b><small id="plusSub">7 дней бесплатно</small></span>
-      <span class="pc-go" id="plusGo">Попробовать</span>
+    <button class="login-card" id="loginCard" type="button" hidden>
+      <span class="pc-ic" aria-hidden="true"><i data-ic="cloud"></i></span>
+      <span class="pc-t"><b>Войти</b><small>Чтобы данные были на любом телефоне</small></span>
+      <span class="pc-go">Войти</span>
     </button>
 
     <div class="grp-t">Аккаунт</div>
@@ -142,28 +133,31 @@
       <button class="row" type="button" data-plate="email" id="plEmail"><span class="rw-ic" aria-hidden="true"><i data-ic="mail"></i></span><span class="rw-t"><b>Почта</b><small></small></span><span class="rw-r"></span></button>
     </div>
 
+    <div class="grp-t">Деньги</div>
+    <div class="grp">
+      <button class="row" type="button" data-go-pay id="plPay"><span class="rw-ic" aria-hidden="true"><i data-ic="calendar"></i></span><span class="rw-t"><b>Обязательные платежи</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-plate="balance" id="plBalance"><span class="rw-ic" aria-hidden="true"><i data-ic="cash"></i></span><span class="rw-t"><b>Стартовый баланс</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+
     <div class="grp-t">Быстрая запись</div>
     <div class="grp">
       <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджет и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-    </div>
-
-    <div class="grp-t">Праздники</div>
-    <div class="grp">
       <button class="row" type="button" data-plate="fest" id="plFest"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>Праздники и подарки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
-    <div class="grp-t">Подсказки Фина</div>
+    <div class="grp-t">Фин</div>
     <div class="grp">
       <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Подсказывать о привычках</b><small></small></span><span class="sw-t" aria-checked="true"></span></button>
       <button class="row" type="button" id="plNudgeCats" data-plate="nudge"><span class="rw-ic" aria-hidden="true"><i data-ic="grid"></i></span><span class="rw-t"><b>По каким категориям</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-go="chat"><span class="rw-ic" aria-hidden="true"><i data-ic="chat"></i></span><span class="rw-t"><b>Спросить Фина</b><small>Сводка, чеки и выписки</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
-    <div class="grp-t">Основное</div>
+    <div class="grp-t">Данные</div>
     <div class="grp">
-      <button class="row" type="button" data-plate="balance" id="plBalance"><span class="rw-ic" aria-hidden="true"><i data-ic="cash"></i></span><span class="rw-t"><b>Стартовый баланс</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-plate="data" id="plData"><span class="rw-ic" aria-hidden="true"><i data-ic="cloud"></i></span><span class="rw-t"><b>Экспорт и импорт</b><small>Копия данных</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-plate="data" id="plData"><span class="rw-ic" aria-hidden="true"><i data-ic="file"></i></span><span class="rw-t"><b>Экспорт и импорт</b><small>Копия данных файлом</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" id="plPlus"><span class="rw-ic" aria-hidden="true"><i data-ic="crown"></i></span><span class="rw-t"><b id="plusTitle">Фин Навсегда</b><small id="plusSub"></small></span><span class="rw-r" id="plusGo"><i data-ic="right"></i></span></button>
     </div>
 
     <button class="btn ghost wide out" id="btnSignOut" type="button">Выйти</button>
@@ -175,11 +169,10 @@
   <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-ic="home"></i></span><span class="nl">Главная</span></button>
   <button class="nav-b" data-tab="stats"><span class="np"><i data-ic="chart"></i></span><span class="nl">Аналитика</span></button>
   <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-ic="plus"></i></button></span>
-  <button class="nav-b" data-tab="chat"><span class="np"><i data-ic="chat"></i></span><span class="nl">Помощник</span></button>
+  <button class="nav-b" data-tab="goals"><span class="np"><i data-ic="goal"></i></span><span class="nl">Цели</span></button>
   <button class="nav-b" data-tab="acc"><span class="np"><i data-ic="person"></i></span><span class="nl">Профиль</span></button>
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-<div id="fx" class="fx" aria-hidden="true"></div>
 
 <!-- Запись -->
 <div class="layer" id="lyTx" hidden>
@@ -226,16 +219,16 @@
   </div>
 </div>
 
-<!-- Черновик: несколько записей -->
+<!-- Всё верно? Черновик после голоса или быстрой записи, любую строку можно изменить -->
 <div class="layer" id="lyDraft" hidden>
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="draftTitle">
     <div class="grab" aria-hidden="true"></div>
     <div class="sheet-head"><h2 id="draftTitle">Всё верно?</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
-    <p class="note top0">Убери лишнее. Остальное сохраню по кнопке ниже.</p>
+    <p class="note top0">Нажми на строку, чтобы изменить. Крестик убирает лишнее.</p>
     <div id="draftList"></div>
     <div class="draft-sum" id="draftSum"></div>
-    <button class="btn primary wide" id="draftOk">Сохранить всё</button>
+    <button class="btn primary wide" id="draftOk">Всё верно</button>
     <button class="btn ghost wide" id="draftCancel" type="button">Отмена</button>
   </div>
 </div>
@@ -328,8 +321,34 @@
   <div class="scrim" data-close></div>
   <div class="sheet tall plus-sheet" role="dialog" aria-modal="true" aria-labelledby="plusSheetTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="plusSheetTitle">Фин Плюс</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="sheet-head"><h2 id="plusSheetTitle">Фин Навсегда</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <div id="plusBody"></div>
+  </div>
+</div>
+
+<!-- Обязательный платёж: создание и правка (одно окно) -->
+<div class="layer" id="lyPay" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="payHead">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="payHead">Новый платёж</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <form id="payForm" novalidate>
+      <div class="chips scroll" id="payPresets" role="group" aria-label="Быстрый выбор названия"></div>
+      <label class="field"><input id="payName" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Название, например аренда</span></label>
+      <div class="bal-row" style="margin-top:12px">
+        <label class="field unit"><input id="payAmount" type="text" inputmode="decimal" placeholder=" " autocomplete="off"><span>Сумма</span><span class="u" id="payCur"></span></label>
+        <label class="field"><input id="payDay" type="text" inputmode="numeric" maxlength="2" placeholder=" " autocomplete="off"><span>День месяца</span></label>
+      </div>
+      <div class="fl">Категория</div>
+      <div class="cat-grid" id="payCats" role="radiogroup" aria-label="Категория"></div>
+      <div class="fl">Напомнить</div>
+      <div class="chips" id="payRemind" role="radiogroup" aria-label="Напоминание"></div>
+      <label class="field t" id="payTimeF" hidden><input id="payTime" type="time" value="10:00"><span>Во сколько</span></label>
+      <div class="msg err" id="payErr" role="alert" hidden></div>
+      <button class="btn primary wide" type="submit" id="paySave">Сохранить</button>
+      <button class="btn soft wide" type="button" id="payMark" hidden>Отметить оплаченным</button>
+      <button class="btn danger wide" type="button" id="payDelete" hidden>Удалить платёж</button>
+    </form>
   </div>
 </div>
 
@@ -356,6 +375,7 @@
 <script src="js/goals.js"></script>
 <script src="js/nudges.js"></script>
 <script src="js/events.js"></script>
+<script src="js/recurring.js"></script>
 <script src="js/importers.js"></script>
 <script src="js/brain.js"></script>
 <script src="js/cloud.js"></script>

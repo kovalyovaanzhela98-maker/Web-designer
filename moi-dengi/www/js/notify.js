@@ -80,6 +80,22 @@
     } catch (e) { return { ok: false, reason: 'fail' }; }
   }
 
+  /* Обязательные платежи: уведомления с номерами 1000…1479. Только для платежей с включённым напоминанием, оплаченные месяцы пропускаем */
+  async function applyPayments(list, money) {
+    const L = plug('LocalNotifications'); if (!L) return { ok: false, reason: 'web' };
+    try {
+      const pend = await L.getPending();
+      const mine = (pend.notifications || []).filter(x => x.id >= 1000 && x.id < 1500);
+      if (mine.length) await L.cancel({ notifications: mine.map(x => ({ id: x.id })) });
+      const items = MD.rec.notifications(list || [], new Date(), money);
+      if (!items.length) return { ok: true };
+      if (!(await ensurePermission())) return { ok: false, reason: 'denied' };
+      await L.createChannel({ id: 'fin_pay', name: 'Обязательные платежи', description: 'Напоминание записать обязательный платёж', importance: 3, visibility: 1 });
+      await L.schedule({ notifications: items.map(i => ({ id: i.id, title: i.title, body: i.body, schedule: { at: i.at, allowWhileIdle: true }, channelId: 'fin_pay', extra: { pay: i.pid }, smallIcon: 'ic_stat_fin', iconColor: '#4F6F34' })) });
+      return { ok: true };
+    } catch (e) { return { ok: false, reason: 'fail' }; }
+  }
+
   function kindOfUrl(url) {
     const m = String(url || '').match(/^fin:\/\/add\/(expense|income|voice)/);
     return m ? m[1] : null;
@@ -91,6 +107,7 @@
     if (L) {
       L.addListener('localNotificationActionPerformed', e => {
         const id = e && e.actionId;
+        if (e && e.notification && e.notification.extra && e.notification.extra.pay) { onAction('pay'); return; }
         onAction(id === 'income' ? 'income' : id === 'voice' ? 'voice' : 'expense');
       });
     }
@@ -104,6 +121,6 @@
     if (c.quick) { const F = plug('FinNative'); if (F) F.setQuickPin({ on: true }).catch(() => {}); }
   }
 
-  const api = { cfg, save, apply, applyEvents, setQuick, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
+  const api = { cfg, save, apply, applyEvents, applyPayments, setQuick, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
   MD.notify = api;
 })(typeof window !== 'undefined' ? window : globalThis);

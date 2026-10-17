@@ -240,7 +240,7 @@ moto: '&lt;path d="M…"/&gt;&lt;circle class="a" cx="12" cy="12" r="4"/&gt;',</
     <h3>Структура</h3>
     <pre><code>moi-dengi/
   www/tokens.css      токены: цвет, шрифты, отступы, радиусы
-  www/style.css       компоненты
+  www/app.css         компоненты и экраны
   www/js/icons.js     иконки
   www/js/mascot.js    Фин и его позы
   www/img/fin/        картинки Фина (PNG)

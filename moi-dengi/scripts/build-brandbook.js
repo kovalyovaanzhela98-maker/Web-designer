@@ -5,7 +5,7 @@ const fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..'), www = path.join(root, 'www'), bb = path.join(root, 'brandbook');
 const read = p => fs.readFileSync(p, 'utf8');
 const fonts = css => css.replace(/url\(fonts\/([^)]+)\)/g, (m, f) => `url(data:font/woff2;base64,${fs.readFileSync(path.join(www, 'fonts', f)).toString('base64')})`);
-const css = fonts(read(path.join(www, 'tokens.css'))) + '\n' + read(path.join(www, 'style.css')) + '\n' + read(path.join(bb, 'brandbook.css'));
+const css = fonts(read(path.join(www, 'tokens.css'))) + '\n' + read(path.join(www, 'app.css')) + '\n' + read(path.join(bb, 'brandbook.css'));
 const icon = 'data:image/png;base64,' + fs.readFileSync(path.join(www, 'icon.png')).toString('base64');
 const finDir = path.join(www, 'img', 'fin');
 const finData = Object.fromEntries(fs.readdirSync(finDir).filter(f => f.endsWith('.png')).map(f => [f.replace('.png', ''), 'data:image/png;base64,' + fs.readFileSync(path.join(finDir, f)).toString('base64')]));
