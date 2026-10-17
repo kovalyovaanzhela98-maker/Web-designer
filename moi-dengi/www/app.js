@@ -524,7 +524,7 @@ function confirmDlg(title, text, yes = 'Удалить') {
 let toastT = null;
 function toast(msg, actionLabel, action, pose) {
   const t = $('#toast');
-  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, 44)}</span>` : '') + `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
+  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, 28)}</span>` : '') + `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
   if (actionLabel) $('button', t).onclick = () => { t.hidden = true; action(); };
   t.hidden = false;
   clearTimeout(toastT);
