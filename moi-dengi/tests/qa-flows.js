@@ -141,7 +141,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await p.fill('#nameIn', 'Анна'); await p.click('#acctBox'); await sleep(200);
   await p.click('[data-tab=home]'); await sleep(200);
   ok('имя в приветствии', (await p.textContent('#greetTitle')).includes('Анна'));
-  ok('в меню ровно четыре кнопки с плюсом', (await p.$$eval('.nav .nav-b, .nav .nav-add', e => e.length)) === 4);
+  ok('в меню ровно пять кнопки с плюсом', (await p.$$eval('.nav .nav-b, .nav .nav-add', e => e.length)) === 5);
   await p.click('#heroSum'); await sleep(250); ok('тап по балансу открывает аналитику', await p.isVisible('#s-stats'));
   await p.click('#s-stats [data-back]'); await sleep(200);
   await p.click('#tiles .hs.exp'); await sleep(250); ok('тап по «Потрачено» открывает аналитику', await p.isVisible('#s-stats'));

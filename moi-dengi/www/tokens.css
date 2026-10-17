@@ -2,36 +2,34 @@
    «Фин» — токены дизайн-системы (единственный источник правды).
    Меняешь значение здесь — меняется всё приложение и брендбук.
    ============================================================ */
-@font-face{font-family:"Wix Madefor Display";font-weight:400 800;font-display:swap;src:url(fonts/wix-madefor-display-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
-@font-face{font-family:"Wix Madefor Display";font-weight:400 800;font-display:swap;src:url(fonts/wix-madefor-display-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:"Golos Text";font-weight:400 900;font-display:swap;src:url(fonts/golos-text-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
-@font-face{font-family:"Golos Text";font-weight:400 900;font-display:swap;src:url(fonts/golos-text-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 
-/* Размеры текста: ровно три. Заголовок экрана, карточка, подпись. */
-/* Размеры текста: ровно три. Заголовок экрана, карточка, подпись. */
+@font-face{font-family:"Manrope";font-weight:200 800;font-display:swap;src:url(fonts/manrope-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Manrope";font-weight:200 800;font-display:swap;src:url(fonts/manrope-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(fonts/inter-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Inter";font-weight:100 900;font-display:swap;src:url(fonts/inter-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
 :root{
-  /* Поверхности и текст. Фон белый, плашки белые с мягкой тенью, поля с обводкой */
-  --bg:#F8F9F7;--surface:#FFFFFF;--float:#FFFFFF;--toast:#1F2A1B;--sheet:#F8F9F7;--text:#16241A;--muted:#566659;--ph:#6B7A6E;
-  --line:#E3E7E1;--field:#EFF2EE;--outline:1px solid #D0D7CF;--card-b:1px solid #E3E7E1;
-  /* Яркий акцент: свежий изумруд и лайм. Кнопки, баланс, активные элементы, прогресс, «+» */
-  --accent:#4B7A34;--accent-d:#34581F;--accent-t:#34581F;--on-accent:#FFFFFF;--lime:#D9E88A;--on-lime:#24300F;
-  --btn:#3A6428;--on-btn:#FFFFFF;--cream:#FFF4D6;--accent-bg:#EAF0DF;
-  /* Весёлые плоские заливки для баннеров и плиток */
-  --tone-mint:#E3EED8;--tone-lime:#E8EFC9;--tone-peach:#F6E4D8;--tone-sky:#DCE9F4;--tone-lilac:#E7E2F3;--tone-sun:#F5EBC8;
-  --on-tone:#16241A;
-  --inc:#4B7A34;--inc-bg:#E3EED8;--inc-t:#34581F;
-  --exp:#D8483F;--exp-bg:#FFE6DF;--exp-t:#B3302A;
-  /* Ряд зелёных и серых для диаграмм: главное темнее, остальное светлее */
-  --r1:#34581F;--r2:#5C8A3C;--r3:#8DB36A;--r4:#B9D0A0;--r5:#C5CCBE;--r6:#DCE0D8;
-  /* Цвета по темам: деньги — зелёный (акцент), платежи — янтарный, копилки — бирюзовый, праздники — коралловый, аналитика — индиго */
-  --c-pay:#B7791F;--c-save:#1F8A96;--c-gift:#D4586A;--c-stat:#5B5BD6;
-  --focus:#3A6428;--scrim:rgba(20,28,12,.45);
-  --font-display:"Wix Madefor Display","Golos Text",system-ui,sans-serif;
-  --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --fs-title:28px;--fs-card:16px;--fs-cap:13px;
-  --r-sm:12px;--r-md:16px;--r-lg:22px;--r-pill:999px;
+  /* Светлая тема: фон белый, плашки #FAFAFA с обводкой 1px, глубина цветом, без теней */
+  --bg:#FFFFFF;--surface:#FAFAFA;--float:#FFFFFF;--toast:#1E1E26;--sheet:#FFFFFF;--text:#1A1A1A;--muted:#5C5C5C;--ph:#767676;
+  --line:#EEEEEE;--field:#F3F3F3;--outline:1px solid #E0E0E0;--card-b:1px solid #EEEEEE;
+  /* Зелёный: деньги и баланс. Синий (интерактив) у «Фина» живёт в копилках */
+  --accent:#2E7D5B;--accent-d:#256249;--accent-t:#256249;--on-accent:#FFFFFF;--lime:#2E7D5B;--on-lime:#FFFFFF;
+  --btn:#2E7D5B;--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#F1F6F3;
+  --tone-mint:#F1F6F3;--tone-lime:#F4F4F4;--tone-peach:#F8F3EE;--tone-sky:#F0F3F8;--tone-lilac:#F2F2F8;--tone-sun:#FAF5EC;
+  --on-tone:#1A1A1A;
+  --inc:#2E7D5B;--inc-bg:#EEF5F1;--inc-t:#256249;
+  --exp:#D2553A;--exp-bg:#FBEEEA;--exp-t:#B5412A;
+  --r1:#2E7D5B;--r2:#C77D2E;--r3:#2F5FA8;--r4:#B85C5C;--r5:#4A4A8A;--r6:#9A9A9A;
+  /* Цвета блоков: платежи — янтарный, копилки — синий, дни рождения — коралловый, аналитика — индиго */
+  --c-pay:#C77D2E;--c-save:#2F5FA8;--c-gift:#B85C5C;--c-stat:#4A4A8A;
+  --focus:#2E7D5B;--scrim:rgba(10,10,15,.4);
+  --font-display:"Manrope","Inter",system-ui,sans-serif;
+  --font-text:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fs-big:32px;--fs-title:28px;--fs-card:16px;--fs-cap:13px;
+  --w-body:300;--w-cap:350;--w-label:500;--w-strong:600;
+  --r-sm:10px;--r-md:12px;--r-lg:16px;--r-pill:999px;
   --gap:16px;--pad:16px;
-  --shadow:0 1px 2px rgba(20,40,25,.05);--shadow-2:0 1px 3px rgba(0,0,0,.08);
+  --shadow:none;--shadow-2:none;
   --ease:cubic-bezier(.2,.8,.2,1);--dur:.18s;
   --nav-h:80px;
   --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
@@ -40,33 +38,33 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0F140D;--surface:#1B2318;--float:#242E20;--toast:#2D382A;--sheet:#11170F;--card-b:1px solid rgba(255,255,255,.09);--text:#EEF3E6;--muted:#A9B5A0;--ph:#97A38D;
-    --line:rgba(255,255,255,.1);--field:#242E20;--outline:1px solid rgba(255,255,255,.17);
-    --accent:#6B9446;--accent-d:#8FB66A;--accent-t:#A5C783;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
-    --btn:#86AD5E;--on-btn:#14200A;--cream:#FFF4D6;--accent-bg:#232E17;
-    --tone-mint:#232E17;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
-    --on-tone:#EDF3E8;
-    --inc:#8DBE5B;--inc-bg:#232E17;--inc-t:#B4D985;
-    --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --r1:#A3CF6E;--r2:#7FAF4E;--r3:#5C8A3C;--r4:#6F7F5C;--r5:#566049;--r6:#3E4733;
-    --c-pay:#E0A94F;--c-save:#5FC0CC;--c-gift:#F0909C;--c-stat:#9C9CF2;
-    --focus:#86AD5E;--scrim:rgba(0,0,0,.6);
-    --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
+    --bg:#0A0A0F;--surface:#14141A;--float:#1E1E26;--toast:#1E1E26;--sheet:#14141A;--card-b:1px solid #22222A;--text:#ECECEF;--muted:#A3A3AE;--ph:#8E8E99;
+    --line:#22222A;--field:#1E1E26;--outline:1px solid #2E2E38;
+    --accent:#3A8F6B;--accent-d:#6DBF9A;--accent-t:#6DBF9A;--on-accent:#FFFFFF;--lime:#3A8F6B;--on-lime:#FFFFFF;
+    --btn:#3A8F6B;--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#17211D;
+    --tone-mint:#17211D;--tone-lime:#1B1B22;--tone-peach:#221D1B;--tone-sky:#181D26;--tone-lilac:#1C1C27;--tone-sun:#221E17;
+    --on-tone:#ECECEF;
+    --inc:#4FA583;--inc-bg:#17211D;--inc-t:#7CC7A5;
+    --exp:#D9806A;--exp-bg:#26191A;--exp-t:#E69A87;
+    --r1:#3A8F6B;--r2:#B88746;--r3:#5A81BD;--r4:#C07878;--r5:#8585C4;--r6:#6E6E7A;
+    --c-pay:#B88746;--c-save:#6D8FC8;--c-gift:#C07878;--c-stat:#8F8FD0;
+    --focus:#3A8F6B;--scrim:rgba(0,0,0,.6);
+    --shadow:none;--shadow-2:none;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-    --bg:#0F140D;--surface:#1B2318;--float:#242E20;--toast:#2D382A;--sheet:#11170F;--card-b:1px solid rgba(255,255,255,.09);--text:#EEF3E6;--muted:#A9B5A0;--ph:#97A38D;
-    --line:rgba(255,255,255,.1);--field:#242E20;--outline:1px solid rgba(255,255,255,.17);
-    --accent:#6B9446;--accent-d:#8FB66A;--accent-t:#A5C783;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
-    --btn:#86AD5E;--on-btn:#14200A;--cream:#FFF4D6;--accent-bg:#232E17;
-    --tone-mint:#232E17;--tone-lime:#2C3A15;--tone-peach:#3F2A22;--tone-sky:#1D3047;--tone-lilac:#2E2842;--tone-sun:#3B3315;
-    --on-tone:#EDF3E8;
-    --inc:#8DBE5B;--inc-bg:#232E17;--inc-t:#B4D985;
-    --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --r1:#A3CF6E;--r2:#7FAF4E;--r3:#5C8A3C;--r4:#6F7F5C;--r5:#566049;--r6:#3E4733;
-    --c-pay:#E0A94F;--c-save:#5FC0CC;--c-gift:#F0909C;--c-stat:#9C9CF2;
-    --focus:#86AD5E;--scrim:rgba(0,0,0,.6);
-    --shadow:0 1px 3px rgba(0,0,0,.45);--shadow-2:0 1px 3px rgba(0,0,0,.5);
+    --bg:#0A0A0F;--surface:#14141A;--float:#1E1E26;--toast:#1E1E26;--sheet:#14141A;--card-b:1px solid #22222A;--text:#ECECEF;--muted:#A3A3AE;--ph:#8E8E99;
+    --line:#22222A;--field:#1E1E26;--outline:1px solid #2E2E38;
+    --accent:#3A8F6B;--accent-d:#6DBF9A;--accent-t:#6DBF9A;--on-accent:#FFFFFF;--lime:#3A8F6B;--on-lime:#FFFFFF;
+    --btn:#3A8F6B;--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#17211D;
+    --tone-mint:#17211D;--tone-lime:#1B1B22;--tone-peach:#221D1B;--tone-sky:#181D26;--tone-lilac:#1C1C27;--tone-sun:#221E17;
+    --on-tone:#ECECEF;
+    --inc:#4FA583;--inc-bg:#17211D;--inc-t:#7CC7A5;
+    --exp:#D9806A;--exp-bg:#26191A;--exp-t:#E69A87;
+    --r1:#3A8F6B;--r2:#B88746;--r3:#5A81BD;--r4:#C07878;--r5:#8585C4;--r6:#6E6E7A;
+    --c-pay:#B88746;--c-save:#6D8FC8;--c-gift:#C07878;--c-stat:#8F8FD0;
+    --focus:#3A8F6B;--scrim:rgba(0,0,0,.6);
+    --shadow:none;--shadow-2:none;
     color-scheme:dark;
 }

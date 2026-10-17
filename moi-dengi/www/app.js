@@ -484,7 +484,12 @@ function renderStats() {
     <svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="График ${word} ${P.word} по ${per.kind === 'year' ? 'месяцам' : P.days > 62 ? 'неделям' : 'дням'}">${grid}${curve}${labels}</svg>`;
   dayCard.hidden = true; dayCard.innerHTML = '';
 
-  catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
+  const hashN = n => { let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
+  const cloud = `<div class="cloud" aria-hidden="false">${rows.slice(0, 8).map(([name, sum], i) => {
+    const h = hashN(name), rot = (h % 25) - 12, dy = (h >> 3) % 9 - 4, col = rampCol(i);
+    return `<button type="button" class="ctag" data-cat="${esc(name)}" style="--rot:${rot}deg;--dy:${dy}px;--tc:${col}">${esc(name)}<b>${Math.round(sum / total * 100)}%</b></button>`;
+  }).join('')}</div>`;
+  catList.innerHTML = `${cloud}<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = [0, 0, rampCol(rows.findIndex(r => r[0] === name))], pc = sum / total * 100;
     return `<li class="${statCat === name ? 'on' : ''}" data-cat="${esc(name)}" role="button" tabindex="0" aria-pressed="${statCat === name}"><div class="cat-top"><span class="dot" style="background:${ci[2]}"></span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span><span class="am">${esc(maskT(fmt(sum)))}</span></div><div class="bar"><i style="--c:${ci[2]};width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
   }).join('')}</ul>`;
@@ -496,7 +501,7 @@ function showTab(name, fromPop) {
   if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
   tab = name;
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
-  const navName = name === 'ops' || name === 'stats' ? 'home' : name === 'chat' ? 'acc' : name === 'pay' ? payFrom : name;
+  const navName = name === 'ops' ? 'home' : name === 'chat' ? 'acc' : name === 'pay' ? payFrom : name;
   $$('.nav-b').forEach(b => { const on = b.dataset.tab === navName; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); const i = $('i[data-ic]', b); if (i) i.innerHTML = on ? MD.iconFill(i.dataset.ic) : icon(i.dataset.ic); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
