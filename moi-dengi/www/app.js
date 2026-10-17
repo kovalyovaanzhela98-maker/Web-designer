@@ -328,7 +328,6 @@ function renderHome() {
   $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
   $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
   if (MD.notify.supported()) MD.notify.pushSummary({ balance: hide ? '••••' : money(total), flow: hide ? '' : `+${fmt(inc)}  −${fmt(exp)}`, month: MONTHS[ym.m].toLowerCase() });
-  { const pose = !state.tx.length ? 'hello' : inc > 0 && exp > inc ? 'love' : inc > 0 && exp / inc > 0.85 ? 'think' : inc > 0 && exp / inc < 0.5 ? 'joy' : exp === 0 ? 'happy' : 'rest', el = $('#heroFin'); if (el && el.dataset.pose !== pose) { el.dataset.pose = pose; el.innerHTML = MD.mascot(pose, 84); } }
   renderPays();
   renderGoalsHome();
   renderFestHome();
