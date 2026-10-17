@@ -1044,8 +1044,9 @@ function renderAccount() {
   $('#setFoot').textContent = cloud.enabled ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';
   $('#acctMascot').innerHTML = MD.mascot('happy', 56);
   const on = cloud.enabled && me;
-  $('#linkCard').hidden = !on;
+  $('#linkCard').hidden = false;
   $('#btnSignOut').hidden = !on;
+  $('#linkNote').hidden = !on;
   if (on) {
     $('#acctName').textContent = me.email || me.phone || me.name || 'Мой профиль';
     $('#acctSub').textContent = 'Данные синхронизируются';
@@ -1056,6 +1057,8 @@ function renderAccount() {
   } else {
     $('#acctName').textContent = 'Ты без входа';
     $('#acctSub').textContent = 'Данные только на этом телефоне.';
+    $('#linkPhone').textContent = 'Появится после входа'; $('#linkEmail').textContent = 'Появится после входа';
+    $('#linkPhoneBtn').hidden = true; $('#linkEmailBtn').hidden = true;
   }
 }
 
