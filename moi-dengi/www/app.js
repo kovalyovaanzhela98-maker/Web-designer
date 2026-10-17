@@ -316,6 +316,7 @@ function renderHome() {
   $('#tileIncL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`; $('#tileExpL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`;
   $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
   $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
+  if (MD.notify.supported()) MD.notify.pushSummary({ balance: hide ? '••••' : money(total), flow: hide ? '' : `+${fmt(inc)}  −${fmt(exp)}`, month: MONTHS[now0.getMonth()].toLowerCase() });
   renderPays();
   renderGoalsHome();
   renderFestHome();
@@ -1694,15 +1695,12 @@ function renderPanel(err) {
     html += e;
   } else if (P.kind === 'quick') {
     const c = MD.notify.cfg(), nat = MD.notify.supported();
-    say = ['hello', 'Записывай, не открывая приложение<small>Виджет, плитка в шторке и кнопки на экране блокировки.</small>'];
+    say = ['hello', 'Записывай, не открывая приложение'];
     html = `<div class="grp flat"><button class="row" type="button" data-pn="quick-toggle" role="switch" aria-checked="${c.quick}" ${nat ? '' : 'disabled'}><span class="rw-ic" aria-hidden="true"><i data-ic="lock"></i></span><span class="rw-t"><b>Кнопки на экране блокировки</b><small>${nat ? 'Расход, Доход, Голосом' : 'Работает только в приложении'}</small></span><span class="sw-t" aria-checked="${c.quick}"></span></button></div>
-      <div class="fl">Как добавить</div>
-      <ol class="step-list">
-        <li><b>Виджет.</b> Удерживай пустое место на главном экране, выбери «Виджеты», найди «Фин».</li>
-        <li><b>Плитка.</b> Потяни шторку вниз, нажми карандаш и перетащи «Запись в Фин».</li>
-        <li><b>Экран блокировки.</b> Включи переключатель выше. Там, где есть виджеты на экране блокировки (Samsung One UI 7, Android 16), добавь тот же виджет «Фин».</li>
-      </ol>
-      <div class="note">С заблокированного экрана Фин откроется после разблокировки.</div>${e}`;
+      <div class="fl">Виджет на главный экран</div>
+      <div class="wsel">${[['small', 'Малый', '2×1', 'Одна кнопка записи'], ['medium', 'Средний', '4×1', 'Расход, доход, голос'], ['large', 'Большой', '4×2', 'Баланс и кнопки']].map(w => `<button class="wopt" type="button" data-pn="widget:${w[0]}" ${nat ? '' : 'disabled'}><span class="wpv wpv-${w[0]}" aria-hidden="true"></span><b>${w[1]}</b><small>${w[2]}</small></button>`).join('')}</div>
+      <div class="note">Нажми размер, и телефон предложит поставить виджет.</div>
+      ${e}`;
   } else if (P.kind === 'data') {
     html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей, целей и платежей одним файлом.</small>${pnBtn('exp-file', 'Сохранить в файл', 'soft')}</div>
       <div class="pn-sec"><b>Импорт</b><small>Выбери файл с копией. Текущие данные заменятся, а вернуть их можно сразу после.</small>${pnBtn('imp-file', 'Выбрать файл', 'soft')}<input id="pnFile" type="file" accept=".json,application/json,text/plain" hidden>${e}</div>`;
@@ -1753,6 +1751,11 @@ $('#linkBody').addEventListener('click', async ev => {
       if (i >= 0) { if (c.days.length > 1) c.days.splice(i, 1); } else c.days.push(d);
       c.days.sort(); MD.notify.save(c); MD.notify.apply(); renderPanel();
     });
+  }
+  if (a.startsWith('widget:')) {
+    const r = await MD.notify.pinWidget(a.slice(7));
+    toast(r.ok ? 'Подтверди добавление на экране телефона' : 'Не получилось добавить сам. Удерживай пустое место на главном экране, «Виджеты», «Фин»', null, null, r.ok ? 'happy' : 'oops');
+    return;
   }
   if (a === 'quick-toggle') {
     const c = MD.notify.cfg(), want = !c.quick;

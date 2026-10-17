@@ -5,53 +5,71 @@
     android:background="@drawable/fin_widget_bg"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="8dp">
-
-    <TextView
-        android:id="@+id/w_logo"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:gravity="center"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:text="Фин"
-        android:textColor="#3E5C2B"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/w_expense"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="6dp"
-        android:layout_weight="1"
-        android:background="@drawable/fin_btn_exp"
-        android:gravity="center"
-        android:text="− Расход"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/w_income"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="6dp"
-        android:layout_weight="1"
-        android:background="@drawable/fin_btn_inc"
-        android:gravity="center"
-        android:text="+ Доход"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+    android:padding="10dp">
 
     <ImageView
-        android:id="@+id/w_voice"
+        android:id="@+id/w_logo"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="@drawable/fin_btn_voice"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="Фин"
+        android:src="@drawable/fin_logo" />
+    <LinearLayout
+        android:id="@+id/w_expense"
+        android:layout_width="0dp"
+        android:layout_height="44dp"
+        android:layout_weight="1"
+        android:background="@drawable/fin_btn_prim"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_w_minus_on" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="Расход"
+            android:textColor="@color/fin_btn_on"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/w_income"
+        android:layout_width="0dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:background="@drawable/fin_btn_soft"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_w_plus_soft" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="Доход"
+            android:textColor="@color/fin_btn_soft_text"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/w_voice"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/fin_btn_soft"
         android:contentDescription="Голосом"
-        android:padding="10dp"
-        android:src="@drawable/ic_mic" />
+        android:padding="11dp"
+        android:src="@drawable/ic_w_mic"
+        android:layout_marginStart="8dp" />
 </LinearLayout>

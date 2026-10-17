@@ -43,7 +43,7 @@
       const list = [];
       c.times.forEach((t, ti) => {
         const [h, m] = t.split(':').map(Number);
-        const base = { title: 'Фин', body: PHRASES[ti % PHRASES.length], channelId: 'fin_remind', smallIcon: 'ic_stat_fin', iconColor: '#4F6F34' };
+        const base = { title: 'Фин', body: PHRASES[ti % PHRASES.length], channelId: 'fin_remind', smallIcon: 'ic_stat_fin', iconColor: '#3A6428' };
         if (c.days.length >= 7) list.push(Object.assign({ id: 100 + ti * 10, schedule: { on: { hour: h, minute: m }, allowWhileIdle: true } }, base));
         else c.days.forEach(d => list.push(Object.assign({ id: 100 + ti * 10 + d, schedule: { on: { weekday: (d % 7) + 1, hour: h, minute: m }, allowWhileIdle: true } }, base)));   // 1 = Пн … 7 = Вс → у Android 1 = воскресенье
       });
@@ -63,6 +63,19 @@
     } catch (e) { c.quick = false; save(c); return { ok: false, reason: 'fail' }; }
   }
 
+  /* Сводка для большого виджета: отправляем, только если она изменилась */
+  let lastSum = '';
+  async function pushSummary(o) {
+    const F = plug('FinNative'); if (!F || !F.setSummary) return;
+    const k = JSON.stringify(o); if (k === lastSum) return; lastSum = k;
+    try { await F.setSummary(o); } catch (_) {}
+  }
+  /* Предложить добавить виджет на главный экран: size = small | medium | large */
+  async function pinWidget(size) {
+    const F = plug('FinNative'); if (!F || !F.pinWidget) return { ok: false, reason: 'web' };
+    try { const r = await F.pinWidget({ size }); return { ok: !!(r && r.ok), reason: r && r.ok ? '' : 'unsupported' }; } catch (_) { return { ok: false, reason: 'fail' }; }
+  }
+
   /* Праздники и подарки: уведомления с номерами 200…299 */
   async function applyEvents(list) {
     const L = plug('LocalNotifications'); if (!L) return { ok: false, reason: 'web' };
@@ -75,7 +88,7 @@
       if (!items.length) return { ok: true };
       if (!(await ensurePermission())) return { ok: false, reason: 'denied' };
       await L.createChannel({ id: 'fin_gifts', name: 'Праздники и подарки', description: 'Напоминание отложить деньги на подарок', importance: 3, visibility: 1 });
-      await L.schedule({ notifications: items.map(i => ({ id: i.id, title: i.title, body: i.body, schedule: i.schedule, channelId: 'fin_gifts', smallIcon: 'ic_stat_fin', iconColor: '#4F6F34' })) });
+      await L.schedule({ notifications: items.map(i => ({ id: i.id, title: i.title, body: i.body, schedule: i.schedule, channelId: 'fin_gifts', smallIcon: 'ic_stat_fin', iconColor: '#3A6428' })) });
       return { ok: true };
     } catch (e) { return { ok: false, reason: 'fail' }; }
   }
@@ -91,7 +104,7 @@
       if (!items.length) return { ok: true };
       if (!(await ensurePermission())) return { ok: false, reason: 'denied' };
       await L.createChannel({ id: 'fin_pay', name: 'Обязательные платежи', description: 'Напоминание записать обязательный платёж', importance: 3, visibility: 1 });
-      await L.schedule({ notifications: items.map(i => ({ id: i.id, title: i.title, body: i.body, schedule: { at: i.at, allowWhileIdle: true }, channelId: 'fin_pay', extra: { pay: i.pid }, smallIcon: 'ic_stat_fin', iconColor: '#4F6F34' })) });
+      await L.schedule({ notifications: items.map(i => ({ id: i.id, title: i.title, body: i.body, schedule: { at: i.at, allowWhileIdle: true }, channelId: 'fin_pay', extra: { pay: i.pid }, smallIcon: 'ic_stat_fin', iconColor: '#3A6428' })) });
       return { ok: true };
     } catch (e) { return { ok: false, reason: 'fail' }; }
   }
@@ -142,6 +155,6 @@
     if (c.quick) { const F = plug('FinNative'); if (F) F.setQuickPin({ on: true }).catch(() => {}); }
   }
 
-  const api = { cfg, save, apply, applyEvents, applyPayments, applyGoals, setQuick, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
+  const api = { cfg, save, apply, applyEvents, applyPayments, applyGoals, setQuick, pushSummary, pinWidget, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
   MD.notify = api;
 })(typeof window !== 'undefined' ? window : globalThis);

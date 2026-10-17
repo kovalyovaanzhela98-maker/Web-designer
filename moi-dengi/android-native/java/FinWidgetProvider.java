@@ -5,7 +5,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.widget.RemoteViews;
 
-/** Виджет «Фин»: три кнопки быстрой записи. Подходит для главного экрана и, где есть, для экрана блокировки. */
+/** Виджет «Фин», средний (4×1): логотип, «Расход», «Доход» и микрофон. Главный экран и экран блокировки, где он поддерживается. */
 public class FinWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {

@@ -1,7 +1,7 @@
         <receiver
             android:name=".FinWidgetProvider"
             android:exported="true"
-            android:label="Фин: быстрая запись">
+            android:label="Фин: средний">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -27,4 +27,28 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".FinWidgetSmall"
+            android:exported="true"
+            android:label="Фин: малый">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fin_widget_small_info" />
+        </receiver>
+
+        <receiver
+            android:name=".FinWidgetLarge"
+            android:exported="true"
+            android:label="Фин: большой">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fin_widget_large_info" />
         </receiver>

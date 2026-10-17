@@ -8,11 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.widget.RemoteViews;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-/** Закреплённое уведомление с кнопками «Расход», «Доход», «Голосом». Видно на экране блокировки. */
+/** Закреплённое уведомление: логотип и кнопки «Расход», «Доход», микрофон. Видно на экране блокировки, баланс не показывает. */
 public final class QuickNotifier {
     private static final String CHANNEL = "fin_quick";
     private static final int ID = 900;
@@ -50,20 +51,24 @@ public final class QuickNotifier {
         }
         int icon = c.getResources().getIdentifier("ic_stat_fin", "drawable", c.getPackageName());
         if (icon == 0) icon = android.R.drawable.ic_menu_add;
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.fin_notif);
+        v.setOnClickPendingIntent(R.id.n_logo, open(c, "expense", 10));
+        v.setOnClickPendingIntent(R.id.n_expense, open(c, "expense", 11));
+        v.setOnClickPendingIntent(R.id.n_income, open(c, "income", 12));
+        v.setOnClickPendingIntent(R.id.n_voice, open(c, "voice", 13));
         NotificationCompat.Builder b = new NotificationCompat.Builder(c, CHANNEL)
                 .setSmallIcon(icon)
                 .setContentTitle("Фин")
                 .setContentText("Запиши трату в одно касание")
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setCustomContentView(v)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
-                .setColor(0xFF4F6F34)
+                .setColor(0xFF3A6428)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentIntent(open(c, "expense", 10))
-                .addAction(0, "Расход", open(c, "expense", 11))
-                .addAction(0, "Доход", open(c, "income", 12))
-                .addAction(0, "Голосом", open(c, "voice", 13));
+                .setContentIntent(open(c, "expense", 10));
         try {
             NotificationManagerCompat.from(c).notify(ID, b.build());
         } catch (SecurityException ignored) {
