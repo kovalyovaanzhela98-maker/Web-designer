@@ -1254,7 +1254,7 @@ const FEST_PRESETS = ['День рождения', 'Новый год', '8 Ма�
 let ev = null;
 const festList = () => state.fest.list;
 const evById = id => festList().find(e => e.id === id);
-function festSave() { save(); MD.notify.applyEvents(festList()); renderAccount(); if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel(); }
+function festSave() { save(); MD.notify.applyEvents(festList()); renderAccount(); renderFestHome(); if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel(); }
 /* Записали подарок: предлагаем внести чей-то праздник, чтобы заранее откладывать деньги */
 function maybeAskFest(items) {
   if (!state.fest.ask || !items.some(i => i.type === 'expense' && i.cat === 'Подарки')) return;
@@ -1319,7 +1319,7 @@ $('#evForm').addEventListener('submit', async e => {
   const i = festList().findIndex(x => x.id === clean.id);
   if (i >= 0) festList()[i] = clean; else festList().push(clean);
   const r = clean.remind.on ? await MD.notify.applyEvents(festList()) : (MD.notify.applyEvents(festList()), { ok: true });
-  save(); closeLayer($('#lyEvent')); ev = null; buzz(15); renderAccount();
+  save(); closeLayer($('#lyEvent')); ev = null; buzz(15); renderAccount(); renderFestHome();
   if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel();
   if (r && r.reason === 'denied') toast('Праздник записан, но уведомления выключены. Включи их в настройках телефона.', null, null, 'oops');
   else toast(clean.remind.on && MD.notify.supported() ? 'Праздник записан, напомню заранее' : 'Праздник записан', null, null, 'happy');
