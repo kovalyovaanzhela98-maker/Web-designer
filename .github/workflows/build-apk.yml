@@ -2,7 +2,7 @@ name: Сборка APK «Фин»
 
 on:
   push:
-    branches: [main, claude/android-moi-dengi-app-xnfffb]
+    branches: [main, claude/android-moi-dengi-app-xnfffb, claude/dengi-app-checklist-677mcj]
     paths: ['moi-dengi/**', '.github/workflows/build-apk.yml']
   workflow_dispatch:
 
