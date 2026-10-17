@@ -1,4 +1,4 @@
-"""Иконка «Мои деньги»: готовая картинка Фина (resources/source/app-icon.png).
+"""Иконка «Фин»: готовая картинка Фина (resources/source/app-icon.png).
 Раскладывает ресурсы Android в resources/android/res: обычная, круглая, адаптивная (передний план + фон)
 и монохромная версия для тематических иконок Android 13+. Запуск: npm run icons"""
 from PIL import Image, ImageDraw, ImageChops, ImageFilter

@@ -2,7 +2,7 @@
   "name": "moi-dengi",
   "version": "1.0.0",
   "private": true,
-  "description": "Мои деньги — личный учёт расходов и доходов",
+  "description": "Фин — личный учёт расходов и доходов",
   "scripts": {
     "prepare:web": "node scripts/prepare.js",
     "serve": "node scripts/prepare.js && node scripts/serve.js",
