@@ -59,10 +59,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await p.click('#toast button'); await sleep(250); ok('вернули', (await S()).tx.length === cnt0);
 
   // ---- 4. аналитика
-  await p.click('[data-tab=stats]'); await sleep(300);
+  await p.click('[data-tab=home]'); await p.click('.gbtn'); await sleep(300);
   for (const k of ['week', 'year', 'range', 'month']) { await p.click(`[data-pk=${k}]`); await sleep(200); ok(`аналитика: период ${k}`, (await p.textContent('#catCard')).length > 5); }
-  await p.click('[data-st=income]'); await sleep(200); ok('аналитика: доходы', (await p.textContent('#catCard')).includes('Br') || true);
-  await p.click('[data-st=expense]'); await sleep(200);
+  await p.click('#s-stats [data-st=income]'); await sleep(200); ok('аналитика: доходы', (await p.textContent('#catCard')).includes('Br') || true);
+  await p.click('#s-stats [data-st=expense]'); await sleep(200);
   await p.click('#catList [data-cat] >> nth=0'); await sleep(200); ok('аналитика: фильтр по категории', await p.isVisible('#catCard svg'));
   await p.click('[data-pshift="-1"]').catch(() => {}); await sleep(150);
 
@@ -75,7 +75,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   // ---- 6. цели: полный цикл
   await p.evaluate(() => MD.app.showTab('goals')); await sleep(250);
   await p.click('#goalNew'); await sleep(300);
-  await p.click('[data-kind="Своя цель"]'); await p.click('[data-qa=kind]'); await sleep(150);
+  await p.click('[data-kind="Своя копилка"]'); await p.click('[data-qa=kind]'); await sleep(150);
   await p.fill('#qText', 'Велосипед'); await p.click('[data-qa=custom]'); await sleep(150);
   await p.fill('#qNum', '600'); await p.click('[data-qa=target]'); await sleep(150);
   await p.click('[data-qa=saved0]'); await sleep(150);
@@ -116,7 +116,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await p.click('[data-theme-pick=dark]'); await sleep(150); ok('тема: тёмная', (await p.getAttribute('html', 'data-theme')) === 'dark');
   await p.click('[data-theme-pick=light]'); ok('тема: светлая', (await p.getAttribute('html', 'data-theme')) === 'light');
   await p.click('[data-theme-pick=auto]'); ok('тема: авто', (await p.getAttribute('html', 'data-theme')) === null);
-  for (const id of ['plBalance', 'plCurrency', 'plRemind', 'plQuick', 'plFest', 'plNudgeCats', 'plData']) { await p.click('#' + id); await sleep(300); const open = await p.isVisible('#lyLink'); ok(`профиль: ${id} открывается`, open || (await p.isVisible('.layer:not([hidden])'))); await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250); }
+  for (const id of ['plCurrency', 'plRemind', 'plQuick', 'plNudgeCats', 'plData']) { await p.click('#' + id); await sleep(300); const open = await p.isVisible('#lyLink'); ok(`профиль: ${id} открывается`, open || (await p.isVisible('.layer:not([hidden])'))); await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250); }
   await p.click('#plNudge'); await sleep(200); s = await S(); ok('подсказки Фина выключены', s.nudge.on === false); await p.click('#plNudge'); await sleep(200);
   await p.click('#plPlus'); await sleep(300); ok('покупка: окно', await p.isVisible('#lyPlus')); await p.click('[data-plus=buy]'); await sleep(500); ok('покупка: «Навсегда» включён', await p.evaluate(() => MD.sub.isPlus()));
   await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close]'); l && l.click(); }); await sleep(250);
@@ -125,7 +125,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   if (lc) { await p.click('#loginCard'); await sleep(300); await p.click('#auth [data-act=google]'); await sleep(900); ok('вход через Google', await p.isVisible('#btnSignOut')); await p.click('#btnSignOut'); await sleep(250); await p.click('#cfYes'); await sleep(700); ok('выход', !(await p.isVisible('#btnSignOut')) || true); }
 
   // ---- 10. помощник
-  await p.click('[data-tab=chat]'); await sleep(250);
+  await p.click('[data-tab=acc]'); await p.evaluate(() => MD.app.showTab('chat')); await sleep(250);
   await p.fill('#chatInput', 'сводка за месяц'); await p.click('#chatSend'); await sleep(1800);
   ok('чат: ответ на «сводка за месяц»', (await p.$$eval('#chatFeed .bm.bot, #chatFeed .cc', e => e.length)) >= 2);
   await p.fill('#chatInput', 'вчера купила молоко за 4 рубля и хлеб за 2'); await p.click('#chatSend'); await sleep(2200);

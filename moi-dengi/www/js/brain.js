@@ -151,11 +151,11 @@
           return { blocks: [T(`Чтобы накопить <em>${esc(M(target))}</em> за ${esc(goalsLib.termLabel(p.months))}, нужно откладывать <em>${esc(M(p.monthly))}</em> в месяц.<small>${verdict}</small>`), { t: 'action', kind: 'newgoal', label: 'Создать цель' }], quick: [] };
         }
       }
-      if (!ctx.goals.length) return { blocks: [T('Целей пока нет. Поставь первую на главном экране: «Новая цель». Я посчитаю, сколько откладывать в месяц.'), { t: 'action', kind: 'newgoal', label: 'Создать цель' }], quick: [] };
+      if (!ctx.goals.length) return { blocks: [T('Копилок пока нет. Заведи первую на главном экране: «Новая копилка». Я посчитаю, сколько откладывать в месяц.'), { t: 'action', kind: 'newgoal', label: 'Создать цель' }], quick: [] };
       const rows = ctx.goals.map(g => ({ l: g.name, v: `${Math.min(100, Math.round(g.saved / g.target * 100))}%`, pct: Math.min(100, Math.round(g.saved / g.target * 100)), color: '#4F6F34', sub: `${M(g.saved)} из ${M(g.target)}` }));
       const g0 = ctx.goals.filter(g => g.saved < g.target)[0];
-      const tail = g0 ? `До «${esc(g0.name)}» осталось <em>${esc(M(r2(g0.target - g0.saved)))}</em>.` : 'Все цели достигнуты.';
-      return { blocks: [T(tail), { t: 'card', title: 'Цели', sub: `${ctx.goals.length} ${plural(ctx.goals.length, 'цель', 'цели', 'целей')}`, rows, bars: true, split: 0 }], quick: ['Сколько можно тратить в день'] };
+      const tail = g0 ? `До «${esc(g0.name)}» осталось <em>${esc(M(r2(g0.target - g0.saved)))}</em>.` : 'Все копилки собраны.';
+      return { blocks: [T(tail), { t: 'card', title: 'Копилки', sub: `${ctx.goals.length} ${plural(ctx.goals.length, 'копилка', 'копилки', 'копилок')}`, rows, bars: true, split: 0 }], quick: ['Сколько можно тратить в день'] };
     };
 
     H.advice = () => {

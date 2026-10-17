@@ -19,17 +19,19 @@
 
   <!-- ГЛАВНАЯ: баланс с итогами месяца, избранные обязательные платежи, «пора отложить», одно наблюдение, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
-    <header class="greet"><h1 class="title" id="greetTitle">Привет</h1></header>
+    <header class="greet"><h1 class="title" id="greetTitle">Привет</h1>
+      <div class="greet-act"><button class="icon-btn gbtn" type="button" data-go="stats" aria-label="Аналитика"><i data-ic="chart"></i></button><button class="avatar-btn" type="button" data-go="acc" id="avatarBtn" aria-label="Профиль"><span id="avatarIn"></span></button></div></header>
 
     <div id="nudgeBox"></div>
 
     <section class="hero" aria-labelledby="heroLabel">
       <div class="hero-deco" aria-hidden="true"></div>
       <div class="hero-top"><span class="hero-label" id="heroLabel">Баланс</span><button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button></div>
-      <div class="hero-sum" id="heroSum"></div>
+      <button class="hero-sum hero-go" id="heroSum" type="button" data-go="stats" aria-label="Открыть аналитику за месяц"></button>
+      <div class="hero-mon"><button class="mb2" type="button" data-hshift="-1" aria-label="Предыдущий месяц"><i data-ic="left"></i></button><span id="heroMon"></span><button class="mb2" type="button" data-hshift="1" aria-label="Следующий месяц"><i data-ic="right"></i></button></div>
       <div class="hero-split" id="tiles">
-        <div class="hs inc"><small><i data-ic="down"></i>Пришло</small><b id="sumInc"></b><span class="mo" id="tileIncL"></span></div>
-        <div class="hs exp"><small><i data-ic="up"></i>Потрачено</small><b id="sumExp"></b><span class="mo" id="tileExpL"></span></div>
+        <button class="hs inc" type="button" data-go="stats" data-st="income"><small><i data-ic="down"></i>Пришло</small><b id="sumInc"></b><span class="mo" id="tileIncL"></span></button>
+        <button class="hs exp" type="button" data-go="stats" data-st="expense"><small><i data-ic="up"></i>Потрачено</small><b id="sumExp"></b><span class="mo" id="tileExpL"></span></button>
       </div>
     </section>
 
@@ -39,16 +41,17 @@
     </section>
 
     <section class="block" id="goalsHome" aria-labelledby="hGoalsH">
-      <div class="h2-row"><h2 class="h2" id="hGoalsH">Цели</h2><button class="link" data-go="goals">Все</button></div>
+      <div class="h2-row"><h2 class="h2" id="hGoalsH">Копилки</h2><button class="link" data-go="goals">Все</button></div>
       <div class="list-card" id="goalsStrip"></div>
     </section>
+
+    <div id="saveCard"></div>
 
     <section class="block" id="festHome" aria-labelledby="hFest">
       <div class="h2-row"><h2 class="h2" id="hFest">Дни рождения</h2></div>
       <div class="pillrow" id="festStrip"></div>
     </section>
 
-    <div id="saveCard"></div>
     <div class="banners" id="banners" aria-label="Наблюдение Фина"></div>
 
     <section class="block" aria-labelledby="hRecent">
@@ -73,7 +76,7 @@
 
   <!-- АНАЛИТИКА -->
   <section class="screen" id="s-stats" data-screen="stats" aria-label="Аналитика" hidden>
-    <header class="hdr"><h1 class="title">Аналитика</h1></header>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Аналитика</h1></header>
     <div class="seg period-seg" role="radiogroup" aria-label="Период">
       <button type="button" role="radio" class="seg-b" data-pk="week" aria-checked="false">Неделя</button>
       <button type="button" role="radio" class="seg-b" data-pk="month" aria-checked="true">Месяц</button>
@@ -120,8 +123,8 @@
   </section>
 
   <!-- ЦЕЛИ -->
-  <section class="screen" id="s-goals" data-screen="goals" aria-label="Цели" hidden>
-    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Цели</h1><button class="pill-btn" id="goalNew"><i data-ic="plus"></i><span>Новая</span></button></header>
+  <section class="screen" id="s-goals" data-screen="goals" aria-label="Копилки" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Копилки</h1><button class="pill-btn" id="goalNew"><i data-ic="plus"></i><span>Новая</span></button></header>
     <div id="goalsBody"></div>
   </section>
 
@@ -146,14 +149,13 @@
 
     <div class="grp-t">Аккаунт</div>
     <div class="grp">
+      <div class="name-row"><label class="field"><input id="nameIn" type="text" maxlength="30" placeholder=" " autocomplete="given-name"><span>Имя</span></label></div>
       <button class="row" type="button" data-plate="phone" id="plPhone"><span class="rw-ic" aria-hidden="true"><i data-ic="phone"></i></span><span class="rw-t"><b>Телефон</b><small></small></span><span class="rw-r"></span></button>
       <button class="row" type="button" data-plate="email" id="plEmail"><span class="rw-ic" aria-hidden="true"><i data-ic="mail"></i></span><span class="rw-t"><b>Почта</b><small></small></span><span class="rw-r"></span></button>
     </div>
 
     <div class="grp-t">Деньги</div>
     <div class="grp">
-      <button class="row" type="button" data-go-pay id="plPay"><span class="rw-ic" aria-hidden="true"><i data-ic="calendar"></i></span><span class="rw-t"><b>Обязательные платежи</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-plate="balance" id="plBalance"><span class="rw-ic" aria-hidden="true"><i data-ic="cash"></i></span><span class="rw-t"><b>Стартовый баланс</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
@@ -161,7 +163,6 @@
     <div class="grp">
       <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджет и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-plate="fest" id="plFest"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>Праздники и подарки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
     <div class="grp-t">Оформление</div>
@@ -194,9 +195,8 @@
 
 <nav class="nav" aria-label="Разделы">
   <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-ic="home"></i></span><span class="nl">Главная</span></button>
-  <button class="nav-b" data-tab="stats"><span class="np"><i data-ic="chart"></i></span><span class="nl">Аналитика</span></button>
+  <button class="nav-b" data-tab="goals"><span class="np"><i data-ic="goal"></i></span><span class="nl">Копилки</span></button>
   <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-ic="plus"></i></button></span>
-  <button class="nav-b" data-tab="chat"><span class="np"><i data-ic="spark"></i></span><span class="nl">Фин</span></button>
   <button class="nav-b" data-tab="acc"><span class="np"><i data-ic="person"></i></span><span class="nl">Профиль</span></button>
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -260,12 +260,12 @@
   </div>
 </div>
 
-<!-- Цель: подробности -->
+<!-- Копилка: подробности -->
 <div class="layer" id="lyGoal" hidden>
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="goalTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="goalTitle">Цель</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="sheet-head"><h2 id="goalTitle">Копилка</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <div id="goalDetail"></div>
   </div>
 </div>
@@ -275,7 +275,7 @@
   <div class="scrim" data-close></div>
   <div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="quizTitle">Новая цель</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="sheet-head"><h2 id="quizTitle">Новая копилка</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <div class="quiz-bar" aria-hidden="true"><i id="quizBar"></i></div>
     <div id="quizBody"></div>
   </div>

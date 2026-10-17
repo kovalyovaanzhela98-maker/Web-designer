@@ -124,7 +124,7 @@
       });
       if (!items.length) return { ok: true };
       if (!(await ensurePermission())) return { ok: false, reason: 'denied' };
-      await L.createChannel({ id: 'fin_goals', name: 'Копилки', description: 'Напоминание отложить деньги на цель', importance: 3, visibility: 1 });
+      await L.createChannel({ id: 'fin_goals', name: 'Копилки', description: 'Напоминание отложить деньги в копилку', importance: 3, visibility: 1 });
       await L.schedule({ notifications: items.map(i => ({ id: i.id, title: i.title, body: i.body, schedule: i.schedule, channelId: 'fin_goals', smallIcon: 'ic_stat_fin', iconColor: '#0E8A4F' })) });
       return { ok: true };
     } catch (e) { return { ok: false, reason: 'fail' }; }

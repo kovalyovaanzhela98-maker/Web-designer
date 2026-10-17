@@ -722,3 +722,52 @@ body.kb .chat-dock{bottom:8px}
 .wpv-small{width:40px;height:20px}
 .wpv-medium{width:56px;height:20px}
 .wpv-large{width:56px;height:40px}
+
+/* ---------- Шапка главной, меню из четырёх кнопок, цвета по темам ---------- */
+.greet{justify-content:space-between;gap:12px}
+.greet .title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.greet-act{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.gbtn{width:44px;height:44px;border-radius:50%;background:var(--surface);border:var(--card-b);color:var(--c-stat)}
+.gbtn svg{width:22px;height:22px}
+.avatar-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-t);border:var(--card-b);font-family:var(--font-display);font-weight:700}
+.avatar-btn svg{width:22px;height:22px}
+.hero-go{display:block;width:100%;text-align:left;color:inherit}
+.hero-mon{display:flex;align-items:center;gap:4px;margin-top:12px;font-weight:600;font-size:var(--fs-cap)}
+.hero-mon span{min-width:0;opacity:.95;text-transform:capitalize}
+.mb2{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.14)}
+.mb2 svg{width:16px;height:16px}
+.hero-split{margin-top:8px}
+button.hs{text-align:left;color:inherit;width:100%}
+.name-row{padding:12px}
+.name-row .field{margin:0}
+/* Меню: четыре кнопки, «+» крупнее и приподнят */
+.nav{grid-template-columns:1fr 1fr 1fr 1fr;overflow:visible}
+.nav-add{width:72px;height:72px;border-radius:24px;margin-top:-30px;box-shadow:0 6px 16px rgba(30,50,20,.28),0 0 0 6px var(--surface)}
+.nav-add svg{width:34px;height:34px}
+.nav-mid{height:100%;align-items:start;padding-top:0}
+/* Цвета тем: иконки, тонкие полоски слева, прогресс. Фоны не заливаем */
+#paysBlock{--tc:var(--c-pay)}#goalsHome{--tc:var(--c-save)}#festHome{--tc:var(--c-gift)}
+#paysBlock .h2,#goalsHome .h2,#festHome .h2{display:flex;align-items:center;gap:8px}
+#paysBlock .h2::before,#goalsHome .h2::before,#festHome .h2::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--tc)}
+.pcard:not(.late):not(.add){border-left:3px solid var(--c-pay)}
+.pcard:not(.late):not(.add) .tx-ic{background:color-mix(in srgb,var(--c-pay) 14%,var(--surface));color:var(--c-pay)}
+.pcard.late{border-left:3px solid var(--exp)}
+.pcard.paid{border-left-color:var(--accent)}
+.pcard.paid .tx-ic{background:var(--accent-bg);color:var(--accent-t)}
+.grow{border-left:3px solid var(--c-save)}
+.grow .goal-pct{color:var(--c-save)}
+.grow .goal-bar{background:color-mix(in srgb,var(--c-save) 16%,var(--field))}
+.grow .goal-bar i{background:var(--c-save)}
+.grow.add{border-left-color:transparent}
+.fpill{border-left:3px solid var(--c-gift)}
+.fp-ic{background:color-mix(in srgb,var(--c-gift) 14%,var(--surface));color:var(--c-gift)}
+.curve-sum,.days{color:var(--c-stat)}
+.save-card{border-left:3px solid var(--c-save);background:var(--surface);border-color:var(--line);border-left-color:var(--c-save)}
+.save-card.due{background:var(--surface);border-color:var(--line);border-left-color:var(--c-save)}
+.pc-ic2{background:color-mix(in srgb,var(--tc,var(--accent)) 14%,var(--surface));color:var(--tc,var(--accent-t))}
+.goal-bar i,.gblock .goal-bar i{background:var(--gc,var(--c-save))}
+/* Тост: плотная тёмная плашка, слева полоска, кнопка «Вернуть» с убывающим фоном; смахивается вправо */
+.toast{background:var(--toast);color:#F2F6EC;border-left:4px solid var(--tstripe,#8FA083);padding:10px 10px 10px 14px;touch-action:pan-y;transition:transform .15s ease-out,opacity .15s}
+.toast button{position:relative;overflow:hidden;min-height:36px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.14);color:#F2F6EC;text-decoration:none;z-index:0}
+.toast button::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(255,255,255,.26);transform-origin:left;animation:tshrink var(--tms,6s) linear forwards}
+@keyframes tshrink{to{transform:scaleX(0)}}

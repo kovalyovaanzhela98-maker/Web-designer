@@ -1,4 +1,4 @@
-/* Сквозная проверка в настоящем браузере (Chromium): знакомство, первая запись до входа, «Всё верно?», удаление с «Вернуть»,
+/* Сквозная проверка в настоящем браузере (Chromium): знакомство, первая запись до входа, «Всё верно?», удаление с «Отмена»,
    обязательные платежи за три тапа, отметка оплаты, предел в 10 платежей и покупка «Навсегда».
    Не входит в `npm test`, потому что нужен Playwright:
      npm i --no-save playwright-core && node tests/e2e.js
@@ -33,7 +33,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('после знакомства Фин показывает тур по экрану', await vis('.tour'));
   await page.click('[data-tour=skip]'); await sleep(200);
   ok('после пропуска: вход не требуется, видна главная', await vis('#s-home') && !(await vis('#auth')));
-  ok('главная: пустое состояние с действием', (await page.textContent('#recentList')).includes('Нажми +') && await vis('#recentList [data-add]'));
+  ok('главная: пустое состояние без лишней кнопки', (await page.textContent('#recentList')).includes('Пока пусто') && !(await vis('#recentList [data-add]')));
   ok('на главной нет голосового ввода (микрофон только в «+»)', !(await page.$('#s-home [data-ic=mic], #qaMic')));
 
   // ---- 2. добавление: 4 действия, кнопка активна только при сумме и категории
@@ -78,21 +78,21 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(4200);
   await page.click('#recentList .tx >> nth=0'); await sleep(250);
   await page.click('#txDelete'); await sleep(250);
-  ok('удалено: тост «Вернуть»', (await page.textContent('#toast')).includes('Вернуть'));
+  ok('удалено: тост «Отмена»', (await page.textContent('#toast')).includes('Отмена'));
   ok('удаление: окно закрыто, диалогов нет', (await openLayers()) === 0);
   await sleep(4800);
-  ok('«Вернуть» живёт больше 5 секунд', await vis('#toast'));
+  ok('«Отмена» живёт больше 5 секунд', await vis('#toast'));
   await sleep(1600);
   ok('и пропадает', !(await vis('#toast')));
   await page.click('#recentList .tx >> nth=0');   // восстановим сценарий: удалим и вернём
   await sleep(200); await page.click('#txDelete'); await sleep(200);
   const before = await page.$$eval('#recentList .tx', e => e.length);
   await page.click('#toast button'); await sleep(250);
-  ok('«Вернуть» возвращает запись', (await page.$$eval('#recentList .tx', e => e.length)) === before + 1);
+  ok('«Отмена» возвращает запись', (await page.$$eval('#recentList .tx', e => e.length)) === before + 1);
 
   // ---- 5. обязательные платежи: три тапа
   await page.click('[data-tab=acc]'); await sleep(150);
-  await page.click('#plPay'); await sleep(200);
+  await page.evaluate(() => MD.app.showTab('pay')); await sleep(200);
   ok('экран платежей пуст с призывом', (await page.textContent('#payBody')).includes('Пока пусто') && await vis('#payBody [data-newpay]'));
   await page.click('[data-newpay] >> nth=0');            // тап 1
   await sleep(200);
@@ -118,7 +118,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('Фин предлагает отметить оплату аренды', /Это оплата «Аренда»\?/.test(t) && t.includes('Отметить'), t);
   await page.click('#toast button'); await sleep(250);
   ok('одно нажатие: платёж закрыт', (await page.textContent('#toast')).includes('Отмечено'));
-  await page.click('[data-tab=acc]'); await page.click('#plPay'); await sleep(200);
+  await page.click('[data-tab=acc]'); await page.evaluate(() => MD.app.showTab('pay')); await sleep(200);
   ok('в списке «Оплачено»', (await page.textContent('#payBody')).includes('Оплачено'));
   // правка: тап по платежу
   await page.click('[data-payedit]'); await sleep(200);

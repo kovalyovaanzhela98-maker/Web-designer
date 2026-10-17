@@ -202,7 +202,7 @@
     });
     $('#chatClear').addEventListener('click', async () => {
       if (!msgs.length) return;
-      if (!(await app.confirmDlg('Очистить переписку?', 'Записи и цели не пострадают.', 'Очистить'))) return;
+      if (!(await app.confirmDlg('Очистить переписку?', 'Записи и копилки не пострадают.', 'Очистить'))) return;
       msgs = []; last = null; greet(); save(); render();
     });
     $('#lyAttach').addEventListener('click', e => {

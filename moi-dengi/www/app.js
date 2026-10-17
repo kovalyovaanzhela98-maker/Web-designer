@@ -60,7 +60,7 @@ const maskT = s => (hide ? MASK : s);
 
 /* ---------- Хранилище ---------- */
 const R = MD.rec;
-const freshState = () => ({ currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState(), fest: MD.events.defaultFest(), rec: R.defaultRec() });
+const freshState = () => ({ name: '', currency: 'BYN', accounts: [], goals: [], tx: [], nudge: MD.nudges.defaultState(), fest: MD.events.defaultFest(), rec: R.defaultRec() });
 let state = freshState();
 let hide = false;
 function load() {
@@ -80,7 +80,8 @@ function save() {
 let cloudUid = null, synced = null, stopListen = null, me = null;
 /* Предпросмотр: пока облако не подключено, профиль показан так, будто вход уже выполнен. Выключить: PREVIEW_ACCOUNT = false */
 const PREVIEW_ACCOUNT = true;
-const previewMe = () => (!cloud.enabled && PREVIEW_ACCOUNT ? { name: 'Анна', phone: '+375 29 123-45-67', phoneLinked: '+375 29 123-45-67', emailLinked: '' } : null);
+const userName = () => (state.name || (me && me.name) || '').trim();
+const previewMe = () => (!cloud.enabled && PREVIEW_ACCOUNT ? { name: '', phone: '+375 29 123-45-67', phoneLinked: '+375 29 123-45-67', emailLinked: '' } : null);
 function pushCloud() {
   if (!cloudUid || !synced) return;
   const ops = cloud.diff(synced, state);
@@ -97,7 +98,7 @@ function applyRemote(r) {
     pushCloud();
     return;
   }
-  const st = sanitize({ currency: r.currency, accounts: r.accounts, goals: r.goals, nudge: r.nudge, fest: r.fest, rec: r.rec, tx: r.tx });
+  const st = sanitize({ name: state.name, currency: r.currency, accounts: r.accounts, goals: r.goals, nudge: r.nudge, fest: r.fest, rec: r.rec, tx: r.tx });
   if (!st) return;
   st.tx.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0)));
   synced = cloud.snapshotOf(st);
@@ -190,7 +191,7 @@ function sanitize(o) {
       log: (Array.isArray(g.log) ? g.log : []).slice(-400).map(x => ({ d: x && x.d, a: parseAmount(x && x.a) })).filter(x => parseYmd(x.d) && x.a > 0).map(x => ({ d: x.d, a: round2(x.a) }))
     });
   }
-  return { currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge), fest: MD.events.sanitize(o.fest), rec: R.sanitize(o.rec, CATS.expense.map(c => c[0])) };
+  return { name: typeof o.name === 'string' ? o.name.replace(/\s+/g, ' ').trim().slice(0, 30) : '', currency, accounts, goals, tx, nudge: MD.nudges.sanitizeState(o.nudge), fest: MD.events.sanitize(o.fest), rec: R.sanitize(o.rec, CATS.expense.map(c => c[0])) };
 }
 
 /* ---------- UI-состояние ---------- */
@@ -205,7 +206,7 @@ const monthKey = (y = ym.y, m = ym.m) => `${y}-${pad(m + 1)}`;
 
 const totalBalance = () => round2(state.accounts.reduce((s, a) => s + accBalance(a), 0));
 function accBalance(a) {
-  let b = a.balance;
+  let b = 0;
   for (const t of state.tx) if (t.acc === a.id) b += t.type === 'income' ? t.amount : -t.amount;
   return round2(b);
 }
@@ -275,7 +276,7 @@ function renderPays() {
 function renderGoalsHome() {
   const el = $('#goalsStrip'), list = state.goals;
   el.innerHTML = list.map(g => `<button class="grow" type="button" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}"><span class="gr-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span><small>${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</small></button>`).join('') +
-    `<button class="grow add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё цель' : 'Новая цель'}</b></button>`;
+    `<button class="grow add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё копилка' : 'Новая копилка'}</b></button>`;
 }
 /* Дни рождения и праздники: ближайшие, одной строкой */
 function renderFestHome() {
@@ -304,19 +305,19 @@ function renderBanners() {
   $('#banners').innerHTML = list.map(b => `<article class="banner tone-${b.tone}"><span class="bi" aria-hidden="true">${icon(b.icon)}</span><b>${esc(b.title)}</b><p>${esc(b.text)}</p></article>`).join('');
 }
 function renderHome() {
-  { const u = me || previewMe(), n = u && u.name; $('#greetTitle').textContent = n ? `Привет, ${n}` : 'Привет'; }
+  { const n = userName(); $('#greetTitle').textContent = n ? `Привет, ${n}` : 'Привет'; $('#avatarIn').innerHTML = n ? esc(n.charAt(0).toUpperCase()) : icon('person'); }
   const total = totalBalance();
   setNum($('#heroSum'), moneyH, total);
   $('#btnEye').innerHTML = icon(hide ? 'eyeoff' : 'eye');
   $('#btnEye').setAttribute('aria-pressed', String(hide));
   $('#btnEye').setAttribute('aria-label', hide ? 'Показать суммы' : 'Скрыть суммы');
 
-  const list = monthTx(now0.getFullYear(), now0.getMonth());
-  const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense');
-  $('#tileIncL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`; $('#tileExpL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`;
+  const list = monthTx(ym.y, ym.m);
+  const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense'), isNow = ym.y === now0.getFullYear() && ym.m === now0.getMonth();
+  $('#heroMon').textContent = isNow ? MONTHS[ym.m] : `${MONTHS[ym.m]} ${ym.y}`; $('#tileIncL').textContent = ''; $('#tileExpL').textContent = '';
   $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
   $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
-  if (MD.notify.supported()) MD.notify.pushSummary({ balance: hide ? '••••' : money(total), flow: hide ? '' : `+${fmt(inc)}  −${fmt(exp)}`, month: MONTHS[now0.getMonth()].toLowerCase() });
+  if (MD.notify.supported()) MD.notify.pushSummary({ balance: hide ? '••••' : money(total), flow: hide ? '' : `+${fmt(inc)}  −${fmt(exp)}`, month: MONTHS[ym.m].toLowerCase() });
   renderPays();
   renderGoalsHome();
   renderFestHome();
@@ -326,7 +327,7 @@ function renderHome() {
   const recent = state.tx.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
     ? `<div class="recent">${recent.map(txRow).join('')}</div>`
-    : emptyBox('Пока пусто', 'Нажми +, чтобы добавить первую трату. Фин всё запишет.', { attr: 'data-add', label: 'Добавить трату' });
+    : emptyBox('Пока пусто', 'Первые записи появятся здесь.');
 }
 
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.ts || 0) - (a.ts || 0));
@@ -486,7 +487,7 @@ let tabPushed = false, payFrom = 'acc';
 function showTab(name, fromPop) {
   tab = name;
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
-  const navName = name === 'ops' ? 'home' : name === 'pay' ? payFrom : name;
+  const navName = name === 'ops' || name === 'stats' ? 'home' : name === 'chat' ? 'acc' : name === 'pay' ? payFrom : name;
   $$('.nav-b').forEach(b => { const on = b.dataset.tab === navName; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); const i = $('i[data-ic]', b); if (i) i.innerHTML = on ? MD.iconFill(i.dataset.ic) : icon(i.dataset.ic); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
@@ -559,6 +560,16 @@ $('#s-stats').addEventListener('click', e => {
   const c = e.target.closest('[data-cat]');
   if (c) { statCat = statCat === c.dataset.cat ? null : c.dataset.cat; buzz(6); renderStats(); }
 });
+document.addEventListener('click', e => { const hs = e.target.closest('[data-hshift]'); if (hs) shiftMonth(Number(hs.dataset.hshift)); });
+{ // свайп по баланс-блоку меняет месяц
+  let sx = null, sy = 0;
+  const hero = document.querySelector('.hero');
+  hero.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  hero.addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) shiftMonth(dx < 0 ? 1 : -1); }, { passive: true });
+}
+/* Имя в профиле: показывается в приветствии на главной */
+$('#nameIn').addEventListener('input', e => { state.name = e.target.value.replace(/\s+/g, ' ').slice(0, 30); save(); renderHome(); });
+$('#nameIn').addEventListener('blur', e => { state.name = state.name.trim(); e.target.value = state.name; save(); renderHome(); renderAccount(); });
 $('#btnEye').addEventListener('click', () => {
   hide = !hide;
   try { localStorage.setItem(HIDE_KEY, hide ? '1' : '0'); } catch (_) {}
@@ -626,15 +637,21 @@ function confirmDlg(title, text, yes = 'Удалить', opts = {}) {
 let toastT = null;
 /* Тост снизу: 4 секунды, с действием («Вернуть», «Отметить») шесть и больше */
 function toast(msg, actionLabel, action, pose, ms) {
-  const t = $('#toast');
+  const t = $('#toast'), dur = ms || (actionLabel ? 6000 : 4000);
   t.hidden = true; void t.offsetWidth;
+  t.style.transform = ''; t.style.opacity = ''; t.style.setProperty('--tms', dur + 'ms');
   t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, msg.length > 60 ? 44 : 30)}</span>` : '') + `<span>${esc(msg)}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
   if (actionLabel) $('button', t).onclick = () => { clearTimeout(toastT); t.hidden = true; action(); };
   t.hidden = false;
   clearTimeout(toastT);
-  toastT = setTimeout(() => { t.hidden = true; }, ms || (actionLabel ? 6000 : 4000));
+  toastT = setTimeout(() => { t.hidden = true; }, dur);
 }
-const undoToast = (msg, undo) => toast(msg, 'Вернуть', undo, null, 6000);
+/* Смахнуть тост вправо */
+{ const t = document.getElementById('toast'); let sx = null, dx = 0;
+  t.addEventListener('touchstart', e => { sx = e.touches[0].clientX; dx = 0; t.style.transition = 'none'; }, { passive: true });
+  t.addEventListener('touchmove', e => { if (sx === null) return; dx = Math.max(0, e.touches[0].clientX - sx); t.style.transform = `translateX(${dx}px)`; t.style.opacity = String(1 - Math.min(1, dx / 220)); }, { passive: true });
+  t.addEventListener('touchend', () => { if (sx === null) return; sx = null; t.style.transition = ''; if (dx > 70) { clearTimeout(toastT); t.hidden = true; } t.style.transform = ''; t.style.opacity = ''; }, { passive: true }); }
+const undoToast = (msg, undo) => toast(msg, 'Отмена', undo, null, 6000);
 const showErr = (el, msg) => { el.textContent = msg; el.hidden = false; };
 const hideErr = el => { el.hidden = true; };
 
@@ -820,7 +837,7 @@ function deleteTx(id) {
   const [gone] = state.tx.splice(i, 1);
   save(); render(); buzz(15);
   nudgeRefresh(true);
-  undoToast('Удалено', () => { state.tx.push(gone); save(); render(); nudgeRefresh(true); });
+  undoToast('Запись удалена', () => { state.tx.push(gone); save(); render(); nudgeRefresh(true); });
 }
 
 // Тап — правка, свайп влево — удаление
@@ -869,7 +886,7 @@ function goalFacts(g) {
   const dl = new Date(g.deadline + 'T00:00:00');
   return { done, left, monthly: done ? 0 : G.perPeriodNow(g, new Date()), dlText: `${dl.getDate()} ${MONTHS_G[dl.getMonth()]} ${dl.getFullYear()}`, over: !done && !pl };
 }
-const goalLeft = g => { const f = goalFacts(g); return f.done ? 'Цель достигнута' : f.over ? `Срок был ${f.dlText}` : `Дедлайн ${f.dlText}`; };
+const goalLeft = g => { const f = goalFacts(g); return f.done ? 'Копилка собрана' : f.over ? `Срок был ${f.dlText}` : `Дедлайн ${f.dlText}`; };
 const goalRows = (g, full) => {
   const f = goalFacts(g);
   return `<span class="goal-sub"><span>${esc(maskT(money(g.saved)))} из ${esc(maskT(money(g.target)))}</span><span>${f.done ? 'Готово' : esc(f.dlText)}</span></span>` +
@@ -878,14 +895,14 @@ const goalRows = (g, full) => {
 function renderGoals() {
   const el = $('#goalsBody'), list = state.goals;
   if (!list.length) {
-    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 140)}</span><h2>Пока пусто</h2><p>Нажми «Новая цель»: Фин спросит, на что копим, посчитает, сколько откладывать в месяц, и скажет, легко это или тяжеловато.</p><button class="btn primary" type="button" data-newgoal>Новая цель</button></div>`;
+    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 140)}</span><h2>Пока пусто</h2><p>Нажми «Новая копилка»: Фин спросит, на что копим, посчитает, сколько откладывать в месяц, и скажет, легко это или тяжеловато.</p><button class="btn primary" type="button" data-newgoal>Новая копилка</button></div>`;
     return;
   }
   const sum = round2(list.reduce((s, g) => s + g.saved, 0)), act = list.filter(g => g.saved < g.target).length;
   el.innerHTML = `<div class="goal-rows">${list.map(g => `<button class="goal" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}">
       <span class="goal-top"><span class="goal-dot" aria-hidden="true"></span><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span>
       <span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span>${goalRows(g)}
-    </button>`).join('')}</div><div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>${act} ${pluralN(act, 'цель', 'цели', 'целей')} в работе</small>`, 64)}</div>`;
+    </button>`).join('')}</div><div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>${act} ${pluralN(act, 'копилка', 'копилки', 'копилок')} в работе</small>`, 64)}</div>`;
 }
 let openGoalId = null;
 const WD_CH = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -910,7 +927,7 @@ function remindBlock(g) {
 }
 function drawGoal(g) {
   const done = g.saved >= g.target, pct = goalPct(g), per = G.perPeriodNow(g, new Date());
-  const say = done ? ['joy', 'Цель достигнута! Можно собираться']
+  const say = done ? ['joy', 'Копилка собрана! Можно собираться']
     : pct >= 50 ? ['happy', `Больше половины пути. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
       : pct > 0 ? ['hello', `Начало положено. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
         : ['think', 'Пока ноль. Отложи первую сумму'];
@@ -925,7 +942,7 @@ function drawGoal(g) {
     </form>`}
     ${goalCalendar(g)}
     ${done ? '' : remindBlock(g)}
-    <button class="btn danger" type="button" id="goalDel">Удалить цель</button>`;
+    <button class="btn danger" type="button" id="goalDel">Удалить копилку</button>`;
   paintIcons(el);
 }
 function openGoal(id) {
@@ -954,7 +971,7 @@ function topUp(g, v) {
   g.saved = round2(g.saved + v); (g.log = g.log || []).push({ d: today(), a: round2(v) });
   save(); render(); buzz(15); afterDataChange();
   const doneNow = !was && g.saved >= g.target;
-  if (doneNow) toast(`Цель достигнута! Собрано ${money(g.target)}`, null, null, 'joy', 6000);
+  if (doneNow) toast(`Копилка собрана! Собрано ${money(g.target)}`, null, null, 'joy', 6000);
   else if (planned > 0 && v > planned * 1.0001) toast(`Ты большой молодец! Отложил на ${money(round2(v - planned))} больше плана. Надеюсь, это не навредит твоим финансам.`, null, null, 'joy', 6500);
   else toast('Отложено', null, null, 'happy');
 }
@@ -985,11 +1002,11 @@ $('#goalDetail').addEventListener('click', e => {
   const i = state.goals.findIndex(x => x.id === openGoalId); if (i < 0) return;
   const [gone] = state.goals.splice(i, 1);
   save(); render(); closeLayer($('#lyGoal'));
-  undoToast('Цель удалена', () => { state.goals.splice(Math.min(i, state.goals.length), 0, gone); save(); render(); });
+  undoToast('Копилка удалена', () => { state.goals.splice(Math.min(i, state.goals.length), 0, gone); save(); render(); });
 });
 
 /* Разговор с Фином: вопросы, план, согласие или уточнения */
-const KINDS = [['Отпуск', 'Билеты, отель'], ['Подушка безопасности', 'Запас на 3–6 месяцев'], ['Техника', 'Телефон, ноутбук'], ['Ремонт', 'Или переезд'], ['Подарок', 'Себе или близким'], ['Своя цель', 'Назову сам']];
+const KINDS = [['Отпуск', 'Билеты, отель'], ['Подушка безопасности', 'Запас на 3–6 месяцев'], ['Техника', 'Телефон, ноутбук'], ['Ремонт', 'Или переезд'], ['Подарок', 'Себе или близким'], ['Своя копилка', 'Назову сам']];
 const STEP_NO = { kind: 1, custom: 1, target: 2, saved: 3, term: 4, free: 5, think: 5, plan: 6, tune: 6, tuneMonthly: 6, tuneTerm: 6, tuneTarget: 6, tuneIncome: 6 };
 let quiz = null;
 function openQuiz() {
@@ -1023,7 +1040,7 @@ function renderQuiz() {
       html = `<div class="kind-grid" role="radiogroup" aria-label="На что копим">${KINDS.map(k => `<button type="button" role="radio" class="kind" data-kind="${esc(k[0])}" aria-checked="${q.pick === k[0]}"><b>${esc(k[0])}</b><small>${esc(k[1])}</small></button>`).join('')}</div>${qBtn('kind', 'Далее', 'primary', !q.pick)}`;
       break;
     case 'custom':
-      say = ['hello', 'Как назовём цель?'];
+      say = ['hello', 'Как назовём копилку?'];
       html = `${fld('qText', 'Название, например: велосипед', { max: 40 })}<div class="msg err" id="qErr" hidden></div>${qBtn('custom', 'Далее')}`;
       break;
     case 'target':
@@ -1056,11 +1073,11 @@ function renderQuiz() {
         ok: ['happy', `Посильно: <em>${esc(money(p.perPeriod))}</em> ${per}, срок ${T}.<small>Это заметная часть твоего среднего остатка.</small>`],
         hard: ['think', `Тяжеловато: нужно <em>${esc(money(p.perPeriod))}</em> ${per}, а в среднем остаётся ${p.free > 0 ? fm + ' в месяц' : 'меньше нуля'}.${p.altN ? `<small>Могу растянуть до ${G.unitLabel(p.altN, U)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
         unknown: ['hello', `План: <em>${esc(money(p.perPeriod))}</em> ${per}, срок ${T}.<small>Твоих доходов я пока не знаю, поэтому не скажу, посильно ли это.</small>`],
-        done: ['joy', 'Нужная сумма уже есть!<small>Сохрани цель, чтобы следить за ней.</small>']
+        done: ['joy', 'Нужная сумма уже есть!<small>Сохрани копилку, чтобы следить за ней.</small>']
       }[p.verdict];
       say = txt;
       html = `<div class="plan">
-        <div><span>Цель</span><b>${nm}</b></div>
+        <div><span>Копилка</span><b>${nm}</b></div>
         <div><span>Нужно</span><b>${esc(money(q.target))}</b></div>
         <div><span>Уже есть</span><b>${esc(money(q.saved))}</b></div>
         <div class="hl"><span>${esc(cap(per))}</span><b>${esc(money(p.perPeriod))}</b></div>
@@ -1116,7 +1133,7 @@ $('#quizBody').addEventListener('click', e => {
   const b = e.target.closest('[data-qa]'); if (!b) return;
   const a = b.dataset.qa;
   if (a === 'back') { q.step = q.stack.pop(); renderQuiz(); return; }
-  if (a === 'kind') { if (!q.pick) return; q.name = q.pick === 'Своя цель' ? '' : q.pick; qGo(q.name ? 'target' : 'custom'); return; }
+  if (a === 'kind') { if (!q.pick) return; q.name = q.pick === 'Своя копилка' ? '' : q.pick; qGo(q.name ? 'target' : 'custom'); return; }
   if (a === 'custom') {
     const v = ($('#qText').value || '').trim();
     if (!v) { showErr($('#qErr'), 'Напиши, на что копим.'); return; }
@@ -1183,7 +1200,7 @@ function saveGoal() {
   state.goals.push({ id: uid(), name: q.name, target: round2(q.target), saved: round2(q.saved), months, unit, deadline: G.ymdOf(G.addTerm(now, p.n, unit)), created: today(), nid, remind: { on: false, day: sd.day, time: '10:00' }, log: q.saved > 0 ? [{ d: today(), a: round2(q.saved) }] : [] });
   save(); closeLayer($('#lyQuiz')); quiz = null; buzz(20);
   showTab('goals'); afterDataChange();
-  toast('Цель добавлена. Откладывай и отмечай, а я напомню', null, null, 'joy');
+  toast('Копилка добавлена. Откладывай и отмечай, а я напомню', null, null, 'joy');
 }
 
 /* ---------- Черновик: несколько записей сразу ---------- */
@@ -1550,7 +1567,7 @@ $('#payDelete').addEventListener('click', () => {
 
 /* ---------- Профиль ---------- */
 const loggedIn = () => !!(cloud.enabled && me);
-const startBal = () => (state.accounts[0] ? state.accounts[0].balance : 0);
+const startBal = () => 0;
 const okIc = () => `<span class="pl-ok" role="img" aria-label="Привязано">${icon('check')}</span>`;
 function setPlate(sel, sub, right, disabled) {
   const el = $(sel);
@@ -1576,27 +1593,24 @@ function renderAccount() {
   const u = me || previewMe(), on = loggedIn() || !!previewMe(), canLogin = cloud.enabled && !me;
   $('#setFoot').textContent = on ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';
   $('#acctMascot').innerHTML = MD.mascot('happy', 48);
+  if (document.activeElement !== $('#nameIn')) $('#nameIn').value = state.name || '';
   $('#btnSignOut').hidden = !on;
   $('#loginCard').hidden = !canLogin;
   if (on) {
-    $('#acctName').textContent = u ? (u.name || u.email || u.phone || 'Мой профиль') : 'Мой профиль';
-    $('#acctSub').textContent = u && u.name && (u.phone || u.email) ? (u.phone || u.email) : 'Данные в облаке';
+    const nm = userName(); $('#acctName').textContent = nm || (u && (u.email || u.phone)) || 'Мой профиль';
+    $('#acctSub').textContent = nm && u && (u.phone || u.email) ? (u.phone || u.email) : 'Данные в облаке';
   } else {
-    $('#acctName').textContent = 'Ты без входа';
+    $('#acctName').textContent = userName() || 'Ты без входа';
     $('#acctSub').textContent = 'Данные только на этом телефоне';
   }
   const ph = on && u && u.phoneLinked, em = on && u && u.emailLinked, off = !cloud.enabled && !previewMe();
   setPlate('#plPhone', ph ? u.phoneLinked : on ? 'Не привязан' : 'Появится после входа', ph ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', off);
   setPlate('#plEmail', em ? u.emailLinked : on ? 'Не привязана' : 'Появится после входа', em ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', off);
-  setPlate('#plBalance', maskT(money(startBal())), null, false);
   setPlate('#plCurrency', `${state.currency} ${CURRENCIES[state.currency]}`, null, false);
-  const nd = R.nextDue(state.rec.list, new Date());
-  setPlate('#plPay', state.rec.list.length ? `${state.rec.list.length} ${pluralN(state.rec.list.length, 'платёж', 'платежа', 'платежей')}${nd ? (nd.late ? `, не записан: ${nd.p.name.toLowerCase()}` : `, ближайший: ${nd.p.name.toLowerCase()} ${R.whenText(nd.days)}`) : ''}` : 'Аренда, подписка, кредит с напоминанием', null, false);
   const rc = MD.notify.cfg();
   setPlate('#plRemind', rc.on ? `Каждый день в ${rc.times.join(', ')}` : 'Выключены', null, false);
   setPlate('#plQuick', rc.quick ? 'Кнопки на экране блокировки включены' : 'Записывай, не открывая Фин', null, false);
   const up = MD.events.upcoming(festList(), new Date())[0];
-  setPlate('#plFest', up ? `${MD.events.whatText(up.e)}, ${MD.events.daysTo(up.occ, new Date()) === 0 ? 'сегодня' : `через ${MD.events.daysTo(up.occ, new Date())} ${pluralN(MD.events.daysTo(up.occ, new Date()), 'день', 'дня', 'дней')}`}` : 'Дни рождения и праздники с напоминанием', null, false);
   const ng = state.nudge, onCats = MD.nudges.WATCH.filter(k => ng.cats[k] !== false).length;
   $('#plNudge').setAttribute('aria-checked', String(ng.on)); $('#plNudge .sw-t').setAttribute('aria-checked', String(ng.on));
   $('#plNudge small').textContent = ng.on ? NG.counter(ng) : NG.t('set.off');
@@ -1702,7 +1716,7 @@ function renderPanel(err) {
       <div class="note">Нажми размер, и телефон предложит поставить виджет.</div>
       ${e}`;
   } else if (P.kind === 'data') {
-    html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей, целей и платежей одним файлом.</small>${pnBtn('exp-file', 'Сохранить в файл', 'soft')}</div>
+    html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей, копилок и платежей одним файлом.</small>${pnBtn('exp-file', 'Сохранить в файл', 'soft')}</div>
       <div class="pn-sec"><b>Импорт</b><small>Выбери файл с копией. Текущие данные заменятся, а вернуть их можно сразу после.</small>${pnBtn('imp-file', 'Выбрать файл', 'soft')}<input id="pnFile" type="file" accept=".json,application/json,text/plain" hidden>${e}</div>`;
   }
   $('#linkTitle').textContent = PN_TITLE[P.kind];

@@ -36,7 +36,7 @@ tx = filler(8).concat([ex('Кафе', 30, 5), ex('Кафе', 30, 9), ex('Каф�
 o = run(tx, st);
 eq('рост: Кафе +50%', [o.st.active.rule, o.an.hits.find(h => h.rule === 'growth').pct], ['growth', 50]);
 d = N.describe(st, tx, Object.assign({ analysis: o.an }, ctx));
-ok('рост: текст с цифрами и целью', /на 50% больше/.test(d.text) && /90,00 Br против 60,00 Br/.test(d.text) && /цель на разницу/.test(d.text), d.text);
+ok('рост: текст с цифрами и копилкой', /на 50% больше/.test(d.text) && /90,00 Br против 60,00 Br/.test(d.text) && /копилку на разницу/.test(d.text), d.text);
 // рост ниже порога и мало операций
 tx = filler(8).concat([ex('Кафе', 25, 5), ex('Кафе', 25, 9), ex('Кафе', 25, 12), ex('Кафе', 20, pmDay(5)), ex('Кафе', 20, pmDay(10)), ex('Кафе', 20, pmDay(15))]);
 ok('рост 25%: нет', !run(tx, old(N.defaultState())).an.hits.some(h => h.rule === 'growth'));
