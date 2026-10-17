@@ -135,6 +135,64 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const lc = await p.isVisible('#loginCard'); ok('баннер входа виден без входа', lc);
   if (lc) { await p.click('#loginCard'); await sleep(300); await p.click('#auth [data-act=google]'); await sleep(900); ok('вход через Google', await p.isVisible('#btnSignOut')); await p.click('#btnSignOut'); await sleep(250); await p.click('#cfYes'); await sleep(700); ok('выход', !(await p.isVisible('#btnSignOut')) || true); }
 
+
+  // ---- 11. имя, аналитика с главной, меню из четырёх кнопок
+  await p.click('[data-tab=acc]'); await sleep(200);
+  await p.fill('#nameIn', 'Анна'); await p.click('#acctBox'); await sleep(200);
+  await p.click('[data-tab=home]'); await sleep(200);
+  ok('имя в приветствии', (await p.textContent('#greetTitle')).includes('Анна'));
+  ok('в меню ровно четыре кнопки с плюсом', (await p.$$eval('.nav .nav-b, .nav .nav-add', e => e.length)) === 4);
+  await p.click('#heroSum'); await sleep(250); ok('тап по балансу открывает аналитику', await p.isVisible('#s-stats'));
+  await p.click('#s-stats [data-back]'); await sleep(200);
+  await p.click('#tiles .hs.exp'); await sleep(250); ok('тап по «Потрачено» открывает аналитику', await p.isVisible('#s-stats'));
+  await p.click('#s-stats [data-back]'); await sleep(200);
+  const mon0 = await p.textContent('#heroMon'); await p.click('[data-hshift="-1"]'); await sleep(300);
+  ok('месяц в балансе переключается стрелкой', (await p.textContent('#heroMon')) !== mon0);
+  await p.click('[data-hshift="1"]'); await sleep(300);
+
+  // ---- 12. выписка: разбор, категории, повторы, платёж, запись
+  const stm = `02.10.2026 10:15:22 02.10.2026 Перевод с карты на карту -150.00 BYN 33445566
+03.10.2026 18:40:10 04.10.2026 Life ) -12.00 BYN 11223344
+03.10.2026 18:40:10 04.10.2026 Life ) -12.00 BYN 11223344
+05.09.2026 12:00:00 05.09.2026 Life ) -12.00 BYN 99887766
+06.10.2026 09:01:00 06.10.2026 Альфа кредит -220.00 BYN 55667788
+12.10.2026 09:00:00 12.10.2026 Пополнение карты +500.00 BYN 34343434`;
+  const before = (await S()).tx.length;
+  await p.evaluate(t => MD.app.openImport(MD.statement.parse(t, { today: new Date(2026, 9, 17), baseCur: 'BYN' }).items, {}), stm); await sleep(400);
+  ok('выписка: открыт список «Всё верно?»', await p.isVisible('#lyImport'));
+  ok('выписка: операции сгруппированы по дням', (await p.$$eval('#impBody .day', e => e.length)) >= 4);
+  ok('выписка: найден повтор', (await p.textContent('#impBody')).includes('повтор'));
+  ok('выписка: предложен платёж (Life, кредит)', (await p.$$eval('#impBody .imp-hint', e => e.length)) >= 1);
+  await p.selectOption('#impBody [data-icat="0"]', 'Дом'); await sleep(200);
+  ok('выписка: категорию можно сменить', (await p.$eval('#impBody [data-icat="0"]', e => e.value)) === 'Дом');
+  await p.click('#impBody [data-imp="merge"]'); await sleep(200);
+  await p.click('#impBody [data-imp^="pay:"]'); await sleep(300);
+  ok('выписка: платёж создан из операции', (await S()).rec.list.length >= 1);
+  await p.click('#impBody [data-imp=ok]'); await sleep(900);
+  ok('выписка: операции записаны (повтор объединён)', (await S()).tx.length === before + 5, (await S()).tx.length - before);
+
+  // ---- 13. массовое изменение
+  await p.evaluate(() => MD.app.showTab('ops')); await sleep(250); await p.click('#s-ops [data-mnow]'); await sleep(200);
+  await p.click('#opsSel'); await sleep(200);
+  await p.click('#opsList .swipe .tx >> nth=0'); await sleep(120); await p.click('#opsList .swipe .tx >> nth=1'); await sleep(150);
+  ok('выбрано две записи', (await p.textContent('#bulkCount')).includes('2'));
+  await p.click('#bulkBar [data-bulk=note]'); await sleep(250); await p.fill('#bulkNote', 'массово'); await p.click('#bulkOk'); await sleep(400);
+  ok('массово: заметка применена к двум', (await S()).tx.filter(t => t.note === 'массово').length === 2);
+  await p.click('#s-ops [data-back]'); await sleep(200);
+
+  // ---- 14. категории: правка и автосоздание
+  await p.click('[data-tab=acc]'); await sleep(200); await p.click('#plCats'); await sleep(300);
+  await p.click('#linkBody [data-pn="cat-add"]'); await sleep(200); await p.fill('#pnCatName', 'Питомцы'); await p.click('#linkBody [data-pn="cat-icon:paw"]'); await p.click('#linkBody [data-pn="cat-save"]'); await sleep(400);
+  ok('категория «Питомцы» создана', (await S()).cats.some(c => c.n === 'Питомцы' && c.i === 'paw'));
+  await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250);
+  for (let i = 0; i < 2; i++) { await p.click('#fab'); await sleep(250); await p.fill('#txAmount', '15'); await p.click('[data-cat="Другое"]'); await p.fill('#txNote', 'Парикмахерская'); await p.click('#txSave'); await sleep(300); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(300); }
+  ok('одинаковые названия в «Другом» превратились в категорию', (await S()).cats.some(c => c.n === 'Парикмахерская' && c.isNew), (await S()).cats);
+
+  // ---- 15. платёж на конкретную дату
+  await p.evaluate(() => MD.app.showTab('pay')); await sleep(250);
+  await p.click('[data-newpay] >> nth=0'); await sleep(250); await p.fill('#payName', 'Страховка'); await p.fill('#payAmount', '90'); await p.click('[data-pmode=once]'); await p.fill('#payOnce', ymd(new Date(now.getFullYear() + 1, 2, 10))); await p.click('[data-pcat="Другое"]').catch(() => {}); await p.click('#paySave'); await sleep(500);
+  ok('платёж с конкретной датой сохранён', (await S()).rec.list.some(x => x.once && x.name === 'Страховка'));
+
   // ---- 10. помощник
   await p.click('[data-tab=acc]'); await p.evaluate(() => MD.app.showTab('chat')); await sleep(250);
   await p.fill('#chatInput', 'сводка за месяц'); await p.click('#chatSend'); await sleep(1800);

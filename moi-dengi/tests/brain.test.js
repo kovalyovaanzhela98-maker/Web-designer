@@ -48,10 +48,15 @@ ok('кто ты', /помощник/.test(text(r)));
 r = R('что ты умеешь');
 ok('помощь', /Записывать/.test(text(r)));
 r = R('абракадабра хыв');
-ok('непонятно: подсказки', /Пока не понял/.test(text(r)) && r.quick.length > 0);
+ok('непонятно: подсказки', /нет готового ответа/.test(text(r)) && r.quick.length > 0);
 r = R('сводка', { tx: [] });
 ok('пусто', /записей нет/.test(text(r)));
 eq('период: вчера', B.periodOf('что вчера', now).from, '2026-10-16');
 eq('период: сентябрь', B.periodOf('в сентябре', now).from, '2026-09-01');
 eq('период: прошлый месяц', B.periodOf('в прошлом месяце', now).to, '2026-09-30');
-if (fail) { console.log(`\nПровалено: ${fail}`); process.exit(1); } else console.log('\nВсе тесты прошли');
+if (fail) { console.log(`\nПровалено: ${fail}`); process.exit(1); } else 
+r = R('что такое инфляция'); ok('разговор: инфляция', r.blocks.some(b => b.t === 'text' && /дешевеют/.test(b.html)));
+r = R('который час'); ok('разговор: дата', r.blocks.some(b => b.t === 'text' && /Сегодня/.test(b.html)));
+r = R('вчера кофе пять рублей и такси двенадцать'); ok('запись словами без цифр', r.blocks.some(b => b.t === 'draft' && b.items.length === 2), r.blocks.map(b => b.t));
+r = R('расскажи про космос'); ok('другая тема: честный ответ без нейросети', r.blocks.some(b => b.t === 'text' && /нет готового ответа/.test(b.html)));
+console.log('\nВсе тесты прошли');

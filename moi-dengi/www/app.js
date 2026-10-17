@@ -273,7 +273,7 @@ function renderPays() {
     const sub = r.status === 'paid' ? 'Оплачено' : esc(R.whenText(days));
     return `<div class="pcard ${r.status}"><button class="pc-main" type="button" data-go-pay aria-label="${esc(cap(p.name))}, ${esc(sub)}. Все обязательные платежи">
         <span class="pc-top"><span class="tx-ic" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span><b class="pc-n">${esc(cap(p.name))}</b></span>
-        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small><small class="pc-d">${esc(R.scheduleText(p, d))}</small></span></button>
+        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small><small class="pc-d">${esc(R.scheduleText(p, d, true))}</small></span></button>
       ${r.status === 'late' ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${key}">Записать</button>` : ''}</div>`;
   }).join('');
 }
@@ -336,6 +336,8 @@ function renderHome() {
     : emptyBox('Пока пусто', 'Первые записи появятся здесь.');
 }
 
+/* Режим выбора в истории: отметить несколько операций и изменить сразу */
+const sel = { on: false, ids: new Set() };
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.ts || 0) - (a.ts || 0));
 
 function dayTitle(s) {
@@ -348,10 +350,10 @@ function dayTitle(s) {
 }
 
 function txRow(t) {
-  const ci = catInfo(t.type, t.cat), a = accById(t.acc);
-  return `<div class="swipe" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}</div>
+  const ci = catInfo(t.type, t.cat), a = accById(t.acc), on = sel.on && sel.ids.has(t.id);
+  return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}</div>
     <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить">
-      <div class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</div>
+      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</div>
       <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}${t.orig ? `<div class="tx-n tx-orig">${t.orig.est ? '≈ ' : ''}${esc(fmt(t.orig.a))} ${esc(sym(t.orig.cur))}</div>` : ''}</div>
       <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${esc(signed(t.amount, t.type))}</div></div>
     </div></div>`;
@@ -491,6 +493,7 @@ function renderStats() {
 /* ---------- Вкладки ---------- */
 let tabPushed = false, payFrom = 'acc';
 function showTab(name, fromPop) {
+  if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
   tab = name;
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
   const navName = name === 'ops' || name === 'stats' ? 'home' : name === 'chat' ? 'acc' : name === 'pay' ? payFrom : name;
@@ -501,6 +504,7 @@ function showTab(name, fromPop) {
   }
   window.scrollTo(0, 0);
   render();
+  renderBulkBar();
 }
 /* Смена месяца: короткий скелетон, потом данные */
 let skelT = null;
@@ -985,12 +989,60 @@ function deleteTx(id) {
   undoToast('Запись удалена', () => { state.tx.push(gone); save(); render(); nudgeRefresh(true); });
 }
 
+function toggleSel(id) { if (sel.ids.has(id)) sel.ids.delete(id); else sel.ids.add(id); buzz(6); renderOps(); renderBulkBar(); }
+function setSelMode(on) {
+  sel.on = on; sel.ids.clear();
+  $('#opsSel span').textContent = on ? 'Готово' : 'Выбрать';
+  renderOps(); renderBulkBar();
+}
+function renderBulkBar() {
+  const n = sel.ids.size;
+  $('#bulkBar').hidden = !(sel.on && tab === 'ops');
+  $('#bulkCount').textContent = n ? `Выбрано: ${n}` : 'Отметь записи';
+  $$('#bulkBar [data-bulk]').forEach(b => { b.disabled = !n; });
+}
+$('#opsSel').addEventListener('click', () => setSelMode(!sel.on));
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-bulk]'); if (!b || b.disabled || !sel.ids.size) return;
+  const kind = b.dataset.bulk, ids = [...sel.ids], rows = state.tx.filter(t => sel.ids.has(t.id));
+  if (kind === 'del') {
+    const gone = rows.map(t => ({ ...t })); state.tx = state.tx.filter(t => !sel.ids.has(t.id));
+    save(); setSelMode(false); render(); nudgeRefresh(true);
+    undoToast(`Удалено записей: ${gone.length}`, () => { gone.forEach(t => state.tx.push(t)); save(); render(); });
+    return;
+  }
+  const types = new Set(rows.map(t => t.type)), body = $('#bulkBody');
+  const apply = patch => {
+    const before = rows.map(t => ({ ...t }));
+    rows.forEach(t => Object.assign(t, patch(t)));
+    save(); setSelMode(false); closeLayer($('#lyBulk')); render();
+    undoToast(`Изменено записей: ${rows.length}`, () => { before.forEach(o => { const t = state.tx.find(x => x.id === o.id); if (t) Object.assign(t, o); }); save(); render(); });
+  };
+  if (kind === 'date') {
+    $('#bulkTitle').textContent = 'Новая дата';
+    body.innerHTML = `<label class="field t"><input id="bulkDate" type="date" value="${today()}"><span>Дата для всех выбранных</span></label><div class="msg err" id="bulkErr" hidden></div><button class="btn primary wide" type="button" id="bulkOk">Применить</button>`;
+    $('#bulkOk').onclick = () => { const v = $('#bulkDate').value; if (!parseYmd(v)) { showErr($('#bulkErr'), 'Выбери дату.'); return; } apply(() => ({ date: v })); };
+  } else if (kind === 'cat') {
+    $('#bulkTitle').textContent = 'Новая категория';
+    const tp = types.size === 1 ? [...types][0] : null;
+    body.innerHTML = tp ? `<div class="cat-grid" id="bulkCats">${CATS[tp].map(c => `<button type="button" class="cat-tile" data-bcat="${esc(c[0])}"><span class="ci" style="${cs(c)}">${cIcon(c)}</span><span>${esc(c[0])}</span></button>`).join('')}</div>`
+      : '<div class="note">В выборе и расходы, и доходы. Выбери записи одного вида, чтобы поменять категорию.</div>';
+    $('#bulkBody').onclick = ev => { const c = ev.target.closest('[data-bcat]'); if (c) apply(t => ({ cat: c.dataset.bcat })); };
+  } else if (kind === 'note') {
+    $('#bulkTitle').textContent = 'Новая заметка';
+    body.innerHTML = `<label class="field"><input id="bulkNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span>Заметка для всех выбранных</span></label><button class="btn primary wide" type="button" id="bulkOk">Применить</button><button class="btn ghost wide" type="button" id="bulkClear">Очистить заметки</button>`;
+    $('#bulkOk').onclick = () => apply(() => ({ note: $('#bulkNote').value.trim().slice(0, 120) }));
+    $('#bulkClear').onclick = () => apply(() => ({ note: '' }));
+  }
+  openLayer($('#lyBulk'));
+});
+
 // Тап — правка, свайп влево — удаление
 (() => {
   let sw = null, swiped = false;
   document.addEventListener('pointerdown', e => {
     const t = e.target.closest('.swipe .tx');
-    if (!t) return;
+    if (!t || sel.on) return;
     sw = { el: t, id: t.closest('.swipe').dataset.id, x: e.clientX, y: e.clientY, dx: 0, drag: false };
   });
   document.addEventListener('pointermove', e => {
@@ -1013,9 +1065,9 @@ function deleteTx(id) {
   };
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', end);
-  const open = e => { const t = e.target.closest('.swipe .tx'); if (t && !swiped) openTx(t.dataset.tx); };
+  const open = e => { const t = e.target.closest('.swipe .tx'); if (!t || swiped) return; if (sel.on) { toggleSel(t.dataset.tx); return; } openTx(t.dataset.tx); };
   document.addEventListener('click', open);
-  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.swipe .tx')) { e.preventDefault(); openTx(e.target.dataset.tx); } });
+  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.swipe .tx')) { e.preventDefault(); if (sel.on) toggleSel(e.target.dataset.tx); else openTx(e.target.dataset.tx); } });
 })();
 
 /* ---------- Цели ---------- */
@@ -1429,6 +1481,73 @@ $('#draftOk').addEventListener('click', () => {
   buzz(20);
   showTab('home');
   afterAdd(added, first, null);
+});
+
+/* ---------- Импорт выписки: список «Всё верно?» с группировкой по дням ---------- */
+let imp = null;
+function openImport(items, o = {}) {
+  ensureAccount();
+  const list = items.map((it, i) => Object.assign({ id: i }, it, { skip: false }));
+  // уже записанные операции в основной валюте не предлагаем второй раз
+  const exist = new Map(); state.tx.forEach(t => { const k = `${t.date}|${t.type}|${round2(t.amount)}`; exist.set(k, (exist.get(k) || 0) + 1); });
+  let dup = 0;
+  list.forEach(it => { if (it.cur === state.currency) { const k = `${it.date}|${it.type}|${round2(it.amount)}`; if (exist.get(k) > 0) { exist.set(k, exist.get(k) - 1); it.skip = true; it.known = true; dup++; } } });
+  imp = { items: list, hints: (MD.statement.hints(list) || []).map(h => Object.assign({}, h, { done: false })), dup, source: o.source || 'выписка', onDone: o.onDone || null };
+  renderImport(); openLayer($('#lyImport'));
+}
+function renderImport() {
+  if (!imp) return;
+  const live = imp.items.filter(i => !i.skip), body = $('#impBody');
+  const inc = round2(live.filter(i => i.type === 'income' && i.cur === state.currency).reduce((s, i) => s + i.amount, 0)), exp = round2(live.filter(i => i.type === 'expense' && i.cur === state.currency).reduce((s, i) => s + i.amount, 0));
+  const reps = imp.items.filter(i => i.rep && !i.skip).length;
+  const groups = MD.statement.byDay(imp.items);
+  const catOpts = (type, cur) => CATS[type].map(c => `<option value="${esc(c[0])}"${c[0] === cur ? ' selected' : ''}>${esc(c[0])}</option>`).join('');
+  body.innerHTML = `<div class="imp-sum"><b>${live.length}</b> из ${imp.items.length}<span>${inc ? `<i class="i">+${esc(fmt(inc))}</i>` : ''}${exp ? `<i class="e">−${esc(fmt(exp))}</i>` : ''}<em>${esc(sym())}</em></span></div>` +
+    (imp.dup ? `<div class="note top0">Уже записанные пропустил: ${imp.dup}.</div>` : '') +
+    (reps ? `<button class="btn soft wide" type="button" data-imp="merge">Объединить повторы (${reps})</button>` : '') +
+    imp.hints.filter(h => !h.done).map((h, k) => `<div class="imp-hint"><span class="ih-t"><b>${esc(h.name)}</b><small>${esc(money(h.amount))}, ${h.day}-го числа${h.sure ? '' : ' · похоже на регулярный'}</small></span><button class="btn primary" type="button" data-imp="pay:${imp.hints.indexOf(h)}">Создать платёж</button><button class="icon-btn sm" type="button" data-imp="nopay:${imp.hints.indexOf(h)}" aria-label="Не нужно"><i data-ic="close"></i></button></div>`).join('') +
+    groups.map(g => `<div class="day"><div class="day-h"><span>${esc(dayTitle(g.date))}</span><span>${g.items.length}</span></div>${g.items.map(it => { const ci = catInfo(it.type, it.cat);
+      return `<div class="imp-row${it.skip ? ' skip' : ''}"><span class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span>
+        <span class="imp-b"><b>${esc(it.name)}</b><small>${esc([it.time, it.check ? 'чек ' + it.check : '', it.procDate && it.procDate !== it.date ? 'обработана ' + it.procDate.slice(8) + '.' + it.procDate.slice(5, 7) : '', it.rep ? 'повтор' : '', it.known ? 'уже записана' : ''].filter(Boolean).join(' · '))}</small>
+        <select class="cat-sel" data-icat="${it.id}" aria-label="Категория">${catOpts(it.type, it.cat)}</select></span>
+        <span class="imp-r"><b class="${it.type === 'income' ? 'inc' : 'exp'}">${it.type === 'income' ? '+' : '−'}${esc(fmt(it.amount))} ${esc(sym(it.cur))}</b><span class="imp-act">${it.rep ? `<button type="button" data-imp="rep:${it.id}">${it.skip ? 'Это не повтор' : 'Это повтор'}</button>` : ''}<button type="button" data-imp="rm:${it.id}" aria-label="Убрать">Убрать</button></span></span></div>`; }).join('')}</div>`).join('') +
+    `<button class="btn primary wide" type="button" data-imp="ok" ${live.length ? '' : 'disabled'}>Записать${live.length ? ` (${live.length})` : ''}</button><button class="btn ghost wide" type="button" data-imp="cancel">Отмена</button>`;
+  paintIcons(body);
+}
+$('#impBody').addEventListener('change', e => { const s = e.target.closest('[data-icat]'); if (!s || !imp) return; const it = imp.items.find(x => x.id === Number(s.dataset.icat)); if (it) { it.cat = s.value; renderImport(); } });
+$('#impBody').addEventListener('click', async e => {
+  const b = e.target.closest('[data-imp]'); if (!b || !imp) return;
+  const a = b.dataset.imp;
+  if (a === 'cancel') { closeLayer($('#lyImport')); imp = null; return; }
+  if (a === 'merge') { imp.items.forEach(i => { if (i.rep) i.skip = true; }); renderImport(); return; }
+  if (a.startsWith('rm:')) { imp.items = imp.items.filter(x => x.id !== Number(a.slice(3))); renderImport(); return; }
+  if (a.startsWith('rep:')) { const it = imp.items.find(x => x.id === Number(a.slice(4))); if (it) it.skip = !it.skip; renderImport(); return; }
+  if (a.startsWith('nopay:')) { imp.hints[Number(a.slice(6))].done = true; renderImport(); return; }
+  if (a.startsWith('pay:')) {
+    const h = imp.hints[Number(a.slice(4))]; if (!h) return;
+    if (state.rec.list.length >= MD.sub.limit('payments')) return MD.sub.open('payments', () => {});
+    const T = new Date(), nm = h.name.slice(0, 30);
+    state.rec.list.push({ id: 'p' + uid().slice(0, 8), name: nm, amount: round2(h.amount), cat: h.cat, once: '', days: [{ from: '0000-00', day: h.day }], remind: 'off', time: '10:00', start: R.startMonth(h.day, T), paid: {}, nid: R.freeNid(state.rec.list) });
+    h.done = true; save(); afterDataChange(); render(); renderImport(); toast(`Платёж «${nm}» создан`, null, null, 'happy'); return;
+  }
+  if (a === 'ok') {
+    const live = imp.items.filter(i => !i.skip); if (!live.length) return;
+    b.disabled = true; b.textContent = 'Записываю…';
+    const added = [];
+    for (let k = 0; k < live.length; k++) {
+      const it = live[k]; let amount = it.amount, orig = null;
+      if (it.cur !== state.currency) { const r = await MD.rates.convert(it.amount, it.cur, state.currency, it.date); amount = r.amount; orig = { a: it.amount, cur: it.cur, rate: r.rate, est: r.est }; }
+      const ts = it.time ? new Date(`${it.date}T${it.time}:00`).getTime() || Date.now() + k : Date.now() + k;
+      const note = [it.name, it.check ? `чек ${it.check}` : ''].filter(Boolean).join(' · ').slice(0, 120);
+      added.push({ id: uid(), type: it.type, amount, cat: it.cat, acc: state.accounts[0].id, date: it.date, note, ts, orig });
+    }
+    added.forEach(t => state.tx.push(t));
+    added.forEach(t => { const m = t.type === 'expense' ? R.matchTx(state.rec.list, t) : null; if (m) m.p.paid[m.mk] = t.id; });
+    lastAddAt = Date.now(); save(); closeLayer($('#lyImport'));
+    const done = imp.onDone; imp = null;
+    render(); afterDataChange(); nudgeRefresh(true);
+    toast(`Записано: ${added.length}`, null, null, 'joy'); if (done) done(added.length);
+  }
 });
 
 /* ---------- Праздники и подарки ---------- */
@@ -1931,8 +2050,11 @@ function renderPanel(err) {
       html = `<div class="seg" role="radiogroup" aria-label="Тип">${[['expense', 'Расходы'], ['income', 'Доходы']].map(x => `<button type="button" role="radio" class="seg-b" data-pn="cat-t:${x[0]}" aria-checked="${t === x[0]}">${x[1]}</button>`).join('')}</div>
         <div class="grp flat">${list.filter(c => c[0] !== OTHER).map((c, i) => `<button class="row" type="button" data-pn="cat-edit:${i}"><span class="rw-ic ci" style="${cs(c)}" aria-hidden="true">${cIcon(c)}</span><span class="rw-t"><b>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</b></span><span class="rw-r"><i data-ic="pencil"></i></span></button>`).join('')}</div>` + pnBtn('cat-add', 'Новая категория', 'soft');
     }
+  } else if (P.kind === 'data' && P.done) {
+    say = ['happy', 'Файл сохранён'];
+    html = `<div class="pn-cur"><small>Где лежит файл</small><b>${esc(P.done.path)}</b></div>` + pnBtn('exp-share', 'Поделиться', 'primary') + pnBtn('exp-done', 'Готово', 'ghost');
   } else if (P.kind === 'data') {
-    html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей, копилок и платежей одним файлом.</small>${pnBtn('exp-file', 'Сохранить в файл', 'soft')}</div>
+    html = `<div class="pn-sec"><b>Экспорт</b><small>Копия всех записей, копилок и платежей одним файлом.</small>${pnBtn('exp-file', 'Сохранить в файл…', 'soft')}</div>
       <div class="pn-sec"><b>Импорт</b><small>Выбери файл с копией. Текущие данные заменятся, а вернуть их можно сразу после.</small>${pnBtn('imp-file', 'Выбрать файл', 'soft')}<input id="pnFile" type="file" accept=".json,application/json,text/plain" hidden>${e}</div>`;
   }
   $('#linkTitle').textContent = PN_TITLE[P.kind];
@@ -2053,16 +2175,24 @@ $('#linkBody').addEventListener('click', async ev => {
   if (a === 'cur-apply') {
     state.currency = P.cur; save(); render(); return pnDone(`Валюта: ${P.cur}`);
   }
-  if (a === 'exp-file') {
-    const blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
-    const file = new File([blob], 'fin-копия.json', { type: 'application/json' });
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Копия данных Фина' }); return; }
-    } catch (_) { return; }
+  if (a === 'exp-file' || a === 'exp-share') {
+    const json = JSON.stringify(state), name = `fin-копия-${today()}.json`, F = MD.notify.native && MD.notify.native('FinNative');
+    if (F && a === 'exp-share') { try { await F.shareFile({ name, data: json, mime: 'application/json' }); } catch (_) { renderPanel('Не получилось поделиться файлом.'); } return; }
+    if (F && F.saveFile) {                             // системное окно «Сохранить как»: человек выбирает место сам
+      try {
+        const r = await F.saveFile({ name, data: json, mime: 'application/json' });
+        if (r && r.ok) { P.done = { path: r.path || name }; renderPanel(); }
+      } catch (_) { renderPanel('Не получилось сохранить файл. Попробуй ещё раз или выбери другую папку.'); }
+      return;
+    }
+    const blob = new Blob([json], { type: 'application/json' }), file = new File([blob], name, { type: 'application/json' });
+    try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Копия данных Фина' }); P.done = { path: 'Отправлено через «Поделиться»' }; renderPanel(); return; } }
+    catch (err) { if (err && err.name === 'AbortError') return; }
     const url = URL.createObjectURL(blob), l = document.createElement('a');
-    l.href = url; l.download = 'fin-копия.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
-    return toast('Файл сохранён', null, null, 'happy');
+    l.href = url; l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    P.done = { path: `Загрузки / ${name}` }; renderPanel(); return;
   }
+  if (a === 'exp-done') { P.done = null; renderPanel(); return; }
   if (a === 'imp-file') { $('#pnFile').click(); return; }
 });
 $('#linkBody').addEventListener('change', ev => {
@@ -2125,10 +2255,10 @@ function addTx(items) {
 setTimeout(() => { if (!document.querySelector('#auth').hidden) return; const st = clashState(); if (st.day !== today()) { if (askClash(undefined, today(), 2)) { st.day = today(); clashSave(st); } } }, 3500);
 MD.app = {
   get state() { return state; },
-  ctx() { ensureAccount(); return { now: new Date(), tx: state.tx, goals: state.goals, sym: sym(), startBalance: startBal(), freeMoney: MD.goals.freeMoney(state.tx, new Date()), accounts: state.accounts }; },
+  ctx() { ensureAccount(); return { cur: state.currency, now: new Date(), tx: state.tx, goals: state.goals, sym: sym(), startBalance: startBal(), freeMoney: MD.goals.freeMoney(state.tx, new Date()), accounts: state.accounts }; },
   addTx, openTx, openQuiz: startNewGoal, showTab, toast, confirmDlg, openLayer, closeLayer, confetti, buzz,
   refreshAll: () => { render(); },
-  normalizeItems, esc, icon, money, fmt, paintIcons, quickAdd, spoken,
+  normalizeItems, esc, icon, money, fmt, paintIcons, quickAdd, spoken, openImport,
   loggedIn: () => !cloud.enabled || !!me
 };
 

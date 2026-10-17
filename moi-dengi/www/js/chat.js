@@ -122,12 +122,23 @@
     push({ k: 'file', name: file.name || 'Фото чека', icon: 'camera' });
     const p = push({ k: 'progress', text: 'Читаю чек…' });
     try {
-      const text = await ocr(file, n => { p.text = `Читаю чек… ${n}%`; render(true); });
+      const text = await ocr(file, n => { p.text = `Читаю… ${n}%`; render(true); });
       drop(p);
+      const st = MD.statement.parse(text, { today: new Date(), baseCur: app.ctx().cur });
+      if (st.items.length >= 2) { statementFound(st); return; }
       const r = MD.importers.parseReceiptText(text, { today: new Date() });
       if (!r.ok) { render(); bot('Не нашёл сумму на фото.<small>Сфотографируй чек ровнее и при хорошем свете, чтобы была видна строка «Итого».</small>'); quick = ['Что ты умеешь']; render(); return; }
       push({ k: 'draft', items: [r.item], intro: 'Нашёл на чеке', note: r.item.guessedDate ? 'Дату не увидел, поставил сегодняшнюю. Проверь перед сохранением.' : 'Проверь и сохрани.' });
     } catch (e) { drop(p); bot(esc(offline(e))); }
+  }
+
+  /* Выписка разобрана: открываем список «Всё верно?» с категориями, повторами и предложениями платежей */
+  function statementFound(st) {
+    render(true);
+    const n = st.items.length, inc = st.items.filter(i => i.type === 'income').length;
+    bot(`Нашёл операций: <em>${n}</em>${inc ? `, из них приходов ${inc}` : ''}.<small>Проверь категории, убери лишнее и подтверди.</small>`);
+    app.openImport(st.items, { source: 'выписка' });
+    quick = ['Сводка за месяц', 'Куда уходят деньги']; render();
   }
 
   async function onStatement(file) {
@@ -137,8 +148,12 @@
     try {
       const isPdf = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
       let res;
-      if (isPdf) res = MD.importers.parseStatementLines(await pdfText(file), { today: new Date() });
-      else { const t = await file.text(); res = MD.importers.parseStatementCSV(t, { today: new Date() }); if (!res.items.length) res = MD.importers.parseStatementLines(t, { today: new Date() }); }
+      let txt = '';
+      if (isPdf) txt = await pdfText(file); else txt = await file.text();
+      const st = MD.statement.parse(txt, { today: new Date(), baseCur: app.ctx().cur });
+      if (st.items.length) { drop(p); statementFound(st); return; }
+      if (isPdf) res = MD.importers.parseStatementLines(txt, { today: new Date() });
+      else { res = MD.importers.parseStatementCSV(txt, { today: new Date() }); if (!res.items.length) res = MD.importers.parseStatementLines(txt, { today: new Date() }); }
       drop(p);
       const d = MD.importers.dedupe(res.items.slice(0, 500), app.state.tx);
       if (!d.items.length) {

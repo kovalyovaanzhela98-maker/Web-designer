@@ -155,6 +155,6 @@
     if (c.quick) { const F = plug('FinNative'); if (F) F.setQuickPin({ on: true }).catch(() => {}); }
   }
 
-  const api = { cfg, save, apply, applyEvents, applyPayments, applyGoals, setQuick, pushSummary, pinWidget, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
+  const api = { cfg, save, apply, applyEvents, applyPayments, applyGoals, setQuick, native: plug, pushSummary, pinWidget, init, ensurePermission, supported: isNative, onAction: null, PHRASES };
   MD.notify = api;
 })(typeof window !== 'undefined' ? window : globalThis);

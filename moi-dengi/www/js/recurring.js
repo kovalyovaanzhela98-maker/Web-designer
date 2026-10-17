@@ -181,8 +181,9 @@
   }
   /* Подпись в карточке: «каждое 5-е · 5 окт» или «15 ноября 2026» */
   const MG = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  function scheduleText(p, date) {
+  function scheduleText(p, date, short) {
     if (p.once) { const d = parseYmd(p.once); return `${d.getDate()} ${MG[d.getMonth()]} ${d.getFullYear()}`; }
+    if (short) return `каждое ${curDay(p)}-е`;
     const dd = date || dateOf(p, mkOfDate(new Date()));
     return `каждое ${curDay(p)}-е · ${dd.getDate()} ${MG[dd.getMonth()]}`;
   }

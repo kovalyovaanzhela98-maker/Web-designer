@@ -62,7 +62,7 @@
 
   <!-- ОПЕРАЦИИ -->
   <section class="screen" id="s-ops" data-screen="ops" aria-label="История" hidden>
-    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">История</h1></header>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">История</h1><button class="pill-btn" id="opsSel" type="button"><i data-ic="check"></i><span>Выбрать</span></button></header>
     <div class="monthbar-slot"></div>
     <div class="search"><i data-ic="search"></i><input id="opsSearch" type="search" placeholder="Поиск по заметке или категории" aria-label="Поиск по записям" autocomplete="off"></div>
     <div class="seg ops-seg" role="radiogroup" aria-label="Тип записей">
@@ -200,6 +200,21 @@
   <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-ic="plus"></i></button></span>
   <button class="nav-b" data-tab="acc"><span class="np"><i data-ic="person"></i></span><span class="nl">Профиль</span></button>
 </nav>
+<div class="bulkbar" id="bulkBar" hidden>
+  <b id="bulkCount">0</b>
+  <button type="button" data-bulk="date">Дата</button>
+  <button type="button" data-bulk="cat">Категория</button>
+  <button type="button" data-bulk="note">Заметка</button>
+  <button type="button" data-bulk="del" class="del">Удалить</button>
+</div>
+<div class="layer" id="lyBulk" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="bulkTitle">Изменить выбранные</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="bulkBody"></div>
+  </div>
+</div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- Запись: тип, дата, сумма с микрофоном, категории, сохранить -->
@@ -399,6 +414,16 @@
 
 <!-- Подтверждение -->
 <!-- Совпадение дат: Фин спрашивает, не забыл ли ты внести платёж -->
+<!-- Выписка: проверить, изменить категории, убрать лишнее и подтвердить -->
+<div class="layer" id="lyImport" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="impTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="impTitle">Всё верно?</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="impBody"></div>
+  </div>
+</div>
+
 <div class="layer dlg" id="lyClash" hidden>
   <div class="scrim" data-close></div>
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="clTitle">
@@ -437,6 +462,7 @@
 <script src="js/insights.js"></script>
 <script src="js/recurring.js"></script>
 <script src="js/rates.js"></script>
+<script src="js/statement.js"></script>
 <script src="js/importers.js"></script>
 <script src="js/brain.js"></script>
 <script src="js/cloud.js"></script>
