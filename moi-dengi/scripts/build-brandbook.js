@@ -12,7 +12,7 @@ const finData = Object.fromEntries(fs.readdirSync(finDir).filter(f => f.endsWith
 const js = [`window.BB_ICON=${JSON.stringify(icon)};`, `window.FIN_DATA=${JSON.stringify(finData)};`, ...['icons', 'mascot', 'categories'].map(n => read(path.join(www, 'js', n + '.js'))), read(path.join(bb, 'brandbook.js'))].join('\n;\n');
 const src = read(path.join(bb, 'index.html'));
 const body = src.slice(src.indexOf('<body class="bb">') + '<body class="bb">'.length, src.lastIndexOf('</body>')).replace(/<script[^>]*><\/script>\s*/g, '');
-const title = 'Брендбук Мои деньги';
+const title = 'Брендбук Фин';
 const fi = process.argv.indexOf('--fragment');
 if (fi > 0) {
   const out = `<title>${title}</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<style>\n${css}\n</style>\n<div class="bb">${body}</div>\n<script>\n${js}\n</script>\n`;

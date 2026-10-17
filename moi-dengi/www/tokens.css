@@ -9,7 +9,8 @@
 
 :root{
   /* Цвет: поверхности и текст */
-  --bg:#F3F0E3;--surface:#FFFDF8;--text:#1F2B20;--muted:#6A7563;--line:#E2DDC9;--field:#F0ECDC;
+  --bg:#FFFFFF;--surface:#FFFFFF;--text:#1F2B20;--muted:#5F6B59;--line:#EDEDED;--field:#F5F6F4;
+  --ph:#6F7A69;--input-line:#8A9484;--float:#FFFFFF;--primary-t:#4F6F34;
   /* Цвет: смысл */
   --inc:#238A5B;--inc-bg:#DDF0E1;--inc-t:#1B7449;
   --exp:#C2413F;--exp-bg:#FAE3DD;--exp-t:#AE3533;
@@ -17,7 +18,7 @@
   --primary:#4F6F34;--primary-2:#6B8F46;--on-primary:#FFFFFF;
   --fin-cream:#F6EBCB;--fin-leaf:#9DB45A;--fin-leaf-deep:#5F7F38;--fin-blush:#F4B3AA;--fin-ink:#1B2A1F;
   --coin:#F2C230;--coin-deep:#F2B900;--ink:#1F2B20;
-  --focus:#4F6F34;--scrim:rgba(20,30,18,.45);--glass:rgba(255,253,248,.84);
+  --focus:#4F6F34;--scrim:rgba(20,30,18,.45);--glass:rgba(255,255,255,.88);
   /* Шрифты: заголовки и суммы — Wix Madefor Display; текст интерфейса — Golos Text */
   --font-display:"Wix Madefor Display","Golos Text",system-ui,sans-serif;
   --font-text:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -26,7 +27,7 @@
   /* Отступы (шаг 4) */
   --s-1:4px;--s-2:8px;--s-3:12px;--s-4:16px;--s-5:20px;--s-6:24px;--s-8:32px;
   /* Тени и движение */
-  --shadow:0 10px 30px rgba(52,72,34,.14);
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-2:0 8px 24px rgba(0,0,0,.08);
   --ease:cubic-bezier(.2,.8,.2,1);--dur-1:.12s;--dur-2:.28s;
   /* Размеры */
   --nav-h:68px;
@@ -36,21 +37,23 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#111A13;--surface:#1A251C;--text:#EBF1E4;--muted:#9AA894;--line:#2B392D;--field:#222E24;
+    --bg:#0F1611;--surface:#172019;--float:#1D2A21;--text:#EBF1E4;--muted:#9AA894;--line:rgba(255,255,255,.08);--field:#1E2A21;
+    --ph:#8C9A86;--input-line:#6F7C69;--primary-t:#8DB566;
     --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --primary:#5C8240;--primary-2:#7BA356;
-    --focus:#B2D283;--scrim:rgba(0,0,0,.6);--glass:rgba(26,37,28,.84);
-    --shadow:0 10px 30px rgba(0,0,0,.45);
+    --primary:#4F6F34;--primary-2:#6B8F46;
+    --focus:#8DB566;--scrim:rgba(0,0,0,.6);--glass:rgba(23,32,25,.9);
+    --shadow:none;--shadow-2:0 8px 24px rgba(0,0,0,.5);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-    --bg:#111A13;--surface:#1A251C;--text:#EBF1E4;--muted:#9AA894;--line:#2B392D;--field:#222E24;
+    --bg:#0F1611;--surface:#172019;--float:#1D2A21;--text:#EBF1E4;--muted:#9AA894;--line:rgba(255,255,255,.08);--field:#1E2A21;
+    --ph:#8C9A86;--input-line:#6F7C69;--primary-t:#8DB566;
     --inc:#4CC38A;--inc-bg:#173A29;--inc-t:#6BD6A0;
     --exp:#EC7770;--exp-bg:#44201E;--exp-t:#FF9A92;
-    --primary:#5C8240;--primary-2:#7BA356;
-    --focus:#B2D283;--scrim:rgba(0,0,0,.6);--glass:rgba(26,37,28,.84);
-    --shadow:0 10px 30px rgba(0,0,0,.45);
+    --primary:#4F6F34;--primary-2:#6B8F46;
+    --focus:#8DB566;--scrim:rgba(0,0,0,.6);--glass:rgba(23,32,25,.9);
+    --shadow:none;--shadow-2:0 8px 24px rgba(0,0,0,.5);
     color-scheme:dark;
   }

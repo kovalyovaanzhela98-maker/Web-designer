@@ -1,9 +1,9 @@
 {
   "appId": "by.moidengi.app",
-  "appName": "Мои деньги",
+  "appName": "Фин",
   "webDir": "www",
   "android": {
-    "backgroundColor": "#F3F0E3"
+    "backgroundColor": "#FFFFFF"
   },
   "plugins": {
     "FirebaseAuthentication": {

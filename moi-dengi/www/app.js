@@ -67,7 +67,7 @@ function load() {
 }
 function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-  catch (e) { toast('Не удалось сохранить данные на устройстве', null, null, 'oops'); }
+  catch (e) { toast('Не получилось сохранить. Освободи место на телефоне и попробуй снова.', null, null, 'oops'); }
   pushCloud();
 }
 
@@ -79,7 +79,7 @@ function pushCloud() {
   if (!ops.length) return;
   const prev = synced;
   synced = cloud.snapshotOf(state);
-  Promise.resolve(cloud.write(cloudUid, ops)).catch(() => { synced = prev; toast('Не получилось отправить в облако — повторю при следующем изменении'); });
+  Promise.resolve(cloud.write(cloudUid, ops)).catch(() => { synced = prev; toast('Нет связи с облаком. Отправлю, как только появится сеть.', null, null, 'oops'); });
 }
 const canon = st => JSON.stringify([st.currency, st.accounts, st.goals, st.tx.map(t => [t.id, t.type, t.amount, t.cat, t.acc, t.date, t.note]).sort()]);
 function applyRemote(r) {
@@ -115,7 +115,7 @@ function onSignedIn(u) {
   try { localStorage.setItem(UID_KEY, u.uid); } catch (_) {}
   cloudUid = u.uid; me = u; synced = null;
   MD.authUI.hide(); gate(true); showTab('home', true);
-  stopListen = cloud.listen(u.uid, { onData: applyRemote, onError: () => toast('Нет связи с облаком. Всё сохранится на телефоне и отправится позже.') });
+  stopListen = cloud.listen(u.uid, { onData: applyRemote, onError: () => toast('Нет связи с облаком. Отправлю, как только появится сеть.', null, null, 'oops') });
 }
 function onSignedOut() {
   if (stopListen) stopListen();
@@ -212,28 +212,34 @@ function setNum(el, html, value) {
 
 /* Фин комментирует месяц: первая реплика самая важная, по касанию листаем дальше */
 let sayIdx = 0;
+const pluralN = (n, a, b, c) => { const m = n % 100, k = n % 10; return m >= 11 && m <= 14 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c; };
 function finTips() {
+  const seed = Math.floor(Date.now() / 864e5);
+  const V = arr => arr[(sayIdx + seed) % arr.length];       // варианты реплик меняются по касанию и по дням
   const cur = monthTx(now0.getFullYear(), now0.getMonth());
   const inc = sumOf(cur, 'income'), exp = sumOf(cur, 'expense');
-  const tips = [];
+  const tips = [], M = n => esc(maskT(money(n)));
   const todayExp = round2(state.tx.filter(t => t.type === 'expense' && t.date === today()).reduce((s, t) => s + t.amount, 0));
-  if (!state.tx.length && !round2(state.accounts.reduce((a, x) => a + x.balance, 0))) tips.push({ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Скажи, сколько денег у тебя сейчас: это можно указать в «Аккаунте». Потом просто записывай траты.</small>' });
-  else if (!cur.length) tips.push({ pose: 'sleepy', t: 'В этом месяце пока тихо<small>Скажи, на что ушли деньги или что пришло, я запишу.</small>' });
+  if (!state.tx.length && !round2(state.accounts.reduce((a, x) => a + x.balance, 0))) tips.push({ pose: 'hello', t: 'Привет, я <em>Фин</em>!<small>Укажи в «Профиле», сколько денег у тебя сейчас. Дальше просто записывай траты.</small>' });
+  else if (!cur.length) tips.push({ pose: 'sleepy', t: V(['В этом месяце пока тихо<small>Скажи, на что ушли деньги, и я запишу.</small>', 'Пока ни одной записи за месяц<small>Нажми «+» или скажи: «кофе 5».</small>']) });
   else {
-    tips.push(todayExp ? { pose: 'hello', t: `Сегодня ушло <em>${esc(maskT(money(todayExp)))}</em><small>Всё записано, ничего не потерялось.</small>` } : { pose: 'joy', t: 'Сегодня без трат<small>Так держать!</small>' });
-    if (inc > 0 && exp > inc) tips.push({ pose: 'think', t: 'Расходы обгоняют доходы<small>Загляни в статистику, там видно, на что уходит больше всего.</small>' });
-    else if (inc > 0) tips.push({ pose: 'happy', t: `Ты в плюсе: <em>${esc(maskT(money(round2(inc - exp))))}</em><small>Столько осталось от того, что пришло в этом месяце.</small>` });
+    tips.push(todayExp ? { pose: 'hello', t: V([`Сегодня ушло <em>${M(todayExp)}</em><small>Всё записано.</small>`, `Сегодня потрачено <em>${M(todayExp)}</em><small>Записал, ничего не потерялось.</small>`]) } : { pose: 'joy', t: V(['Сегодня без трат<small>Так держать!</small>', 'Сегодня трат нет<small>Хороший день для копилки.</small>']) });
+    if (inc > 0 && exp > inc) tips.push({ pose: 'think', t: `Расходы обогнали доходы на <em>${M(round2(exp - inc))}</em><small>Загляни в «Аналитику»: там видно, куда уходит больше всего.</small>` });
+    else if (inc > 0) tips.push({ pose: 'happy', t: `Ты в плюсе на <em>${M(round2(inc - exp))}</em><small>Столько осталось от дохода за месяц.</small>` });
     const pm = new Date(now0.getFullYear(), now0.getMonth() - 1, 1);
     const prev = sumOf(monthTx(pm.getFullYear(), pm.getMonth()), 'expense');
     if (prev > 0 && exp > 0) {
       const pct = Math.round((exp - prev) / prev * 100);
-      if (pct <= -5) tips.push({ pose: 'joy', t: `Тратишь на ${-pct}% меньше, чем в прошлом месяце<small>Отличный темп.</small>` });
-      else if (pct >= 15) tips.push({ pose: 'think', t: `На ${pct}% больше, чем в прошлом месяце<small>Бывает. Посмотри, что изменилось.</small>` });
+      if (pct <= -5) tips.push({ pose: 'joy', t: `Тратишь на <em>${-pct}%</em> меньше, чем в ${MONTHS_P[pm.getMonth()]}<small>Хороший темп.</small>` });
+      else if (pct >= 15) tips.push({ pose: 'think', t: `На <em>${pct}%</em> больше, чем в ${MONTHS_P[pm.getMonth()]}<small>Посмотри в «Аналитике», что изменилось.</small>` });
     }
   }
   const gl = state.goals.filter(g => g.saved < g.target).sort((a, b) => goalPct(b) - goalPct(a))[0];
-  if (gl) tips.push({ pose: 'love', t: `Цель «${esc(gl.name)}»: уже ${goalPct(gl)}%<small>Загляни в «Цели», чтобы пополнить.</small>` });
-  tips.push({ pose: 'notify', t: 'Можно просто сказать голосом<small>Нажми микрофон: «вчера кофе 6 рублей».</small>' });
+  if (gl) {
+    const ml = G.monthsLeft(gl.deadline, new Date()), left = round2(gl.target - gl.saved);
+    tips.push({ pose: 'love', t: `До «${esc(gl.name)}» осталось <em>${M(left)}</em><small>${ml ? `${ml} ${pluralN(ml, 'месяц', 'месяца', 'месяцев')} по ${M(Math.ceil(left / ml))}` : 'Срок вышел. Загляни в «Цели»'}</small>` });
+  }
+  tips.push({ pose: 'notify', t: V(['Можно просто сказать<small>Нажми на микрофон: «вчера кофе 6».</small>', 'Записать быстрее голосом<small>Скажи: «такси 12 и обед 9».</small>']) });
   return tips;
 }
 function renderSay(pop) {
@@ -281,7 +287,7 @@ function renderHome() {
   const recent = list.slice().sort(cmpTx).slice(0, 5);
   $('#recentList').innerHTML = recent.length
     ? `<div class="recent">${recent.map(txRow).join('')}</div>`
-    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>Здесь будут твои траты и доходы</b>Добавь первую — кнопка «+» внизу</div>`;
+    : `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>Пока пусто</b>Нажми «+» или скажи Фину: «кофе 5». Я запишу.</div>`;
 }
 
 const cmpTx = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
@@ -298,10 +304,10 @@ function dayTitle(s) {
 function txRow(t) {
   const ci = catInfo(t.type, t.cat), a = accById(t.acc);
   return `<div class="swipe" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}</div>
-    <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить или удалить">
+    <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить">
       <div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</div>
       <div class="tx-body"><div class="tx-t">${esc(t.cat)}</div>${t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}</div>
-      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${esc(signed(t.amount, t.type))}</div><div class="tx-s">${esc(a ? a.name : '—')}</div></div>
+      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${esc(signed(t.amount, t.type))}</div></div>
     </div></div>`;
 }
 
@@ -314,7 +320,7 @@ function renderOps() {
     (!q || t.cat.toLowerCase().includes(q) || t.note.toLowerCase().includes(q) || ((accById(t.acc) || {}).name || '').toLowerCase().includes(q)));
   const el = $('#opsList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'sleepy', 132)}</span><b>${q ? 'Ничего не нашлось' : `В ${MONTHS_P[ym.m]} пока тихо`}</b>${q ? 'Попробуй другое слово или часть названия' : 'Добавь операцию — и она появится здесь'}</div>`;
+    el.innerHTML = `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot(q ? 'think' : 'sleepy', 132)}</span><b>${q ? 'Ничего не нашёл' : `В ${MONTHS_P[ym.m]} пока пусто`}</b>${q ? `По запросу «${esc(opsQuery.trim())}» ничего нет. Попробуй другое слово.` : 'Нажми «+», чтобы добавить запись.'}</div>`;
     return;
   }
   const days = {};
@@ -332,7 +338,7 @@ function renderStats() {
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>${statType === 'expense' ? 'Трат' : 'Доходов'} в ${MONTHS_P[ym.m]} нет</b>Когда появятся — здесь будет разбивка по категориям</div>`;
+    card.innerHTML = `<div class="empty" style="border:0"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 132)}</span><b>В ${MONTHS_P[ym.m]} ${statType === 'expense' ? 'трат' : 'доходов'} нет</b>Добавь первую запись, и я покажу, ${statType === 'expense' ? 'куда уходят деньги' : 'откуда приходят деньги'}.</div>`;
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
@@ -351,9 +357,9 @@ function renderStats() {
   card.innerHTML = `<div class="cat-wrap">
       <div class="donut" role="img" aria-label="Всего ${word} за месяц: ${esc(hide ? 'скрыто' : money(total))}">
         <svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--field)" stroke-width="20"/>${segs}</svg>
-        <div class="donut-c"><b>${esc(maskT(fmt(total)))}</b><span>${esc(sym())} всего</span></div>
+        <div class="donut-c"><b>${esc(maskT(fmt(total)))}</b><span>всего</span></div>
       </div>
-      <div class="top-cat">${statType === 'expense' ? 'Больше всего ушло на' : 'Главный источник'}<b>${esc(rows[0][0])}</b>${Math.round(rows[0][1] / total * 100)}% ${word}</div>
+      <div class="top-cat">${statType === 'expense' ? 'Больше всего ушло на' : 'Главный источник'}<b>${esc(rows[0][0])}</b>${Math.round(rows[0][1] / total * 100)}% ${word} · ${esc(maskT(money(rows[0][1])))}</div>
     </div>`;
 
   // Сравнение, среднее, максимум
@@ -372,10 +378,11 @@ function renderStats() {
   {
     const top = esc(rows[0][0]);
     let tip;
-    if (statType === 'income') tip = { p: 'happy', t: `Главный источник: <em>${top}</em><small>Это ${Math.round(rows[0][1] / total * 100)}% всех доходов за месяц.</small>` };
-    else if (prev > 0 && total < prev) tip = { p: 'joy', t: `На ${Math.round((prev - total) / prev * 100)}% меньше, чем в прошлом месяце<small>Больше всего ушло на «${top}».</small>` };
-    else if (prev > 0 && total > prev * 1.15) tip = { p: 'think', t: `На ${Math.round((total - prev) / prev * 100)}% больше, чем в прошлом месяце<small>Чаще всего: «${top}». Посмотри, можно ли там сэкономить.</small>` };
-    else tip = { p: 'hello', t: `Больше всего ушло на <em>${top}</em><small>${Math.round(rows[0][1] / total * 100)}% всех трат за месяц.</small>` };
+    const topSum = esc(maskT(money(rows[0][1]))), share = Math.round(rows[0][1] / total * 100);
+    if (statType === 'income') tip = { p: 'happy', t: `Главный источник: <em>${top}</em><small>${share}% дохода за месяц, ${topSum}.</small>` };
+    else if (prev > 0 && total < prev) tip = { p: 'joy', t: `Расходы упали на <em>${Math.round((prev - total) / prev * 100)}%</em> против ${MONTHS_G[pm.getMonth()]}<small>Больше всего ушло на «${top}»: ${topSum}.</small>` };
+    else if (prev > 0 && total > prev * 1.15) tip = { p: 'think', t: `Расходы выросли на <em>${Math.round((total - prev) / prev * 100)}%</em> против ${MONTHS_G[pm.getMonth()]}<small>Больше всего ушло на «${top}»: ${topSum}.</small>` };
+    else tip = { p: 'hello', t: `Больше всего ушло на <em>${top}</em><small>${share}% расходов, ${topSum}.</small>` };
     $('#statSay').innerHTML = MD.say(tip.p, tip.t, 84);
   }
   cmp = '';
@@ -504,6 +511,7 @@ function renderTxForm() {
   $('#txCur').textContent = sym();
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
     `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="--c:${c[2]}" aria-hidden="true">${cIcon(c)}</span><span>${esc(c[0])}</span></button>`).join('');
+  $('#txNote').placeholder = tx.type === 'income' ? 'Например: аванс за октябрь' : 'Например: обед с Аней';
   syncDateChips();
 }
 function syncDateChips() {
@@ -518,7 +526,7 @@ function openTx(id) {
   tx.type = t ? t.type : 'expense';
   tx.cat = t ? t.cat : CATS.expense[0][0];
   tx.acc = t ? t.acc : state.accounts[0].id;
-  $('#txTitle').textContent = t ? 'Изменить операцию' : 'Новая операция';
+  $('#txTitle').textContent = t ? 'Изменить запись' : 'Новая запись';
   $('#txAmount').value = t ? String(t.amount).replace('.', ',') : '';
   $('#txNote').value = t ? t.note : '';
   $('#txDate').value = t ? t.date : today();
@@ -543,7 +551,7 @@ $('#txForm').addEventListener('submit', e => {
   e.preventDefault();
   const amt = parseAmount($('#txAmount').value);
   const err = $('#txAmountErr');
-  if (!(amt > 0)) { showErr(err, 'Введи сумму, например 12,50'); $('#txAmount').focus(); return; }
+  if (!(amt > 0)) { showErr(err, 'Введи сумму, например 150.'); $('#txAmount').focus(); return; }
   hideErr(err);
   const date = parseYmd($('#txDate').value) ? $('#txDate').value : today();
   const rec = { type: tx.type, amount: round2(amt), cat: tx.cat, acc: tx.acc, date, note: $('#txNote').value.trim().slice(0, 120) };
@@ -554,7 +562,7 @@ $('#txForm').addEventListener('submit', e => {
   closeLayer($('#lyTx'));
   buzz(15);
   render();
-  toast(ex ? 'Сохранено' : 'Готово, записано', null, null, 'joy');
+  toast(ex ? 'Изменил запись' : `Записал: ${tx.cat}, ${money(amt)}`, null, null, 'joy');
 });
 $('#txDelete').addEventListener('click', () => {
   const id = tx.editId;
@@ -567,7 +575,7 @@ function deleteTx(id) {
   if (i < 0) { render(); return; }
   const [t] = state.tx.splice(i, 1);
   save(); render(); buzz(15);
-  toast('Удалено', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); }, 'think');
+  toast('Запись удалена', 'Вернуть', () => { state.tx.splice(Math.min(i, state.tx.length), 0, t); save(); render(); }, 'think');
 }
 
 // Тап — правка, свайп влево — удаление
@@ -610,16 +618,16 @@ const goalLeft = g => {
   if (g.saved >= g.target) return 'Цель достигнута';
   const ml = G.monthsLeft(g.deadline, new Date());
   if (!ml) return 'Срок вышел';
-  return `${G.termLabel(ml)} · по ${maskT(money(Math.ceil((g.target - g.saved) / ml)))}`;
+  return `Ещё ${G.termLabel(ml)} · по ${maskT(money(Math.ceil((g.target - g.saved) / ml)))}`;
 };
 function renderGoals() {
   const el = $('#goalsBody'), list = state.goals;
   if (!list.length) {
-    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 170)}</span><h2>Пока ни одной цели</h2><p>Отпуск, подушка безопасности, новая техника. Расскажи Фину, чего хочешь, и он посчитает, сколько откладывать каждый месяц.</p><button class="btn primary wide" data-newgoal>Поставить цель</button></div>`;
+    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 170)}</span><h2>Целей пока нет</h2><p>Скажи Фину, на что копишь. Он посчитает, сколько откладывать в месяц.</p><button class="btn primary wide" data-newgoal>Добавить цель</button></div>`;
     return;
   }
   const sum = round2(list.reduce((s, g) => s + g.saved, 0));
-  el.innerHTML = `<div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>Целей в работе: ${list.filter(g => g.saved < g.target).length}</small>`, 84)}</div>` +
+  el.innerHTML = `<div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>${list.filter(g => g.saved < g.target).length} ${pluralN(list.filter(g => g.saved < g.target).length, 'цель', 'цели', 'целей')} в работе</small>`, 84)}</div>` +
     list.map(g => `<button class="goal" data-goal="${esc(g.id)}">
       <span class="goal-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span>
       <span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span>
@@ -633,16 +641,17 @@ function openGoal(id) {
   $('#goalTitle').textContent = g.name;
   const done = g.saved >= g.target, pct = goalPct(g);
   const say = done ? ['joy', 'Цель достигнута! Можно собираться']
-    : pct >= 50 ? ['happy', `Больше половины пути, осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
+    : pct >= 50 ? ['happy', `Больше половины пути. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
       : pct > 0 ? ['hello', `Начало положено. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
-        : ['think', 'Пока пусто. Отложи первую сумму'];
+        : ['think', 'Пока ноль. Отложи первую сумму'];
   $('#goalDetail').innerHTML = `${MD.say(say[0], say[1], 84)}
     <div class="goal big"><span class="goal-top"><b>${esc(maskT(money(g.saved)))}</b><span class="goal-pct">${pct}%</span></span>
     <span class="goal-bar"><i style="width:${pct}%"></i></span>
     <span class="goal-sub"><span>Цель: ${esc(maskT(money(g.target)))}</span><span>${esc(goalLeft(g))}</span></span></div>
     <form id="goalAdd" novalidate>
-      <label class="fl" for="goalAmt">Отложить</label>
-      <div class="bal-row"><div class="amount-wrap sm"><input id="goalAmt" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"><span class="cur">${esc(sym())}</span></div><button class="btn primary" type="submit">Добавить</button></div>
+      <label class="fl" for="goalAmt">Пополнить</label>
+      <div class="bal-row"><div class="amount-wrap sm"><input id="goalAmt" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"><span class="cur">${esc(sym())}</span></div><button class="btn primary" type="submit">Пополнить</button></div>
+      <div class="note">Пополнение цели — это отметка. Баланс не меняется.</div>
       <div class="msg err" id="goalErr" hidden></div>
     </form>
     <button class="btn danger wide" type="button" id="goalDel">Удалить цель</button>`;
@@ -658,16 +667,16 @@ $('#goalDetail').addEventListener('submit', e => {
   e.preventDefault();
   const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
   const v = parseAmount($('#goalAmt').value), err = $('#goalErr');
-  if (!(v > 0)) { showErr(err, 'Введи сумму больше нуля, например 150.'); return; }
+  if (!(v > 0)) { showErr(err, 'Введи сумму, например 150.'); return; }
   const was = g.saved >= g.target;
   g.saved = round2(g.saved + v); save(); render(); buzz(15);
   closeLayer($('#lyGoal'));
-  toast(!was && g.saved >= g.target ? 'Цель достигнута, поздравляю!' : 'Отложено', null, null, !was && g.saved >= g.target ? 'joy' : 'happy');
+  toast(!was && g.saved >= g.target ? `Цель достигнута! Собрано ${money(g.target)}` : `Добавил ${money(v)} к цели`, null, null, !was && g.saved >= g.target ? 'joy' : 'happy');
 });
 $('#goalDetail').addEventListener('click', async e => {
   if (!e.target.closest('#goalDel')) return;
   const g = state.goals.find(x => x.id === openGoalId); if (!g) return;
-  const yes = await confirmDlg('Удалить цель?', `Цель «${g.name}» и отложенная сумма в ней исчезнут из приложения.`, 'Удалить');
+  const yes = await confirmDlg(`Удалить «${g.name}»?`, `Отметка ${money(g.saved)} в цели пропадёт. Записи в истории останутся.`, 'Удалить');
   if (!yes) return;
   state.goals = state.goals.filter(x => x.id !== g.id); save(); render();
   closeLayer($('#lyGoal'));
@@ -675,7 +684,7 @@ $('#goalDetail').addEventListener('click', async e => {
 });
 
 /* Разговор с Фином: вопросы, план, согласие или уточнения */
-const KINDS = [['Отпуск', 'Куда-нибудь, где тепло'], ['Подушка безопасности', 'На непредвиденное'], ['Техника', 'Телефон, ноутбук'], ['Ремонт', 'Или переезд'], ['Подарок', 'Себе или близким'], ['Своя цель', 'Назову сам']];
+const KINDS = [['Отпуск', 'Билеты, отель'], ['Подушка безопасности', 'Запас на 3–6 месяцев'], ['Техника', 'Телефон, ноутбук'], ['Ремонт', 'Или переезд'], ['Подарок', 'Себе или близким'], ['Своя цель', 'Назову сам']];
 const STEP_NO = { kind: 1, custom: 1, target: 2, saved: 3, term: 4, free: 5, think: 5, plan: 6, tune: 6, tuneMonthly: 6, tuneTerm: 6, tuneTarget: 6, tuneIncome: 6 };
 let quiz = null;
 function openQuiz() {
@@ -696,28 +705,28 @@ function renderQuiz() {
   let say, html = '';
   switch (q.step) {
     case 'kind':
-      say = ['hello', 'Давай поставим цель. Что хочешь накопить?'];
+      say = ['hello', 'На что копим?'];
       html = `<div class="kind-grid">${KINDS.map(k => `<button type="button" class="kind" data-kind="${esc(k[0])}"><b>${esc(k[0])}</b><small>${esc(k[1])}</small></button>`).join('')}</div>`;
       break;
     case 'custom':
       say = ['hello', 'Как назовём цель?'];
-      html = `<input id="qText" type="text" maxlength="40" autocomplete="off" placeholder="Например, Велосипед"><div class="msg err" id="qErr" hidden></div>${qBtn('custom', 'Дальше')}`;
+      html = `<input id="qText" type="text" maxlength="40" autocomplete="off" placeholder="Например: велосипед"><div class="msg err" id="qErr" hidden></div>${qBtn('custom', 'Дальше')}`;
       break;
     case 'target':
       say = ['think', `Сколько нужно на «${nm}»?`];
       html = qIn('qNum', '0', sym()) + qBtn('target', 'Дальше');
       break;
     case 'saved':
-      say = ['hello', 'Сколько уже отложено на эту цель?'];
-      html = qIn('qNum', '0', sym()) + qBtn('saved', 'Дальше') + qBtn('saved0', 'Пока ничего', 'soft');
+      say = ['hello', 'Сколько уже есть?'];
+      html = qIn('qNum', '0', sym()) + qBtn('saved', 'Дальше') + qBtn('saved0', 'Пока ноль', 'soft');
       break;
     case 'term':
-      say = ['notify', 'К какому сроку хочешь накопить?'];
+      say = ['notify', 'За сколько хочешь накопить?'];
       html = `<div class="term-grid">${[[3, '3 месяца'], [6, '6 месяцев'], [12, '1 год'], [24, '2 года']].map(t => `<button type="button" class="kind term" data-term="${t[0]}"><b>${t[1]}</b></button>`).join('')}</div>
-        <label class="fl sm" for="qNum">Или свой срок, в месяцах</label>${qIn('qNum', 'Например, 9')}${qBtn('term', 'Дальше', 'soft')}`;
+        <label class="fl sm" for="qNum">Другой срок, месяцев</label>${qIn('qNum', 'Например: 9')}${qBtn('term', 'Дальше', 'soft')}`;
       break;
     case 'free':
-      say = ['think', 'Я пока не вижу твоих доходов и трат. Сколько денег остаётся свободными за месяц?'];
+      say = ['think', 'Не вижу твоих трат и доходов. Сколько примерно остаётся свободным за месяц?'];
       html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('free', 'Дальше') + qBtn('free0', 'Не знаю', 'soft');
       break;
     case 'think':
@@ -728,11 +737,12 @@ function renderQuiz() {
       const p = planOf(), cur = sym();
       const until = G.addMonths(new Date(), p.months), untilTxt = `${MONTHS[until.getMonth()].toLowerCase()} ${until.getFullYear()}`;
       const T = G.termLabel(p.months);
+      const fm = p.free !== null ? esc(money(p.free)) : '';
       const txt = {
-        easy: ['joy', `Это посильно. Откладывая по <em>${esc(money(p.monthly))}</em> в месяц, на «${nm}» накопишь за ${T}.<small>Хватит и останется запас.</small>`],
-        ok: ['happy', `Вполне реально. Нужно откладывать по <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Почти всё свободное уйдёт в цель, так что придётся себя держать.</small>`],
-        hard: ['think', `Тяжеловато: нужно по <em>${esc(money(p.monthly))}</em> в месяц, а свободно в среднем ${p.free > 0 ? esc(money(p.free)) : 'меньше нуля'}.${p.altMonths ? `<small>Если откладывать по ${esc(money(p.free))}, цель получится за ${G.termLabel(p.altMonths)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
-        unknown: ['hello', `Вот план: по <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Твоих доходов я не знаю, поэтому не могу сказать, посильно ли это.</small>`],
+        easy: ['joy', `Легко. По <em>${esc(money(p.monthly))}</em> в месяц, и через ${T} на «${nm}» будет ${esc(money(q.target))}.<small>Останется запас.</small>`],
+        ok: ['happy', `Реально, но впритык: <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Это почти всё твоё свободное.</small>`],
+        hard: ['think', `Тяжеловато: нужно <em>${esc(money(p.monthly))}</em> в месяц, а свободно в среднем ${p.free > 0 ? fm : 'меньше нуля'}.${p.altMonths ? `<small>Могу растянуть до ${G.termLabel(p.altMonths)}.</small>` : '<small>Давай подберём другой срок или сумму.</small>'}`],
+        unknown: ['hello', `План: <em>${esc(money(p.monthly))}</em> в месяц, срок ${T}.<small>Твоих доходов я не знаю, поэтому не скажу, посильно ли это.</small>`],
         done: ['joy', 'Нужная сумма уже есть!<small>Сохрани цель, чтобы следить за ней.</small>']
       }[p.verdict];
       say = txt;
@@ -740,38 +750,38 @@ function renderQuiz() {
         <div><span>Цель</span><b>${nm}</b></div>
         <div><span>Нужно</span><b>${esc(money(q.target))}</b></div>
         <div><span>Уже есть</span><b>${esc(money(q.saved))}</b></div>
-        <div class="hl"><span>Откладывать</span><b>${esc(money(p.monthly))} в месяц</b></div>
+        <div class="hl"><span>В месяц</span><b>${esc(money(p.monthly))}</b></div>
         <div><span>Срок</span><b>${T}, до ${untilTxt}</b></div>
         ${p.free !== null ? `<div><span>Свободно в среднем</span><b>${esc(money(p.free))} в месяц</b></div>` : ''}
-      </div>` + qBtn('accept', 'Согласен, сохранить цель') +
-        (p.verdict === 'hard' && p.altMonths ? qBtn('alt', `Принять срок: ${G.termLabel(p.altMonths)}`, 'soft') : '') +
-        qBtn('reject', 'Не подходит', 'ghost');
+      </div>` + qBtn('accept', 'Беру этот план') +
+        (p.verdict === 'hard' && p.altMonths ? qBtn('alt', `Растянуть до ${G.termLabel(p.altMonths)}`, 'soft') : '') +
+        qBtn('reject', 'Изменить план', 'ghost');
       void cur;
       break;
     }
     case 'tune':
-      say = ['think', 'Понял, подберём иначе. Что не так?'];
+      say = ['think', 'Что поправим?'];
       html = `<div class="opts">
-        <button type="button" data-qa="tuneMonthly">Откладывать столько каждый месяц тяжело</button>
-        <button type="button" data-qa="tuneTerm">Хочу накопить быстрее</button>
-        <button type="button" data-qa="tuneTarget">Сумма получилась слишком большой</button>
-        <button type="button" data-qa="tuneIncome">Есть доход, которого ты не видишь</button>
-        <button type="button" data-qa="restart">Начать сначала</button></div>`;
+        <button type="button" data-qa="tuneMonthly">Слишком много в месяц</button>
+        <button type="button" data-qa="tuneTerm">Хочу быстрее</button>
+        <button type="button" data-qa="tuneTarget">Цель дороговата</button>
+        <button type="button" data-qa="tuneIncome">Есть доход вне приложения</button>
+        <button type="button" data-qa="restart">Начать заново</button></div>`;
       break;
     case 'tuneMonthly':
-      say = ['think', 'Сколько в месяц тебе комфортно откладывать?'];
+      say = ['think', 'Сколько в месяц откладывать комфортно?'];
       html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('doMonthly', 'Пересчитать');
       break;
     case 'tuneTerm':
-      say = ['notify', 'За сколько месяцев хочешь накопить?'];
-      html = qIn('qNum', 'Например, 5') + qBtn('doTerm', 'Пересчитать');
+      say = ['notify', 'За сколько месяцев?'];
+      html = qIn('qNum', 'Например: 5') + qBtn('doTerm', 'Пересчитать');
       break;
     case 'tuneTarget':
-      say = ['think', `Какая сумма на «${nm}» подойдёт?`];
+      say = ['think', 'Какая сумма подойдёт?'];
       html = qIn('qNum', '0', sym()) + qBtn('doTarget', 'Пересчитать');
       break;
     case 'tuneIncome':
-      say = ['think', 'Сколько ещё поступает в месяц сверх того, что записано в приложении?'];
+      say = ['think', 'Сколько ещё приходит в месяц вне приложения?'];
       html = qIn('qNum', '0', sym() + ' в месяц') + qBtn('doIncome', 'Пересчитать');
       break;
   }
@@ -798,17 +808,17 @@ $('#quizBody').addEventListener('click', e => {
     q.name = v.slice(0, 40); qGo('target'); return;
   }
   if (a === 'target' || a === 'doTarget') {
-    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму больше нуля, например 3000.');
+    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму, например 3000.');
     q.target = n.v; if (a === 'doTarget') { if (q.saved > q.target) q.saved = q.target; toPlan(true); } else qGo('saved'); return;
   }
   if (a === 'saved' || a === 'saved0') {
     if (a === 'saved0') q.saved = 0;
-    else { const n = quizNum(true); if (!Number.isFinite(n.v) || n.v < 0) return n.fail('Введи сумму, например 500, или нажми «Пока ничего».'); q.saved = n.v; }
+    else { const n = quizNum(true); if (!Number.isFinite(n.v) || n.v < 0) return n.fail('Введи сумму, например 500, или нажми «Пока ноль».'); q.saved = n.v; }
     qGo('term'); return;
   }
   if (a === 'term' || a === 'doTerm') {
     const n = quizNum(false); const m = Math.round(n.v);
-    if (!(m >= 1 && m <= 600)) return n.fail('Введи срок в месяцах, от 1 до 600.');
+    if (!(m >= 1 && m <= 600)) return n.fail('Введи срок в месяцах, например 6.');
     q.months = m; toPlan(a === 'doTerm'); return;
   }
   if (a === 'free' || a === 'free0') {
@@ -822,13 +832,13 @@ $('#quizBody').addEventListener('click', e => {
   if (a === 'restart') { q.stack = []; q.step = 'kind'; renderQuiz(); return; }
   if (a === 'tuneMonthly' || a === 'tuneTerm' || a === 'tuneTarget' || a === 'tuneIncome') { qGo(a); return; }
   if (a === 'doMonthly') {
-    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму больше нуля, например 200.');
+    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму, например 200.');
     const need = Math.max(q.target - q.saved, 0), m = Math.max(1, Math.ceil(need / n.v));
-    if (m > 600) return n.fail('Так получится больше 50 лет. Давай откладывать побольше.');
+    if (m > 600) return n.fail('Так выйдет больше 50 лет. Давай откладывать побольше.');
     q.months = m; toPlan(true); return;
   }
   if (a === 'doIncome') {
-    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму больше нуля, например 300.');
+    const n = quizNum(false); if (!(n.v > 0)) return n.fail('Введи сумму, например 300.');
     q.extra += n.v; q.free = round2((q.free || 0) + n.v); toPlan(true); return;
   }
 });
@@ -852,13 +862,13 @@ function saveGoal() {
   state.goals.push({ id: uid(), name: q.name, target: round2(q.target), saved: round2(q.saved), months: p.months, deadline: G.ymdOf(G.addMonths(new Date(), p.months)), created: today() });
   save(); closeLayer($('#lyQuiz')); quiz = null; buzz(20);
   showTab('goals');
-  toast('Цель добавлена', null, null, 'joy');
+  toast('Цель добавлена. Пополняй, когда отложишь', null, null, 'joy');
 }
 
 $('#fab').addEventListener('click', () => { buzz(10); openTx(); });
 
 /* ---------- Помощник ---------- */
-const AI_SAY = { hello: 'Скажи или напиши, что записать', listen: 'Слушаю тебя…', think: 'Пока пусто. Скажи или напиши, что записать', happy: 'Готово! Проверь, всё ли понял верно', oops: 'Не вышло. Попробуем ещё раз?' };
+const AI_SAY = { hello: 'Скажи или напиши, что записать', listen: 'Слушаю…', think: 'Пока пусто. Скажи, например: «кофе 6»', happy: 'Готово! Проверь, всё ли я понял', oops: 'Не вышло. Попробуем ещё раз?' };
 const setAiPose = p => { $('#aiMascot').innerHTML = MD.say(p === 'listen' ? 'notify' : p, esc(AI_SAY[p] || AI_SAY.hello), 76); };
 function normalizeItems(items) {
   const res = [];
@@ -880,10 +890,10 @@ function normalizeItems(items) {
 function runAI() {
   const err = $('#aiErr'), text = $('#aiText').value.trim();
   hideErr(err);
-  if (!text) { showErr(err, 'Пока пусто. Скажи или напиши, например: «вчера кофе 6 рублей».'); setAiPose('think'); $('#aiText').focus(); return; }
+  if (!text) { showErr(err, 'Пока пусто. Скажи, например: «кофе 6».'); setAiPose('think'); $('#aiText').focus(); return; }
   ensureAccount();
   const items = normalizeItems(MD.parseNotes(text, { today: new Date(), accounts: state.accounts }));
-  if (!items.length) { showErr(err, 'Не нашлось трат и доходов. Назови, что куплено или получено и на какую сумму.'); setAiPose('oops'); return; }
+  if (!items.length) { showErr(err, 'Не понял. Назови, что и на какую сумму: «такси 12».'); setAiPose('oops'); return; }
   setAiPose('happy'); buzz(15);
   draft = items; renderDraft(); openLayer($('#lyDraft'));
 }
@@ -897,13 +907,14 @@ function renderDraft() {
   $('#draftList').innerHTML = draft.map((d, i) => {
     const ci = catInfo(d.type, d.cat), a = accById(d.acc);
     return `<div class="dr"><div class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${cIcon(ci)}</div>
-      <div class="dr-b"><div class="dr-t">${esc(d.cat)}</div>${d.note ? `<div class="tx-n">${esc(d.note)}</div>` : ''}<div class="dr-s">${esc(a.name)} · ${esc(dayTitle(d.date))}</div></div>
+      <div class="dr-b"><div class="dr-t">${esc(d.cat)}</div>${d.note ? `<div class="tx-n">${esc(d.note)}</div>` : ''}<div class="dr-s">${esc(dayTitle(d.date))}</div></div>
       <div class="tx-a ${d.type === 'income' ? 'inc' : 'exp'}">${esc(signed(d.amount, d.type))}</div>
       <button class="dr-x" data-drop="${i}" aria-label="Убрать строку: ${esc(d.cat)}">${icon('close')}</button></div>`;
   }).join('');
   const inc = sumOf(draft, 'income'), exp = sumOf(draft, 'expense');
   $('#draftSum').innerHTML = `<span>Записей: ${draft.length}</span><span class="i">Доход +${esc(money(inc))}</span><span class="e">Расход −${esc(money(exp))}</span>`;
   $('#draftOk').disabled = !draft.length;
+  $('#draftOk').textContent = `Сохранить всё · ${draft.length}`;
 }
 $('#draftList').addEventListener('click', e => {
   const b = e.target.closest('[data-drop]');
@@ -925,7 +936,7 @@ $('#draftOk').addEventListener('click', () => {
   closeLayer($('#lyDraft'));
   buzz(20);
   showTab('home');
-  toast(`Добавлено: ${n}`, null, null, 'happy');
+  toast(`Записал: ${n}`, null, null, 'happy');
 });
 
 /* ---------- Голосовой ввод ---------- */
@@ -944,7 +955,7 @@ function setMic(on, hint, live) {
   h.classList.toggle('live', !!live);
   setAiPose(on ? 'listen' : 'hello');
 }
-const HINT_IDLE = 'Нажми на микрофон и говори';
+const HINT_IDLE = 'Нажми и говори';
 function voiceFail(msg) { setMic(false, HINT_IDLE); showErr($('#aiErr'), msg); setAiPose('oops'); }
 function voiceText(t) {
   voice.text = t;
@@ -954,7 +965,7 @@ async function finishVoice() {
   if (!voice.on) return;
   setMic(false, HINT_IDLE);
   if (voice.text.trim()) { buzz(15); runAI(); }
-  else voiceFail('Не расслышалось. Поднеси телефон поближе и попробуй ещё раз.');
+  else voiceFail('Не расслышал. Скажи ещё раз, чуть ближе к микрофону.');
 }
 async function startVoice() {
   hideErr($('#aiErr'));
@@ -963,36 +974,36 @@ async function startVoice() {
   if (P) {
     try {
       const av = await P.available();
-      if (!av.available) return voiceFail('На этом телефоне нет распознавания речи. Нажми на поле ниже и продиктуй через значок микрофона на клавиатуре.');
+      if (!av.available) return voiceFail('На этом телефоне нет распознавания речи. Нажми на поле и продиктуй через микрофон на клавиатуре.');
       let perm = await P.checkPermissions();
       if (perm.speechRecognition !== 'granted') perm = await P.requestPermissions();
-      if (perm.speechRecognition !== 'granted') return voiceFail('Нет доступа к микрофону. Разреши его в настройках телефона: Приложения → Мои деньги → Разрешения.');
+      if (perm.speechRecognition !== 'granted') return voiceFail('Нужен доступ к микрофону. Включи его в настройках телефона: Приложения → Фин → Разрешения.');
       await P.removeAllListeners();
       await P.addListener('partialResults', d => { if (d && d.matches && d.matches[0]) voiceText(d.matches[0]); });
       await P.addListener('listeningState', d => { if (d && d.status === 'stopped') finishVoice(); });
-      setMic(true, 'Слушаю. Договоришь — нажми ещё раз', true);
+      setMic(true, 'Слушаю… Нажми, когда закончишь', true);
       buzz(15);
       await P.start({ language: 'ru-RU', maxResults: 1, partialResults: true, popup: false });
-    } catch (e) { voiceFail('Микрофон не включился. Попробуй ещё раз или продиктуй через клавиатуру.'); }
+    } catch (e) { voiceFail('Не получилось включить микрофон. Попробуй ещё раз или продиктуй с клавиатуры.'); }
     return;
   }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return voiceFail('Голосовой ввод здесь не работает. Нажми на поле и продиктуй через микрофон на клавиатуре.');
+  if (!SR) return voiceFail('Голос здесь не работает. Нажми на поле и продиктуй через микрофон на клавиатуре.');
   const r = new SR();
   r.lang = 'ru-RU'; r.interimResults = true; r.continuous = false;
   r.onresult = ev => { let s = ''; for (const x of ev.results) s += x[0].transcript; voiceText(s.trim()); };
   r.onerror = ev => {
-    if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') voiceFail('Нет доступа к микрофону. Разреши его в настройках браузера.');
-    else if (ev.error === 'no-speech') voiceFail('Не расслышалось. Попробуй ещё раз.');
-    else if (ev.error === 'network') voiceFail('Для распознавания речи нужен интернет.');
-    else if (ev.error !== 'aborted') voiceFail('Не получилось распознать речь. Попробуй ещё раз.');
+    if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') voiceFail('Нужен доступ к микрофону. Включи его в настройках браузера.');
+    else if (ev.error === 'no-speech') voiceFail('Не расслышал. Скажи ещё раз.');
+    else if (ev.error === 'network') voiceFail('Для голоса нужен интернет.');
+    else if (ev.error !== 'aborted') voiceFail('Не получилось распознать. Скажи ещё раз.');
     voice.web = null;
   };
   r.onend = () => { if (voice.web) { voice.web = null; finishVoice(); } };
   voice.web = r;
-  setMic(true, 'Слушаю. Договоришь — нажми ещё раз', true);
+  setMic(true, 'Слушаю… Нажми, когда закончишь', true);
   buzz(15);
-  try { r.start(); } catch (e) { voice.web = null; voiceFail('Микрофон не включился.'); }
+  try { r.start(); } catch (e) { voice.web = null; voiceFail('Не получилось включить микрофон.'); }
 }
 async function stopVoice() {
   const P = capPlugin();
@@ -1022,7 +1033,7 @@ $('#balSave').addEventListener('click', () => {
   ensureAccount();
   state.accounts[0].balance = round2(state.accounts[0].balance + (v - totalBalance()));
   save(); render(); buzz(12);
-  toast('Баланс обновлён', null, null, 'happy');
+  toast(`Баланс: ${money(v)}`, null, null, 'happy');
 });
 $('#setCur').addEventListener('click', e => {
   const b = e.target.closest('[data-cur]');
@@ -1030,20 +1041,81 @@ $('#setCur').addEventListener('click', e => {
   state.currency = b.dataset.cur; save(); renderSettings(); render();
 });
 function renderAccount() {
-  $('#setFoot').textContent = cloud.enabled ? 'Твои данные хранятся в личном облаке и на этом телефоне.' : 'Данные лежат только на этом телефоне.';
-  $('#acctMascot').innerHTML = MD.mascot('happy', 46);
-  if (cloud.enabled && me) {
-    $('#acctName').textContent = me.email || me.phone || me.name || 'Мой аккаунт';
-    $('#acctSub').textContent = 'Данные в облаке — они есть на всех твоих устройствах';
-    $('#btnSignOut').hidden = false;
+  $('#setFoot').textContent = cloud.enabled ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';
+  $('#acctMascot').innerHTML = MD.mascot('happy', 56);
+  const on = cloud.enabled && me;
+  $('#linkCard').hidden = !on;
+  $('#btnSignOut').hidden = !on;
+  if (on) {
+    $('#acctName').textContent = me.email || me.phone || me.name || 'Мой профиль';
+    $('#acctSub').textContent = 'Данные синхронизируются';
+    $('#linkPhone').textContent = me.phone || 'Не привязан';
+    $('#linkPhoneBtn').hidden = !!me.phone;
+    $('#linkEmail').textContent = me.email || 'Не добавлена';
+    $('#linkEmailBtn').hidden = !!me.email;
   } else {
-    $('#acctName').textContent = 'Без аккаунта';
-    $('#acctSub').textContent = 'Вход ещё не подключён: данные лежат только на этом телефоне';
-    $('#btnSignOut').hidden = true;
+    $('#acctName').textContent = 'Ты без входа';
+    $('#acctSub').textContent = 'Данные только на этом телефоне.';
   }
 }
+
+/* Привязка телефона и почты: чтобы вернуть доступ, если потеряешь Google или Apple */
+let linkStep = 'phone', linkPhoneNum = '';
+const linkErr = e => {
+  const l = (((e && e.code) || '') + ' ' + ((e && e.message) || '')).toLowerCase();
+  if (/network|unavailable|timeout/.test(l)) return 'Нет сети. Проверь интернет и попробуй снова.';
+  if (/invalid-phone/.test(l)) return 'Не понял номер. Введи с кодом страны: +375…';
+  if (/invalid-verification|invalid-code/.test(l)) return 'Не тот код. Проверь цифры из СМС.';
+  if (/expired/.test(l)) return 'Код устарел. Запроси новый.';
+  if (/already-in-use|credential-already|provider-already/.test(l)) return 'Это уже привязано к другому профилю. Попробуй другое.';
+  if (/weak-password/.test(l)) return 'Пароль короткий. Нужно хотя бы 6 символов.';
+  if (/invalid-email/.test(l)) return 'Не понял почту. Проверь адрес.';
+  if (/too-many/.test(l)) return 'Слишком много попыток. Подожди немного.';
+  return 'Не получилось привязать. Попробуй ещё раз.';
+};
+function renderLink(err) {
+  const e = err ? `<div class="msg err" role="alert">${esc(err)}</div>` : '<div class="msg err" id="linkErr" hidden></div>';
+  const m = { phone: ['Привяжем телефон', 'Пришлю СМС с кодом.', `<label class="fl sm" for="lkPhone">Номер телефона</label><input id="lkPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+375 29 123-45-67" value="${esc(linkPhoneNum)}">${e}<button class="btn primary wide" data-lk="send" type="button">Получить код</button>`],
+    code: ['Введи код из СМС', linkPhoneNum, `<label class="fl sm" for="lkCode">Код</label><input id="lkCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">${e}<button class="btn primary wide" data-lk="confirm" type="button">Подтвердить</button>`],
+    email: ['Добавим почту', 'Нужна, чтобы вернуть доступ.', `<label class="fl sm" for="lkEmail">Почта</label><input id="lkEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="name@example.com"><label class="fl sm" for="lkPw">Пароль</label><input id="lkPw" type="password" autocomplete="new-password" placeholder="Не короче 6 символов">${e}<button class="btn primary wide" data-lk="email" type="button">Добавить почту</button>`] }[linkStep];
+  $('#linkTitle').textContent = linkStep === 'email' ? 'Почта' : 'Телефон';
+  $('#linkBody').innerHTML = MD.say(linkStep === 'code' ? 'notify' : 'hello', `${esc(m[0])}<small>${esc(m[1])}</small>`, 76) + m[2];
+  const f = $('#linkBody input'); if (f) setTimeout(() => f.focus({ preventScroll: true }), 80);
+}
+function openLink(kind) { linkStep = kind; linkPhoneNum = ''; renderLink(); openLayer($('#lyLink')); }
+$('#linkCard').addEventListener('click', e => { const b = e.target.closest('[data-linkbtn]'); if (b) openLink(b.dataset.linkbtn); });
+$('#linkBody').addEventListener('click', async e => {
+  const b = e.target.closest('[data-lk]'); if (!b || b.disabled) return;
+  const a = b.dataset.lk, fail = m => { renderLink(m); };
+  const norm = v => { let t = v.replace(/[\s\-()]/g, ''); if (/^8\d{10}$/.test(t)) t = '+7' + t.slice(1); return /^\+\d{9,15}$/.test(t) ? t : null; };
+  b.disabled = true;
+  try {
+    if (a === 'send') {
+      const n = norm($('#lkPhone').value); linkPhoneNum = $('#lkPhone').value;
+      if (!n) return fail('Не понял номер. Введи с кодом страны: +375…');
+      await cloud.linkPhoneSend(n); linkPhoneNum = n; linkStep = 'code'; renderLink();
+    } else if (a === 'confirm') {
+      const c = $('#lkCode').value.replace(/\D/g, '');
+      if (c.length < 6) return fail('Код — шесть цифр из СМС.');
+      await cloud.linkPhoneConfirm(c);
+      await linkDone('Телефон привязан');
+    } else if (a === 'email') {
+      const em = $('#lkEmail').value.trim(), pw = $('#lkPw').value;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) return fail('Не понял почту. Проверь адрес.');
+      if (pw.length < 6) return fail('Пароль короткий. Нужно хотя бы 6 символов.');
+      await cloud.linkEmail(em, pw);
+      await linkDone('Почта добавлена');
+    }
+  } catch (err) { fail(linkErr(err)); }
+  finally { b.disabled = false; }
+});
+async function linkDone(msg) {
+  try { const u = await cloud.refreshUser(); if (u) me = Object.assign({}, me, u); } catch (_) {}
+  closeLayer($('#lyLink')); renderAccount();
+  toast(msg, null, null, 'happy');
+}
 $('#btnSignOut').addEventListener('click', async () => {
-  const yes = await confirmDlg('Выйти из аккаунта?', 'Данные останутся в облаке. Войдёшь снова — и всё вернётся.', 'Выйти');
+  const yes = await confirmDlg('Выйти?', 'Данные останутся в облаке. Войдёшь снова, и всё вернётся.', 'Выйти');
   if (!yes) return;
   setTimeout(() => cloud.signOut(), 200);
 });
@@ -1054,23 +1126,23 @@ $('#bkCopy').addEventListener('click', async () => {
   if (!ok) {
     const ta = $('#bkText'); ta.value = json; ta.focus(); ta.select();
     try { ok = document.execCommand('copy'); } catch (_) {}
-    if (!ok) { toast('Скопируй текст из поля ниже вручную'); return; }
+    if (!ok) { toast('Скопируй текст из поля вручную'); return; }
     ta.value = '';
   }
-  toast('Копия скопирована');
+  toast('Копия в буфере', null, null, 'happy');
 });
 $('#bkRestore').addEventListener('click', async () => {
   const err = $('#bkErr'); hideErr(err);
   const raw = $('#bkText').value.trim();
-  if (!raw) { showErr(err, 'Вставь в поле скопированный текст.'); return; }
+  if (!raw) { showErr(err, 'Вставь в поле копию данных.'); return; }
   let s = null;
   try { s = sanitize(JSON.parse(raw)); } catch (_) {}
-  if (!s) { showErr(err, 'Не похоже на копию из этого приложения. Скопируй её заново целиком.'); return; }
-  const yes = await confirmDlg('Заменить все данные?', `Всё, что сейчас в приложении, заменится копией: операций — ${s.tx.length}, целей — ${s.goals.length}.`, 'Заменить');
+  if (!s) { showErr(err, 'Не понял эту копию. Скопируй её заново целиком.'); return; }
+  const yes = await confirmDlg('Заменить данные?', `Всё текущее заменится копией: ${s.tx.length} ${pluralN(s.tx.length, 'запись', 'записи', 'записей')} и ${s.goals.length} ${pluralN(s.goals.length, 'цель', 'цели', 'целей')}.`, 'Заменить');
   if (!yes) return;
   state = s; save();
   render();
-  toast('Всё восстановлено', null, null, 'happy');
+  toast('Данные восстановлены', null, null, 'happy');
 });
 
 /* ---------- Старт ---------- */

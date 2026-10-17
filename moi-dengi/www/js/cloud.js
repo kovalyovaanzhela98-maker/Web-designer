@@ -29,17 +29,22 @@
       signUpEmail: (email, password) => A.createUserWithEmailAndPassword({ email, password }),
       resetPassword: email => A.sendPasswordResetEmail({ email }),
       signOut: () => A.signOut(),
-      async phoneSend(phoneNumber) {
+      async phoneSend(phoneNumber, link) {
         const handles = [];
         try {
           await new Promise(async (resolve, reject) => {
             handles.push(await A.addListener('phoneCodeSent', ev => { verificationId = ev.verificationId; resolve(); }));
             handles.push(await A.addListener('phoneVerificationFailed', ev => reject(ev && ev.message ? { message: ev.message, code: ev.code } : ev)));
             handles.push(await A.addListener('phoneVerificationCompleted', () => resolve()));
-            A.signInWithPhoneNumber({ phoneNumber }).catch(reject);
+            (link ? A.linkWithPhoneNumber({ phoneNumber }) : A.signInWithPhoneNumber({ phoneNumber })).catch(reject);
           });
         } finally { handles.forEach(h => h && h.remove && h.remove()); }
       },
+      /* Привязка к уже вошедшему профилю (телефон и почта нужны, чтобы вернуть доступ) */
+      linkPhoneSend(phoneNumber) { return api.phoneSend(phoneNumber, true); },
+      linkPhoneConfirm: code => A.linkWithPhoneNumber({ verificationId, verificationCode: code }),
+      linkEmail: (email, password) => A.linkWithEmailAndPassword({ email, password }),
+      async refreshUser() { const r = await A.getCurrentUser(); return toUser(r && r.user); },
       phoneConfirm: code => A.confirmVerificationCode({ verificationId, verificationCode: code }),
 
       /* Синхронизация: два слушателя (карты и операции), результат отдаём вместе, когда пришли оба */
@@ -98,6 +103,10 @@
       signOut() { wr('user', null); authCb && authCb(null); return Promise.resolve(); },
       phoneSend(phone) { if (phone === '+1000') return fail('auth/invalid-phone-number'); pendingPhone = phone; return Promise.resolve(); },
       phoneConfirm(code) { return code === '123456' ? setUser({ uid: 'p-' + pendingPhone, phone: pendingPhone }) : fail('auth/invalid-verification-code'); },
+      linkPhoneSend(phone) { if (phone === '+1000') return fail('auth/invalid-phone-number'); pendingPhone = phone; return Promise.resolve(); },
+      linkPhoneConfirm(code) { if (code !== '123456') return fail('auth/invalid-verification-code'); const u = Object.assign({}, rd('user', {}), { phone: pendingPhone }); wr('user', u); return Promise.resolve({ user: u }); },
+      linkEmail(email, pw) { if (pw.length < 6) return fail('auth/weak-password'); const u = Object.assign({}, rd('user', {}), { email }); wr('user', u); return Promise.resolve({ user: u }); },
+      refreshUser: () => Promise.resolve(rd('user', null)),
       listen(uid, h) {
         const fire = () => { const c = cloudOf(uid); h.onData({ exists: !!c.meta, currency: c.meta && c.meta.currency, accounts: (c.meta && c.meta.accounts) || [], goals: (c.meta && c.meta.goals) || [], tx: Object.entries(c.tx).map(([id, d]) => Object.assign({ id }, d)) }); };
         const l = () => setTimeout(fire, 20); listeners.add(l); setTimeout(fire, 40);
