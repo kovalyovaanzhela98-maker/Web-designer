@@ -68,9 +68,9 @@
 .gd-card{padding:0}
 .gd-in{display:flex;flex-direction:column;gap:2px;margin:var(--pad);padding:var(--pad);border-radius:var(--r-sm);background:var(--field)}
 .gd-in small{color:var(--muted)}
-.gd-mark{display:flex;align-items:center;gap:8px;height:var(--gap);margin:calc(var(--gap) * -1) 0;font-size:var(--fs-cap);color:var(--muted)}
+.gd-mark{display:flex;align-items:center;gap:8px;height:var(--gap);font-size:var(--fs-cap);color:var(--muted)}
 .gd-mark i{display:block;width:2px;height:var(--gap);background:var(--text)}
-.gapdemo{gap:var(--gap)}
+.gapdemo{gap:0}
 .rd{display:flex;gap:12px;flex-wrap:wrap}
 .rd div{width:92px;height:68px;background:var(--surface);border:2px solid var(--text);display:grid;place-items:center;align-content:center;font-size:var(--fs-cap);font-weight:700}
 .rd code{background:none;padding:0;font-weight:500;color:var(--muted)}
