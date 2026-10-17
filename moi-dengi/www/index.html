@@ -16,25 +16,27 @@
 
 <div id="app">
 
-  <!-- ГЛАВНАЯ: важное сверху (подсказка о привычках, баланс, платёж, пора отложить), плитки, баннеры, быстрая запись, последние пять -->
+  <!-- ГЛАВНАЯ: баланс с итогами месяца, избранные обязательные платежи, «пора отложить», одно наблюдение, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
     <div id="nudgeBox"></div>
 
-    <section class="bal" aria-labelledby="heroLabel">
-      <div class="bal-top"><span class="cap" id="heroLabel">Баланс</span><button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button></div>
-      <div class="bal-sum" id="heroSum"></div>
-      <div class="bal-note" id="balNote"></div>
+    <section class="hero" aria-labelledby="heroLabel">
+      <div class="hero-deco" aria-hidden="true"></div>
+      <div class="hero-top"><span class="hero-label" id="heroLabel">Баланс</span><button class="eye" id="btnEye" aria-label="Скрыть суммы" aria-pressed="false"><i data-ic="eye"></i></button></div>
+      <div class="hero-sum" id="heroSum"></div>
+      <div class="hero-split" id="tiles">
+        <div class="hs inc"><small><i data-ic="down"></i>Пришло</small><b id="sumInc"></b><span class="mo" id="tileIncL"></span></div>
+        <div class="hs exp"><small><i data-ic="up"></i>Потрачено</small><b id="sumExp"></b><span class="mo" id="tileExpL"></span></div>
+      </div>
     </section>
 
-    <div class="card pay-next" id="payNext" hidden></div>
+    <section class="block panel" id="paysBlock" hidden aria-labelledby="hPays">
+      <div class="h2-row"><h2 class="h2" id="hPays">Обязательные платежи</h2><button class="link" data-go-pay>Все</button></div>
+      <div class="pays" id="paysStrip"></div>
+    </section>
+
     <div id="saveCard"></div>
-
-    <div class="tiles" id="tiles">
-      <div class="card tile inc"><small><i data-ic="down"></i><span>Пришло</span></small><b id="sumInc"></b><small class="mo" id="tileIncL"></small></div>
-      <div class="card tile exp"><small><i data-ic="up"></i><span>Потрачено</span></small><b id="sumExp"></b><small class="mo" id="tileExpL"></small></div>
-    </div>
-
-    <div class="banners" id="banners" aria-label="Наблюдения Фина"></div>
+    <div class="banners" id="banners" aria-label="Наблюдение Фина"></div>
 
     <form class="qadd" id="qaForm" autocomplete="off">
       <input id="qaInput" type="text" placeholder="Напиши: вчера такси 12" aria-label="Быстрая запись фразой">

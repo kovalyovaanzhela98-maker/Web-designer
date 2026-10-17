@@ -11,13 +11,13 @@
 /* Размеры текста: ровно три. Заголовок экрана, карточка, подпись. */
 :root{
   /* Поверхности и текст. Фон белый, плашки белые с мягкой тенью, поля с обводкой */
-  --bg:#FFFFFF;--surface:#FFFFFF;--float:#FFFFFF;--text:#16241A;--muted:#5A6B5E;--ph:#6B7A6E;
-  --line:#E7ECE7;--field:#F2F5F2;--outline:1px solid #D5DCD6;
+  --bg:#EFF2EC;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#EFF2EC;--text:#16241A;--muted:#566659;--ph:#6B7A6E;
+  --line:#DCE2DA;--field:#EBEFE9;--outline:1px solid #CBD3CB;--card-b:1px solid #DCE2DA;
   /* Яркий акцент: свежий изумруд и лайм. Кнопки, баланс, активные элементы, прогресс, «+» */
   --accent:#0E8A4F;--accent-d:#0A6B3D;--accent-t:#0A6B3D;--on-accent:#FFFFFF;--lime:#D5F26B;--on-lime:#16300F;
   --btn:#0A6B3D;--on-btn:#FFFFFF;--cream:#FFF4D6;--accent-bg:#E6F6EC;
   /* Весёлые плоские заливки для баннеров и плиток */
-  --tone-mint:#DDF5E5;--tone-lime:#EAF9B8;--tone-peach:#FFE6D8;--tone-sky:#DDEEFF;--tone-lilac:#ECE5FF;--tone-sun:#FFF0BF;
+  --tone-mint:#DDEFE3;--tone-lime:#E8EFC9;--tone-peach:#F6E4D8;--tone-sky:#DCE9F4;--tone-lilac:#E7E2F3;--tone-sun:#F5EBC8;
   --on-tone:#16241A;
   --inc:#12905A;--inc-bg:#DDF5E5;--inc-t:#0B6E43;
   --exp:#D8483F;--exp-bg:#FFE6DF;--exp-t:#B3302A;
@@ -27,7 +27,7 @@
   --fs-title:28px;--fs-card:16px;--fs-cap:13px;
   --r-sm:12px;--r-md:16px;--r-lg:22px;--r-pill:999px;
   --gap:16px;--pad:14px;
-  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow-2:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 1px 2px rgba(20,40,25,.05);--shadow-2:0 1px 3px rgba(0,0,0,.08);
   --ease:cubic-bezier(.2,.8,.2,1);--dur:.18s;
   --nav-h:68px;
   --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
@@ -36,7 +36,7 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
+    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--sheet:#101912;--card-b:1px solid rgba(255,255,255,.09);--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
     --line:rgba(255,255,255,.1);--field:#212E25;--outline:1px solid rgba(255,255,255,.17);
     --accent:#1E9D5F;--accent-d:#3DD088;--accent-t:#5FDB9B;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
     --btn:#3DD088;--on-btn:#05230F;--cream:#FFF4D6;--accent-bg:#1C3326;
@@ -50,7 +50,7 @@
   }
 }
 :root[data-theme="dark"]{
-    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
+    --bg:#0E1510;--surface:#18221B;--float:#1E2A21;--sheet:#101912;--card-b:1px solid rgba(255,255,255,.09);--text:#EDF3E8;--muted:#A6B4A4;--ph:#94A392;
     --line:rgba(255,255,255,.1);--field:#212E25;--outline:1px solid rgba(255,255,255,.17);
     --accent:#1E9D5F;--accent-d:#3DD088;--accent-t:#5FDB9B;--on-accent:#FFFFFF;--lime:#C6E85A;--on-lime:#16300F;
     --btn:#3DD088;--on-btn:#05230F;--cream:#FFF4D6;--accent-bg:#1C3326;

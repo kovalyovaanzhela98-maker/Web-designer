@@ -244,18 +244,28 @@ function renderMonthBars() {
   $$('.monthbar-slot').forEach(s => { s.innerHTML = html; });
 }
 
-/* Ближайший обязательный платёж. Не оплачен и день прошёл: плашка краснеет и предлагает записать, без лишних слов */
+/* Обязательные платежи на главной: «избранное», как в банке. Карточки по порядку: пора записать, ближайшие, оплаченные */
 const rMoney = n => esc(maskT(money(n)));
-function renderPayNext() {
-  const el = $('#payNext'), n = R.nextDue(state.rec.list, new Date());
-  if (!n) { el.hidden = true; el.innerHTML = ''; return; }
-  const p = n.p, d = n.date, dt = `${d.getDate()} ${MONTHS_G[d.getMonth()]}`;
-  el.hidden = false; el.classList.toggle('late', n.late);
-  const main = n.late
-    ? `<span class="pn-ic" aria-hidden="true">${icon('calendar')}</span><span class="pn-t"><small>Пора записать</small><b>${esc(cap(p.name))} ${rMoney(p.amount)} · ${dt}</b></span>`
-    : `<span class="pn-ic" aria-hidden="true">${icon('calendar')}</span><span class="pn-t"><small>Ближайший платёж</small><b>${esc(R.dueLine(p, n.days, a => maskT(money(a))))}</b></span><span class="rw-r">${icon('right')}</span>`;
-  el.innerHTML = `<button class="pn-main" type="button" data-go-pay aria-label="Все обязательные платежи">${main}</button>` +
-    (n.late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${n.mk}">Записать</button>` : '');
+function renderPays() {
+  const blk = $('#paysBlock'), el = $('#paysStrip'), T = new Date(), mk = R.mkOfDate(T), list = state.rec.list;
+  blk.hidden = false;
+  if (!list.length) {
+    el.innerHTML = `<button class="pcard add" type="button" data-go-pay><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>Добавить платёж</b><small>Аренда, подписка, кредит</small></button>`;
+    return;
+  }
+  let rows = R.monthRows(list, mk, T);
+  if (!rows.length) { const n = R.nextDue(list, T); rows = n ? [{ p: n.p, date: n.date, status: 'wait', mk: n.mk }] : []; }
+  const rank = r => (r.status === 'late' ? 0 : r.status === 'wait' ? 1 : 2);
+  rows = rows.slice().sort((a, b) => rank(a) - rank(b) || a.date - b.date).slice(0, 8);
+  const mid = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  el.innerHTML = rows.map(r => {
+    const p = r.p, ci = catInfo('expense', p.cat), d = r.date, days = Math.round((mid(d) - mid(T)) / 864e5), key = r.mk || mk;
+    const sub = r.status === 'paid' ? 'Оплачено' : r.status === 'late' ? 'Пора записать' : esc(R.whenText(days));
+    return `<div class="pcard ${r.status}"><button class="pc-main" type="button" data-go-pay aria-label="${esc(cap(p.name))}, ${esc(sub)}. Все обязательные платежи">
+        <span class="tx-ic" style="--c:${ci[2]}" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span>
+        <b class="pc-n">${esc(cap(p.name))}</b><span class="pc-a">${rMoney(p.amount)}</span><small class="pc-s">${sub}</small></button>
+      ${r.status === 'late' ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${key}">Записать</button>` : ''}</div>`;
+  }).join('');
 }
 
 /* Карточка «Пора отложить»: цель, в этом периоде ещё не откладывали. Или совет включить напоминание в лучший день */
@@ -269,7 +279,7 @@ function renderSaveCard() {
 }
 /* Баннеры: пара наблюдений по записям */
 function renderBanners() {
-  const list = MD.insights.pick(MD.insights.build(state.tx, new Date(), n => maskT(money(n))), new Date(), 2);
+  const list = MD.insights.pick(MD.insights.build(state.tx, new Date(), n => maskT(money(n))), new Date(), 1);
   $('#banners').innerHTML = list.map(b => `<article class="banner tone-${b.tone}"><span class="bi" aria-hidden="true">${icon(b.icon)}</span><b>${esc(b.title)}</b><p>${esc(b.text)}</p></article>`).join('');
 }
 function renderHome() {
@@ -284,8 +294,7 @@ function renderHome() {
   $('#tileIncL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`; $('#tileExpL').textContent = `за ${MONTHS[now0.getMonth()].toLowerCase()}`;
   $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
   $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
-  $('#balNote').textContent = state.tx.length ? (inc - exp >= 0 ? `В этом месяце в плюсе на ${maskT(money(round2(inc - exp)))}` : `В этом месяце расходы больше доходов на ${maskT(money(round2(exp - inc)))}`) : 'Нажми «+», и запишем первую трату';
-  renderPayNext();
+  renderPays();
   renderSaveCard();
   renderBanners();
 
@@ -439,14 +448,18 @@ function renderStats() {
     buckets = Array.from({ length: P.days }, (_, i) => { const d = addD(P.from, i); return { l: per.kind === 'week' ? WD_S[d.getDay()] : String(d.getDate()), v: 0, now: ymd(d) === today() }; });
     list.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
   }
-  const mx = Math.max(...buckets.map(b => b.v)) || 1, W = 300, H = 90, nb = buckets.length, bw = W / nb;
-  const bars = buckets.map((b, i) => {
-    const h = b.v > 0 ? Math.max(4, b.v / mx * H) : 2;
-    return `<rect x="${(i * bw + bw * 0.14).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw * 0.72).toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(3, bw * 0.3).toFixed(1)}" fill="${b.v > 0 ? (statType === 'expense' ? 'var(--exp)' : 'var(--inc)') : 'var(--line)'}" opacity="${b.v > 0 ? (b.now ? 1 : .8) : 1}"/>`;
-  }).join('');
+  const mx = Math.max(...buckets.map(b => b.v)) || 1, W = 300, H = 100, nb = buckets.length, bw = W / nb, col = statType === 'expense' ? 'var(--exp)' : 'var(--inc)';
+  const pts = buckets.map((b, i) => [nb === 1 ? W / 2 : 8 + i * (W - 16) / (nb - 1), H - 8 - (b.v / mx) * (H - 22)]);
+  let path = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], mx2 = (x0 + x1) / 2; path += ` C${mx2.toFixed(1)} ${y0.toFixed(1)} ${mx2.toFixed(1)} ${y1.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`; }
+  const area = `${path} L${pts[nb - 1][0].toFixed(1)} ${H} L${pts[0][0].toFixed(1)} ${H} Z`;
+  const peak = buckets.reduce((m, b, i) => (b.v > buckets[m].v ? i : m), 0), nowI = buckets.findIndex(b => b.now);
+  const dot = (i, r, f) => `<circle cx="${pts[i][0].toFixed(1)}" cy="${pts[i][1].toFixed(1)}" r="${r}" fill="${f}" stroke="var(--surface)" stroke-width="2"/>`;
+  const curve = `<path d="${area}" fill="${col}" opacity=".12"/><path d="${path}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${buckets[peak].v > 0 ? dot(peak, 5, col) : ''}${nowI >= 0 && nowI !== peak ? dot(nowI, 4, 'var(--text)') : ''}`;
   const step = nb <= 7 ? 1 : nb <= 12 ? 1 : Math.ceil(nb / 6);
-  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${((i + 0.5) * bw).toFixed(1)}" y="${H + 16}" text-anchor="middle">${esc(b.l)}</text>` : '').join('');
-  dayCard.innerHTML = `<h3>${per.kind === 'year' ? 'По месяцам' : P.days > 62 ? 'По неделям' : 'По дням'}</h3><svg class="days" viewBox="0 0 ${W} ${H + 20}" role="img" aria-label="Столбики ${word} ${P.word}">${bars}${labels}</svg>`;
+  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${pts[i][0].toFixed(1)}" y="${H + 16}" text-anchor="${i === 0 && nb > 1 ? 'start' : i === nb - 1 && nb > 1 ? 'end' : 'middle'}">${esc(b.l)}</text>` : '').join('');
+  const hi = buckets[peak];
+  dayCard.innerHTML = `<h3>${per.kind === 'year' ? 'По месяцам' : P.days > 62 ? 'По неделям' : 'По дням'}</h3><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="График ${word} ${P.word}">${curve}${labels}</svg>${hi.v > 0 ? `<div class="note">Пик: ${esc(hi.l)}, ${esc(maskT(money(round2(hi.v))))}</div>` : ''}`;
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = catInfo(statType, name), pc = sum / total * 100;
@@ -835,6 +848,8 @@ function deleteTx(id) {
 
 /* ---------- Цели ---------- */
 const G = MD.goals;
+const GCOL = ['#2F8F5B', '#3F7FB5', '#D9893B', '#8B6BC0', '#CC5B7B', '#2E9E9A'];
+const gCol = g => GCOL[(g.nid || 0) % GCOL.length];
 const goalPct = g => Math.min(100, Math.round(g.saved / g.target * 100));
 /* Карточка цели: прогресс, остаток, взнос за период (неделя или месяц) и дедлайн */
 const gUnit = g => (g.unit === 'week' ? 'week' : 'month');
@@ -856,29 +871,31 @@ function renderGoals() {
     return;
   }
   const sum = round2(list.reduce((s, g) => s + g.saved, 0)), act = list.filter(g => g.saved < g.target).length;
-  el.innerHTML = `<div class="goal-rows">${list.map(g => `<button class="goal" data-goal="${esc(g.id)}" style="margin-bottom:16px">
-      <span class="goal-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span>
+  el.innerHTML = `<div class="goal-rows">${list.map(g => `<button class="goal" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}">
+      <span class="goal-top"><span class="goal-dot" aria-hidden="true"></span><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span>
       <span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span>${goalRows(g)}
     </button>`).join('')}</div><div class="say-wrap">${MD.say('happy', `Отложено <em>${esc(maskT(money(sum)))}</em><small>${act} ${pluralN(act, 'цель', 'цели', 'целей')} в работе</small>`, 64)}</div>`;
 }
 let openGoalId = null;
 const WD_CH = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-/* Календарь взносов: какие недели или месяцы цели закрыты, какие пропущены, и дни текущего месяца с взносами */
+/* Календарь взносов: полоса из девяти дней, сегодня всегда посередине. Ниже недели или месяцы цели квадратиками */
 function goalCalendar(g) {
-  const U = gUnit(g), st = G.strip(g, new Date());
+  const U = gUnit(g), st = G.strip(g, new Date()), T = new Date();
+  const had = new Set((g.log || []).map(x => x.d)), from = g.created || '';
+  const days = Array.from({ length: 9 }, (_, k) => {
+    const d = addD(T, k - 4), key = ymd(d), cls = k === 4 ? 'td' : k > 4 ? 'fut' : '';
+    const on = had.has(key);
+    return `<span class="dsq ${cls}${on ? ' on' : ''}${!on && k < 4 && key >= from ? ' no' : ''}" aria-label="${d.getDate()} ${MONTHS_G[d.getMonth()]}${on ? ', откладывал' : ''}">${d.getDate()}</span>`;
+  }).join('');
   const cells = st.cells.map(c => `<span class="pcell ${c.status}${c.full ? ' full' : ''}" title="${esc(maskT(money(c.sum)))}">${c.i + 1}</span>`).join('');
-  const T = new Date(), first = new Date(T.getFullYear(), T.getMonth(), 1), dim = new Date(T.getFullYear(), T.getMonth() + 1, 0).getDate(), lead = (first.getDay() + 6) % 7;
-  const days = new Set((g.log || []).filter(x => x.d.startsWith(monthKey(T.getFullYear(), T.getMonth()))).map(x => Number(x.d.slice(8))));
-  const grid = WD_CH.map(d => `<span class="h">${d}</span>`).join('') + '<span></span>'.repeat(lead) + Array.from({ length: dim }, (_, i) => `<span class="${days.has(i + 1) ? 'on' : ''}${i + 1 === T.getDate() ? ' td' : ''}">${i + 1}</span>`).join('');
-  return `<div class="fl">Календарь взносов: ${U === 'week' ? 'недели' : 'месяцы'}</div><div class="pstrip">${cells}</div>
-    <div class="plegend"><span><i style="background:var(--accent)"></i>отложено</span><span><i style="background:var(--exp-bg);box-shadow:inset 0 0 0 1px var(--exp)"></i>пропущено${st.missed ? `: ${st.missed}` : ''}</span><span><i style="background:var(--field);box-shadow:inset 0 0 0 2px var(--accent)"></i>сейчас</span></div>
-    <div class="fl">${esc(cap(MONTHS[T.getMonth()]))}: дни, когда откладывал</div><div class="mcal" aria-label="Дни взносов в этом месяце">${grid}</div>`;
+  return `<section class="gblock"><h3>Дни</h3><div class="dstrip" role="img" aria-label="Дни вокруг сегодняшнего. Закрашены дни, когда ты откладывал">${days}</div></section>
+    <section class="gblock"><div class="h2-row"><h3>${U === 'week' ? 'Недели' : 'Месяцы'}</h3>${st.missed ? `<small class="muted">Пропущено: ${st.missed}</small>` : ''}</div><div class="pstrip">${cells}</div></section>`;
 }
 function remindBlock(g) {
   const r = g.remind, U = gUnit(g), on = r && r.on, sd = G.suggestDay(state.tx, U);
-  const days = U === 'week' ? WD_CH.map((d, i) => `<button type="button" class="chip" data-gday="${i + 1}" aria-checked="${r.day === i + 1}">${d}</button>`).join('') : `<label class="field t" style="margin:0;flex:1"><input id="gDay" type="text" inputmode="numeric" maxlength="2" value="${r.day}"><span>Число месяца</span></label>`;
-  return `<div class="goal-remind"><button class="row" type="button" data-gremind="toggle" role="switch" aria-checked="${!!on}" style="padding:0;min-height:44px"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминать откладывать</b><small>Лучше ${esc(G.dayName(U, sd.day))}${sd.fromIncome ? ', когда приходят деньги' : ''}</small></span><span class="sw-t" aria-checked="${!!on}"></span></button>
-    ${on ? `<div class="${U === 'week' ? 'day-chips' : 'chips'}" role="group" aria-label="${U === 'week' ? 'День недели' : 'День месяца'}" style="margin-top:12px">${days}</div><label class="field t"><input id="gTime" type="time" value="${esc(r.time)}"><span>Во сколько</span></label>` : ''}</div>`;
+  const days = U === 'week' ? WD_CH.map((d, i) => `<button type="button" class="chip" data-gday="${i + 1}" aria-checked="${r.day === i + 1}">${d}</button>`).join('') : `<label class="field t"><input id="gDay" type="text" inputmode="numeric" maxlength="2" value="${r.day}"><span>Число месяца</span></label>`;
+  return `<section class="gblock remind"><button class="rem-head" type="button" data-gremind="toggle" role="switch" aria-checked="${!!on}"><span class="rem-t"><b>Напоминать откладывать</b><small>Лучше ${esc(G.dayName(U, sd.day))}${sd.fromIncome ? ', когда приходят деньги' : ''}</small></span><span class="sw-t" aria-checked="${!!on}"></span></button>
+    ${on ? `<div class="${U === 'week' ? 'day-chips' : 'chips'}" role="group" aria-label="${U === 'week' ? 'День недели' : 'День месяца'}">${days}</div><label class="field t"><input id="gTime" type="time" value="${esc(r.time)}"><span>Во сколько</span></label>` : ''}</section>`;
 }
 function drawGoal(g) {
   const done = g.saved >= g.target, pct = goalPct(g), per = G.perPeriodNow(g, new Date());
@@ -886,18 +903,19 @@ function drawGoal(g) {
     : pct >= 50 ? ['happy', `Больше половины пути. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
       : pct > 0 ? ['hello', `Начало положено. Осталось ${esc(maskT(money(round2(g.target - g.saved))))}`]
         : ['think', 'Пока ноль. Отложи первую сумму'];
-  $('#goalDetail').innerHTML = `${MD.say(say[0], say[1], 64)}
+  const el = $('#goalDetail'); el.style.setProperty('--gc', gCol(g));
+  el.innerHTML = `${MD.say(say[0], say[1], 64)}
     <div class="goal big"><span class="goal-top"><b>${esc(maskT(money(g.saved)))}</b><span class="goal-pct">${pct}%</span></span>
     <span class="goal-bar"><i style="width:${pct}%"></i></span>${goalRows(g)}</div>
-    ${done ? '' : `<form id="goalAdd" novalidate>
+    ${done ? '' : `<form id="goalAdd" class="gblock key" novalidate>
       <div class="bal-row">${fld('goalAmt', 'Сколько отложил', { mode: 'decimal', unit: sym() })}<button class="btn primary" type="submit">Отложить</button></div>
       ${per ? `<div class="note">По плану ${esc(G.perWord(gUnit(g)))}: ${esc(maskT(money(per)))}. Если отложишь больше, Фин порадуется.</div>` : ''}
       <div class="msg err" id="goalErr" hidden></div>
     </form>`}
     ${goalCalendar(g)}
     ${done ? '' : remindBlock(g)}
-    <button class="btn danger wide" type="button" id="goalDel">Удалить цель</button>`;
-  paintIcons($('#goalDetail'));
+    <button class="btn danger" type="button" id="goalDel">Удалить цель</button>`;
+  paintIcons(el);
 }
 function openGoal(id) {
   const g = state.goals.find(x => x.id === id); if (!g) return;
@@ -1203,9 +1221,10 @@ $('#draftList').addEventListener('click', e => {
   }
 });
 $('#draftCancel').addEventListener('click', () => closeLayer($('#lyDraft')));
+let draftBusy = false;
 $('#draftOk').addEventListener('click', () => {
   if (!draft.length) return;
-  if (txBusy) return; txBusy = true; setTimeout(() => { txBusy = false; }, 600);
+  if (draftBusy) return; draftBusy = true; setTimeout(() => { draftBusy = false; }, 600);
   const first = !state.tx.length;
   const added = draft.map((d, i) => ({ id: uid(), ...d, ts: Date.now() + i }));
   const latest = draft.map(d => d.date).sort().pop(), ld = parseYmd(latest);

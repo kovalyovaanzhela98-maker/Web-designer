@@ -105,9 +105,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('платёж создан за три тапа', (await page.textContent('#toast')).includes('Платёж добавлен') && (await page.textContent('#payBody')).includes('Аренда'));
   ok('в списке отметка «Ожидает»', (await page.textContent('#payBody')).includes('Ожидает'));
   await page.click('#s-pay [data-back]'); await page.click('[data-tab=home]'); await sleep(200);
-  const plaque = await page.textContent('#payNext');
-  ok('плашка: «Аренда 500,00 Br через 2 дня»', /Аренда 500,00\s*\S+ через 2 дня/.test(plaque), plaque);
-  await page.click('#payNext .pn-main'); await sleep(200);
+  const plaque = await page.textContent('#paysStrip');
+  ok('карточка на главной: «Аренда 500,00 Br через 2 дня»', /Аренда\s*500,00\s*\S+\s*через 2 дня/.test(plaque), plaque);
+  await page.click('#paysStrip .pc-main'); await sleep(200);
   ok('тап по плашке открывает список платежей', await vis('#s-pay'));
   // совпадение операции: категория Дом, сумма 500, дата +1 день
   await page.click('[data-tab=home]'); await sleep(100);
