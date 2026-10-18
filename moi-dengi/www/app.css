@@ -1145,3 +1145,22 @@ input:focus,textarea:focus,select:focus{border-color:var(--accent);background:va
 .grp .field input,.panel .field input{background:var(--bg)}
 :root[data-theme="dark"] .seg-b[aria-checked=true]{background:#636366;box-shadow:none}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg-b[aria-checked=true]{background:#636366;box-shadow:none}}
+
+/* Навигация как в iOS: сверху строка с «‹ Назад» и действием, ниже крупный заголовок */
+.hdr:has([data-back]):not(.chat-hdr){display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"back . act" "title title title";align-items:center;row-gap:4px;min-height:0}
+.hdr:has([data-back]):not(.chat-hdr) [data-back]{grid-area:back;width:auto;height:44px;margin-left:-8px;padding:0 8px 0 0;border-radius:0;display:inline-flex;align-items:center;gap:2px;color:var(--accent-t);font-size:17px;font-weight:400}
+.hdr:has([data-back]):not(.chat-hdr) [data-back]::after{content:"Назад"}
+.hdr:has([data-back]):not(.chat-hdr) [data-back] svg{width:22px;height:22px}
+.hdr:has([data-back]):not(.chat-hdr) .title{grid-area:title;flex:none}
+.hdr:has([data-back]):not(.chat-hdr) .pill-btn{grid-area:act;justify-self:end;background:none;color:var(--accent-t);height:44px;padding:0;font-size:17px;font-weight:400}
+.hdr .pill-btn svg{width:20px;height:20px}
+.link{text-decoration:none;color:var(--accent-t);font-weight:400;font-size:17px}
+
+/* Шторки как в iOS: по центру заголовок 17 semibold, справа круглая серая кнопка закрытия */
+.sheet>.sheet-head{justify-content:center;position:sticky;min-height:44px;margin-bottom:8px}
+.sheet>.sheet-head h2{font-size:17px;font-weight:600;text-align:center}
+.sheet>.sheet-head .icon-btn{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:30px;height:30px;min-height:0;border-radius:50%;background:var(--field);color:var(--muted)}
+.sheet>.sheet-head .icon-btn svg{width:16px;height:16px}
+.sheet>.sheet-head .icon-btn::after{content:"";position:absolute;inset:-7px}
+.sheet>.sheet-head{padding-bottom:0;align-items:center}
+.sheet>.sheet-head .icon-btn{top:50%}
