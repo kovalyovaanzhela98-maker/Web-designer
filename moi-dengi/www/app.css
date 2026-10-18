@@ -1064,37 +1064,84 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 
 
 /* ============================================================
-   Принципы Copilot: «Глубокий космос» в тёмной теме, контраст массы в типографике, тишина в интерфейсе
+   Human Interface Guidelines: ясность, уважение к содержимому, глубина.
+   Системный шрифт и Dynamic Type, системные цвета и семантика, отступы 8pt, цели нажатия от 44pt,
+   разделители в списках, материалы (размытие) только в панелях навигации.
    ============================================================ */
-/* 1. Глубокий космос: холст #000814, плашки чуть светлее с едва заметной границей, неоновые тонкие индикаторы */
-:root[data-theme="dark"] .card,:root[data-theme="dark"] .grp,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .day,:root[data-theme="dark"] .goal,:root[data-theme="dark"] .grow,:root[data-theme="dark"] .fpill{background:var(--surface);border:1px solid rgba(255,255,255,.055)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card,:root:not([data-theme="light"]) .grp,:root:not([data-theme="light"]) .panel,:root:not([data-theme="light"]) .day,:root:not([data-theme="light"]) .goal,:root:not([data-theme="light"]) .grow,:root:not([data-theme="light"]) .fpill{background:var(--surface);border:1px solid rgba(255,255,255,.055)}}
-.cats li .bar{height:4px;border-radius:4px}
-.cats li .bar i{background:var(--c);box-shadow:none}
-.goal-bar{height:4px;border-radius:4px}
-.days path[stroke]{stroke-width:2}
-.inc,.hs.inc b{--neon:var(--positive)}
-.tx-a.inc .pill,.pill.inc{color:var(--positive-t)}
+html,body{font-family:var(--font-text);font-weight:400;letter-spacing:0;background:var(--bg);color:var(--text)}
+h1,h2,h3,h4,.title,.h2,.bubble,.hl-num{font-family:var(--font-display);letter-spacing:0}
+/* Типографика: Large Title 34 bold, Title 3 20 semibold, Headline 17 semibold, Body 17, Footnote 13. Лёгких начертаний нет */
+.title,.greet .title{font-size:34px;font-weight:700;line-height:1.2}
+.sheet-head h2{font-size:20px;font-weight:600;line-height:1.25}
+.h2{font-size:20px;font-weight:600;line-height:24px}
+.card h3,.cat-top .nm,.tx-t,.pc-n,.rw-t b,.pr-b b,.goal b{font-size:17px;font-weight:600}
+.tx-n,.tx-s,.day-h,small,.cap,.note,.muted,.pc-s,.rw-t small,.nl,.pc-d{font-weight:400;color:var(--muted)}
+small,.cap,.note{font-size:13px}
+.nl{font-size:12px;font-weight:500}
+.hero-sum,.hs b,.curve-sum,.pc-a,.goal-pct,.curve-pk b,.ins b,.pill,.tx-a,.am{font-family:var(--font-text);letter-spacing:0;font-variant-numeric:tabular-nums}
+.hero-sum{font-size:34px;font-weight:700;line-height:1.15}
+.hs b{font-size:17px;font-weight:600}
+.pc-a,.curve-sum{font-weight:600}
+.curve-sum{font-size:28px}
+.hero-an,.mon-bar{font-weight:500}
+.btn,.pill-btn,.chip,.seg-b,.link{font-weight:600}
+.tx-ic,.ci{border-radius:12px}
 
-/* 2. Контраст массы: крупные цифры — массивный геометрический гротеск Montserrat, плотный трекинг; подписи и списки — лёгкий Inter */
-.hero-sum,.hs b,.curve-sum,.pc-a,.goal-pct,.curve-pk b,.ins b{font-family:var(--font-num);font-weight:800;letter-spacing:-.03em}
-.hero-sum{font-size:38px;line-height:1.05;letter-spacing:-.035em}
-.hs b{font-weight:700;font-size:var(--fs-card)}
-.pc-a{font-weight:700;letter-spacing:-.02em}
-.curve-sum{font-size:28px;line-height:1.1}
-html,body{font-weight:300}
-.tx-t,.pc-n,.pr-b b,.rw-t b,.h2,.cat-top .nm{font-weight:400}
-.tx-n,.tx-s,.day-h,small,.cap,.note,.muted,.pc-s,.rw-t small,.nl{font-weight:300}
-.title,.sheet-head h2,h1,h3{font-weight:600}
-.pill{font-family:var(--font-text)}
+/* Размеры: цели нажатия не меньше 44pt, строки списка от 44pt */
+.icon-btn,.btn,.chip,.seg-b,.mb2{min-height:44px}
+.mon-bar .mb2{flex:0 0 44px;width:44px;height:44px}
+.row,.pay-row .pr-main{min-height:44px}
 
-/* 3. Тишина: без сеток, рамок и разделителей в списках, разделяем воздухом */
-.days .grid{display:none}
-.swipe,.dr,.pay-row,.row+.row,.grow,.pn-sec+.pn-sec,.imp-row,.cc-row+.cc-row,.plan div+div{border-top:0}
-.recent .swipe,.day .swipe{padding-block:2px}
-.row+.row{margin-top:2px}
-.nav{border-top:0}
-:root[data-theme="dark"] .nav{background:color-mix(in srgb,#000814 94%,transparent)}
-.hero-an{font-weight:300}
-.mon-bar{font-weight:400}
-.card,.day,.grp,.panel,.goal,.grow{border-color:rgba(0,0,0,.04)}
+/* Плашки без обводок: заливка secondarySystemBackground, радиус один и концентричный (внутри 12) */
+:root{--r-card:20px}
+.hero,.mon-bar,.pcard,.grow,.fpill,.card,.grp,.panel,.day,.goal,.save-card,.nudge,.banner,.imp-hint,.gblock,.pcard.add,.grow.add,.fpill.add{border-radius:var(--r-card);border:0}
+.card,.grp,.panel,.day,.goal,.grow,.fpill,.save-card,.nudge,.banner,.imp-hint,.gblock,.mon-bar{background:var(--surface)}
+.pcard:not(.add),.pcard.paid,.pcard.late{background:linear-gradient(135deg,color-mix(in srgb,var(--text) 6%,transparent) 0%,transparent 100%),var(--surface);border:0}
+.pcard.late .pc-s{color:var(--negative-t)}
+.hero{box-shadow:none}
+.hero-label{color:rgba(255,255,255,.85)}
+.hs{background:rgba(255,255,255,.16);border-radius:12px}
+.hs small,.hs .mo{color:rgba(255,255,255,.85);font-weight:500}
+.hs b,.hs b small{color:#fff}
+.hs b small{opacity:.8}
+.hs small svg{width:18px;height:18px;stroke:none;stroke-width:0}
+.hs.inc small svg{color:#8EF0AB}.hs.exp small svg{color:#FFB1AA}
+
+/* Поля ввода: заливка вместо обводки, как у системных текстовых полей */
+.field input,.field textarea,input[type=text],input[type=number],input[type=date],input[type=search],input[type=email],input[type=password],textarea,select{background:var(--field);border:1px solid transparent;border-radius:12px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);background:var(--bg)}
+.seg{background:var(--field);border-radius:10px}
+.seg-b[aria-checked=true]{background:var(--float);box-shadow:0 1px 3px rgba(0,0,0,.12);border-radius:8px;color:var(--text)}
+.chip{background:var(--field)}
+.chip[aria-checked=true]{background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-t);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.btn.primary,.pill-btn,.pc-go,.cb-send,.qa-go,.bm.me{background:var(--btn);color:var(--on-btn)}
+.btn.soft{background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-t)}
+.btn.ghost{background:var(--field);border:0;box-shadow:none;color:var(--accent-t)}
+
+/* Списки: разделители тонкой линией, как в системных таблицах */
+.row+.row,.pay-row+.pay-row,.swipe+.swipe,.imp-row+.imp-row,.dr+.dr,.cc-row+.cc-row,.plan div+div,.pn-sec+.pn-sec{border-top:.5px solid var(--line)}
+.swipe,.dr,.pay-row,.imp-row{border-top:0}
+.swipe+.swipe{border-top:.5px solid var(--line)}
+.day-h + .swipe{border-top:0}
+.days .grid{display:block;stroke:var(--text);stroke-opacity:.08}
+
+/* Панель навигации: системный материал (размытие), без собственной обводки */
+.nav{background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--line);border-radius:0}
+.nav-b{font-weight:500;color:var(--muted)}
+.nav-b[aria-current=page]{color:var(--tab,var(--accent-t))}
+.nav-add{background:var(--grad-fab);color:#fff;box-shadow:none}
+:root[data-theme="dark"] .nav-add{color:#000}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .nav-add{color:#000}}
+.sheet>.grab,.sheet>.sheet-head{background:color-mix(in srgb,var(--sheet) 85%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
+.toast{background:var(--toast);color:#fff;border-radius:14px;box-shadow:none}
+
+/* Данные: цвет не единственный признак, суммы со знаком и стрелкой */
+.pill{font-weight:600}
+.cats li .bar{height:6px;border-radius:3px;background:var(--field)}
+.cats li .bar i{border-radius:3px}
+.ctag{font-weight:500}
+.row,.pay-row,.swipe,.imp-row,.dr{border-radius:0}
+.grp,.day,.panel{overflow:hidden}
+.grp .field input,.panel .field input{background:var(--bg)}
+:root[data-theme="dark"] .seg-b[aria-checked=true]{background:#636366;box-shadow:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg-b[aria-checked=true]{background:#636366;box-shadow:none}}
