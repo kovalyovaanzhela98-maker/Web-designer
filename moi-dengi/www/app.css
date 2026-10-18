@@ -1061,3 +1061,40 @@ img.ic-cat{display:block;width:32px;height:32px;object-fit:contain;pointer-event
 .hs b,.hs b small{color:#fff}
 .hs b small{opacity:1;color:rgba(255,255,255,.72)}
 .hs .mo{color:rgba(255,255,255,.75)}
+
+
+/* ============================================================
+   Принципы Copilot: «Глубокий космос» в тёмной теме, контраст массы в типографике, тишина в интерфейсе
+   ============================================================ */
+/* 1. Глубокий космос: холст #000814, плашки чуть светлее с едва заметной границей, неоновые тонкие индикаторы */
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .grp,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .day,:root[data-theme="dark"] .goal,:root[data-theme="dark"] .grow,:root[data-theme="dark"] .fpill{background:var(--surface);border:1px solid rgba(255,255,255,.055)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card,:root:not([data-theme="light"]) .grp,:root:not([data-theme="light"]) .panel,:root:not([data-theme="light"]) .day,:root:not([data-theme="light"]) .goal,:root:not([data-theme="light"]) .grow,:root:not([data-theme="light"]) .fpill{background:var(--surface);border:1px solid rgba(255,255,255,.055)}}
+.cats li .bar{height:4px;border-radius:4px}
+.cats li .bar i{background:var(--c);box-shadow:none}
+.goal-bar{height:4px;border-radius:4px}
+.days path[stroke]{stroke-width:2}
+.inc,.hs.inc b{--neon:var(--positive)}
+.tx-a.inc .pill,.pill.inc{color:var(--positive-t)}
+
+/* 2. Контраст массы: крупные цифры — массивный геометрический гротеск Montserrat, плотный трекинг; подписи и списки — лёгкий Inter */
+.hero-sum,.hs b,.curve-sum,.pc-a,.goal-pct,.curve-pk b,.ins b{font-family:var(--font-num);font-weight:800;letter-spacing:-.03em}
+.hero-sum{font-size:38px;line-height:1.05;letter-spacing:-.035em}
+.hs b{font-weight:700;font-size:var(--fs-card)}
+.pc-a{font-weight:700;letter-spacing:-.02em}
+.curve-sum{font-size:28px;line-height:1.1}
+html,body{font-weight:300}
+.tx-t,.pc-n,.pr-b b,.rw-t b,.h2,.cat-top .nm{font-weight:400}
+.tx-n,.tx-s,.day-h,small,.cap,.note,.muted,.pc-s,.rw-t small,.nl{font-weight:300}
+.title,.sheet-head h2,h1,h3{font-weight:600}
+.pill{font-family:var(--font-text)}
+
+/* 3. Тишина: без сеток, рамок и разделителей в списках, разделяем воздухом */
+.days .grid{display:none}
+.swipe,.dr,.pay-row,.row+.row,.grow,.pn-sec+.pn-sec,.imp-row,.cc-row+.cc-row,.plan div+div{border-top:0}
+.recent .swipe,.day .swipe{padding-block:2px}
+.row+.row{margin-top:2px}
+.nav{border-top:0}
+:root[data-theme="dark"] .nav{background:color-mix(in srgb,#000814 94%,transparent)}
+.hero-an{font-weight:300}
+.mon-bar{font-weight:400}
+.card,.day,.grp,.panel,.goal,.grow{border-color:rgba(0,0,0,.04)}
