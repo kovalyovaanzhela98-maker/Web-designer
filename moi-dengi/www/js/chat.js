@@ -149,13 +149,13 @@
     return c;
   }
   async function ocr(file, onProgress) {
-    await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+    await loadScript('vendor/tess/tesseract.min.js');
     const img = await downscale(file, 1800);
-    const worker = await root.Tesseract.createWorker(['rus', 'eng'], 1, { logger: m => { if (m.status === 'recognizing text') onProgress(Math.round(m.progress * 100)); } });
+    const worker = await root.Tesseract.createWorker(['rus', 'eng'], 1, { workerPath: 'vendor/tess/worker.min.js', corePath: 'vendor/tess/', langPath: 'vendor/tess/lang', gzip: true, workerBlobURL: false, logger: m => { if (m.status === 'recognizing text') onProgress(Math.round(m.progress * 100)); } });
     try { const { data } = await worker.recognize(img); return data.text || ''; } finally { try { await worker.terminate(); } catch (_) {} }
   }
   async function pdfText(file) {
-    const V = '3.11.174', base = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${V}/`;
+    const base = 'vendor/pdfjs/';
     await loadScript(base + 'pdf.min.js');
     root.pdfjsLib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js';
     const doc = await root.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
@@ -169,7 +169,7 @@
     return out.join('\n');
   }
 
-  const offline = e => `Не получилось: ${e && e.message === 'load' ? 'нужен интернет, чтобы загрузить распознавание (один раз)' : 'файл не читается'}. Попробуй ещё раз.`;
+  const offline = e => `Не получилось: ${e && e.message === 'load' ? 'не удалось запустить распознавание' : 'файл не читается'}. Попробуй ещё раз.`;
 
   async function onReceipt(file) {
     if (!file) return;

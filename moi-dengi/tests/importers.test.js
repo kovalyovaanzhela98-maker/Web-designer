@@ -18,6 +18,8 @@ eq('чек: сумма, категория, дата, магазин', [r.ok, r.
 
 const r2 = I.parseReceiptText('Кафе «Пицца Темпо»\nПицца 18,90\nКофе 4,50\nК ОПЛАТЕ 23,40\nВСЕГО 23,40\n2026-10-16', { today });
 eq('чек: к оплате с запятой', [r2.item.amount, r2.item.cat, r2.item.date], [23.4, 'Кафе', '2026-10-16']);
+const rt = I.parseReceiptText('ООО «Евроопт»\nг. Минск, пр. Независимости 10\nЧек № 004517\nДата: 14.10.2026 18:42\nМолоко 3,2% 2,89\nИТОГО BYN 17,36\nКарта **** 4412', { today });
+eq('чек: время и номер', [rt.item.amount, rt.item.date, rt.item.time, rt.item.check, rt.item.note], [17.36, '2026-10-14', '18:42', '004517', 'Евроопт']);
 eq('чек: пустой', I.parseReceiptText('', { today }).ok, false);
 eq('чек: без суммы', I.parseReceiptText('Привет\nмир', { today }).reason, 'no-amount');
 eq('чек: без даты — сегодня', I.parseReceiptText('Аптека\nИТОГО 12.00', { today }).item.date, '2026-10-17');

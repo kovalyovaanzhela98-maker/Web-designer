@@ -83,7 +83,9 @@
       break;
     }
     const cat = category(`${shop} ${lines.join(' ')}`.toLowerCase().replace(/ё/g, 'е'), 'expense');
-    return { ok: true, item: { type: 'expense', amount: round2(amount), cat, date: date || ymd(today), note: tidy(shop, 40), guessedDate: !date } };
+    let time = '', check = '';
+    for (const l of lines) { if (!time) { const tm = l.match(/(?<!\d)([01]?\d|2[0-3]):([0-5]\d)(?!\d)/); if (tm) time = tm[1].padStart(2, '0') + ':' + tm[2]; } if (!check) { const cm = l.match(/(?:чек|документ|операци[яи])\s*(?:№|#|n)?\s*:?\s*(\d{3,})/i) || l.match(/№\s*(\d{3,})/); if (cm) check = cm[1]; } }
+    return { ok: true, item: { type: 'expense', amount: round2(amount), cat, date: date || ymd(today), note: tidy(shop, 40), time, check, guessedDate: !date } };
   }
 
   /* ---------- Выписка: таблица ---------- */
