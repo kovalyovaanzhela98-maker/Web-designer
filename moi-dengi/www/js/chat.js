@@ -286,6 +286,6 @@
     fit();
   }
 
-  MD.chat = { init, render, send };
+  MD.chat = { init, render, send, receipt: onReceipt };
   if (MD.app) init(MD.app);
 })(typeof window !== 'undefined' ? window : globalThis);

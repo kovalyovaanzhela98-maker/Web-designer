@@ -19,44 +19,31 @@
 
   <!-- ГЛАВНАЯ: баланс с итогами месяца, избранные обязательные платежи, «пора отложить», одно наблюдение, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
-    <header class="greet"><h1 class="title" id="greetTitle">Привет</h1></header>
-
-    <div id="nudgeBox"></div>
-
-    <section class="hero" aria-labelledby="heroLabel">
-      <div class="hero-deco" aria-hidden="true"></div>
-      <div class="hero-top"><span class="hero-label" id="heroLabel">Баланс</span><span class="hero-acts"><button class="hero-an" type="button" data-go="stats" aria-label="Открыть аналитику"><i data-ic="chart"></i><span>Аналитика</span></button></span></div>
-      <button class="hero-sum hero-go" id="heroSum" type="button" data-go="stats" aria-label="Открыть аналитику за месяц"></button>
-      <div class="hero-split" id="tiles">
-        <button class="hs inc" type="button" data-go="stats" data-st="income"><small><i data-ic="down"></i>Пришло</small><b id="sumInc"></b><span class="mo" id="tileIncL"></span></button>
-        <button class="hs exp" type="button" data-go="stats" data-st="expense"><small><i data-ic="up"></i>Потрачено</small><b id="sumExp"></b><span class="mo" id="tileExpL"></span></button>
+    <div id="welcome" hidden>
+      <div class="welc"><span class="welc-ic" aria-hidden="true"><i data-ic="wallet"></i></span><h1>Добро пожаловать!</h1><p>Давайте настроим ваш финансовый контроль. Это займёт 2 минуты</p></div>
+      <div class="grp wl-list">
+        <button class="row" type="button" data-wl="acc"><span class="rw-ic" aria-hidden="true"><i data-ic="wallet"></i></span><span class="rw-t"><b>Добавить первый счёт</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
+        <button class="row" type="button" data-wl="ev"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>Добавить дни рождения</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
+        <button class="row" type="button" data-wl="goal"><span class="rw-ic" aria-hidden="true"><i data-ic="goal"></i></span><span class="rw-t"><b>Создать первую копилку</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
       </div>
-    </section>
-    <div class="mon-bar"><button class="mb2" type="button" data-hshift="-1" aria-label="Предыдущий месяц"><i data-ic="left"></i></button><span id="heroMon"></span><button class="mb2" type="button" data-hshift="1" aria-label="Следующий месяц"><i data-ic="right"></i></button></div>
-
-    <section class="block" id="paysBlock" hidden aria-labelledby="hPays">
-      <div class="h2-row"><h2 class="h2" id="hPays">Обязательные платежи</h2><button class="link" data-go-pay>Все</button></div>
-      <div class="pays" id="paysStrip"></div>
-    </section>
-
-    <section class="block" id="goalsHome" aria-labelledby="hGoalsH">
-      <div class="h2-row"><h2 class="h2" id="hGoalsH">Копилки</h2><button class="link" data-go="goals">Все</button></div>
-      <div class="list-card" id="goalsStrip"></div>
-    </section>
-
-    <div id="saveCard"></div>
-
-    <section class="block" id="festHome" aria-labelledby="hFest">
-      <div class="h2-row"><h2 class="h2" id="hFest">Дни рождения</h2></div>
-      <div class="pillrow" id="festStrip"></div>
-    </section>
-
-    <div class="banners" id="banners" aria-label="Наблюдение Фина"></div>
-
-    <section class="block" aria-labelledby="hRecent">
-      <div class="h2-row"><h2 class="h2" id="hRecent">Последние операции</h2><button class="link" data-go="ops" aria-label="Вся история">Все</button></div>
-      <div id="recentList"></div>
-    </section>
+      <div class="wl-hint" id="wlHint"><span>Начните здесь</span></div>
+    </div>
+    <div id="homeMain">
+      <header class="h-top"><span class="h-greet" id="greetTitle">Привет</span><span class="h-acts"><button class="h-ib" type="button" data-go="chat" aria-label="Помощник"><i data-ic="chat"></i></button><button class="h-ib" type="button" data-go="acc" aria-label="Профиль"><i data-ic="person"></i></button></span></header>
+      <div id="nudgeBox"></div>
+      <section class="h-free" aria-labelledby="heroLabel">
+        <small id="heroLabel">Свободные деньги</small>
+        <button class="hero-sum" id="heroSum" type="button" data-go="stats" aria-label="Открыть статистику"></button>
+        <em id="heroAll"></em>
+      </section>
+      <div id="evtCard"></div>
+      <div id="goalCard"></div>
+      <div id="payCard"></div>
+      <section class="block" aria-labelledby="hRecent">
+        <div class="h2-row"><h2 class="h2" id="hRecent">Последние операции</h2><button class="link" data-go="ops" aria-label="Вся история">Все</button></div>
+        <div id="recentList"></div>
+      </section>
+    </div>
   </section>
 
   <!-- ОПЕРАЦИИ -->
@@ -75,7 +62,7 @@
 
   <!-- АНАЛИТИКА -->
   <section class="screen" id="s-stats" data-screen="stats" aria-label="Аналитика" hidden>
-    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Аналитика</h1></header>
+    <header class="hdr"><h1 class="title">Статистика</h1></header>
     <div class="seg period-seg" role="radiogroup" aria-label="Период">
       <button type="button" role="radio" class="seg-b" data-pk="week" aria-checked="false">Неделя</button>
       <button type="button" role="radio" class="seg-b" data-pk="month" aria-checked="true">Месяц</button>
@@ -92,6 +79,13 @@
     <div class="say-wrap" id="statSay"></div>
     <div id="insights"></div>
     <div class="card" id="dayCard"></div>
+    <div class="grp-t">Разделы</div>
+    <div class="grp sect-list">
+      <button class="row" type="button" data-go="goals"><span class="rw-ic" aria-hidden="true"><i data-ic="goal"></i></span><span class="rw-t"><b>Копилки</b></span><span class="rw-r" id="secGoals"></span></button>
+      <button class="row" type="button" data-go-pay><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Обязательные платежи</b></span><span class="rw-r" id="secPays"></span></button>
+      <button class="row" type="button" data-go="events"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>События</b></span><span class="rw-r" id="secEvents"></span></button>
+      <button class="row" type="button" data-go="accounts"><span class="rw-ic" aria-hidden="true"><i data-ic="wallet"></i></span><span class="rw-t"><b>Счета</b></span><span class="rw-r" id="secAccs"></span></button>
+    </div>
   </section>
 
   <!-- ПОМОЩНИК -->
@@ -133,9 +127,21 @@
     <div id="payBody"></div>
   </section>
 
+  <!-- СОБЫТИЯ: дни рождения и праздники -->
+  <section class="screen" id="s-events" data-screen="events" aria-label="События" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">События</h1><button class="pill-btn" type="button" data-ev=""><i data-ic="plus"></i><span>Добавить</span></button></header>
+    <div id="eventsBody"></div>
+  </section>
+
+  <!-- СЧЕТА -->
+  <section class="screen" id="s-accounts" data-screen="accounts" aria-label="Счета" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Счета</h1></header>
+    <div id="accountsBody"></div>
+  </section>
+
   <!-- ПРОФИЛЬ -->
   <section class="screen" id="s-acc" data-screen="acc" aria-label="Профиль" hidden>
-    <header class="hdr"><h1 class="title">Профиль</h1></header>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Профиль</h1></header>
     <div class="acct" id="acctBox">
       <div class="acct-m" id="acctMascot" aria-hidden="true"></div>
       <div class="acct-t"><b id="acctName">Профиль</b><span id="acctSub"></span></div>
@@ -200,10 +206,8 @@
 
 <nav class="nav" aria-label="Разделы">
   <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-ic="home"></i></span><span class="nl">Главная</span></button>
-  <button class="nav-b" data-tab="goals"><span class="np"><i data-ic="goal"></i></span><span class="nl">Копилки</span></button>
   <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-ic="plus"></i></button></span>
-  <button class="nav-b" data-tab="chat"><span class="np"><i data-ic="chat"></i></span><span class="nl">Фин</span></button>
-  <button class="nav-b" data-tab="acc"><span class="np"><i data-ic="person"></i></span><span class="nl">Профиль</span></button>
+  <button class="nav-b" data-tab="stats"><span class="np"><i data-ic="chart"></i></span><span class="nl">Статистика</span></button>
 </nav>
 <div class="bulkbar" id="bulkBar" hidden>
   <b id="bulkCount">0</b>
@@ -234,29 +238,31 @@
         <button type="button" role="radio" class="seg-b" data-type="income" aria-checked="false">Доход</button>
       </div>
       <div class="tx-rest">
-        <div class="fl">Дата</div>
-        <div class="date-row">
-          <span id="dQuick" class="dq-wrap"></span>
-          <button type="button" class="chip" id="dToday">Сегодня</button>
-          <button type="button" class="chip" id="dYest">Вчера</button>
-          <button type="button" class="chip" id="dOther">Другая дата</button>
-          <input id="txDate" class="pick-hidden" type="date" aria-label="Другая дата" tabindex="-1">
-        </div>
-        <div class="fl">Сумма</div>
         <div class="amt-line">
-          <label class="amt-in"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="Сумма, например 12,50" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
+          <label class="amt-in"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
           <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i></button>
         </div>
         <div class="chips cur-row" id="txCurRow" role="radiogroup" aria-label="Валюта операции"></div>
         <div class="note cur-note" id="txCurNote" hidden></div>
         <div class="msg err" id="txAmountErr" hidden></div>
-        <div class="fl">Категория</div>
         <button type="button" class="cat-cur" id="txCatCur" hidden></button>
         <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
+        <div class="grp tx-grp">
+          <div class="tt-row" id="txAccRow" hidden><span>Счёт</span><select id="txAcc" aria-label="Счёт"></select></div>
+          <div class="tt-row"><span>Дата</span>
+            <div class="date-row">
+              <span id="dQuick" class="dq-wrap"></span>
+              <button type="button" class="chip" id="dToday">Сегодня</button>
+              <button type="button" class="chip" id="dYest">Вчера</button>
+              <button type="button" class="chip" id="dOther">Другая дата</button>
+              <input id="txDate" class="pick-hidden" type="date" aria-label="Другая дата" tabindex="-1">
+            </div>
+          </div>
+        </div>
         <button type="button" class="link note-link" id="txNoteBtn">Добавить заметку</button>
         <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span id="txNoteL">Заметка</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
         <div class="msg err" id="txNoteErr" hidden></div>
-        <button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button>
+        <div class="save-bar"><button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button></div>
         <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить запись</button>
       </div>
       <div class="voice-live" id="txVoiceLive" hidden>
@@ -378,6 +384,42 @@
       <button class="row" type="button" data-attach="gallery"><span class="rw-ic" aria-hidden="true"><i data-ic="image"></i></span><span class="rw-t"><b>Фото чека из галереи</b><small>Выбери снимок</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-attach="stmt"><span class="rw-ic" aria-hidden="true"><i data-ic="file"></i></span><span class="rw-t"><b>Выписка из банка</b><small>Файл CSV, TXT или PDF</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
+  </div>
+</div>
+
+<!-- Счёт: создание и правка -->
+<div class="layer" id="lyAccount" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="accTitle">Новый счёт</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <form id="accForm" novalidate autocomplete="off">
+      <label class="field"><input id="accName" type="text" maxlength="24" placeholder=" " data-autofocus><span>Название, например «Карта»</span></label>
+      <div class="msg err" id="accErr" hidden></div>
+      <div class="seg" role="radiogroup" aria-label="Тип счёта" id="accKind">
+        <button type="button" role="radio" class="seg-b" data-akind="card" aria-checked="true">Карта</button>
+        <button type="button" role="radio" class="seg-b" data-akind="cash" aria-checked="false">Наличные</button>
+        <button type="button" role="radio" class="seg-b" data-akind="other" aria-checked="false">Другое</button>
+      </div>
+      <button class="btn primary wide" type="submit" id="accSave">Сохранить</button>
+      <button class="btn danger wide" type="button" id="accDel" hidden>Удалить счёт</button>
+    </form>
+  </div>
+</div>
+
+<!-- Добавить запись: выбор способа, клавиатура не открывается сразу -->
+<div class="layer" id="lyAdd" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet add-sheet" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="addTitle">Добавить запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="grp" id="addOpts">
+      <button class="row" type="button" data-addway="photo"><span class="rw-ic" aria-hidden="true"><i data-ic="camera"></i></span><span class="rw-t"><b>По фото чека</b><small>Сфотографируй чек</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-addway="text"><span class="rw-ic" aria-hidden="true"><i data-ic="sms"></i></span><span class="rw-t"><b>Текстом<span class="tag">быстро</span></b><small>Например: «кофе 250»</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-addway="manual"><span class="rw-ic" aria-hidden="true"><i data-ic="pencil"></i></span><span class="rw-t"><b>Вручную</b><small>Сумма, категория, счёт</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+    <form id="addTextForm" hidden autocomplete="off"><label class="field"><input id="addTextIn" type="text" maxlength="200" placeholder=" " enterkeyhint="done"><span>Например: кофе 250</span></label><button class="btn primary wide" type="submit">Понять</button><button class="btn ghost wide" type="button" id="addTextBack">Назад</button></form>
+    <input id="addPhoto" type="file" accept="image/*" capture="environment" hidden>
   </div>
 </div>
 

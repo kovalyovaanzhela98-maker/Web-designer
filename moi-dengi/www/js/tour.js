@@ -1,44 +1,51 @@
-/* Первый заход: Фин коротко показывает подсветкой, как пользоваться приложением. Один раз, можно пропустить.
+/* Первый заход: четыре подсказки, по одной. Экран затемняется, нужное место подсвечено, рядом белый пузырь с хвостиком.
    MD.tour.start() вызывает знакомство после последнего экрана; MD.tour.reset() (для проверки) запускает заново. */
 (function (root) {
   'use strict';
   const MD = root.MD = root.MD || {};
   const KEY = 'moidengi_tour';
   const STEPS = [
-    { sel: '.hero', t: 'Здесь твои деньги', p: 'Все деньги одной суммой. Нажми на неё, и откроется аналитика.', pose: 'hello' },
-    { sel: '#fab', t: 'Главная кнопка', p: 'Дата, сумма, категория. Микрофон справа от суммы.', pose: 'notify' },
-    { sel: '[data-tab=goals]', t: 'Копилки', p: 'Скажи, на что копишь и за какой срок. Фин посчитает взнос и напомнит.', pose: 'love' },
-    { sel: '[data-tab=acc]', t: 'Платежи и настройки', p: 'Тема, валюта и копия данных.', pose: 'joy' }
+    { sel: ['.h-free'], t: 'Ваши свободные деньги', p: 'Здесь показано, сколько вы можете безопасно потратить. Мы уже вычли из этой суммы обязательные платежи, чтобы вы не ушли в минус.', pos: 'below' },
+    { sel: ['#fab'], t: 'Добавление трат в один клик', p: 'Нажмите сюда, чтобы записать расход. Можно ввести сумму вручную, написать текстом (например, «Кофе 5 Br») или сфотографировать чек.', pos: 'above', round: true, pulse: true },
+    { sel: ['#homeMain .block .h2-row'], t: 'Вся история под рукой', p: 'Здесь появляются все ваши записи. Нажмите «Все», чтобы найти старые траты, отфильтровать или изменить их. А в карточке выше можно откладывать деньги на цели.', pos: 'above' },
+    { sel: ['.nav-b[data-tab=stats]', '.h-acts [data-go=acc]'], t: 'Статистика и настройки', p: 'Во вкладке «Статистика» графики, категории, копилки и счета. А нажав на аватар вверху, можно настроить Face ID, выгрузить данные и многое другое.', pos: 'above', tail: 0 }
   ];
   let el = null, i = 0, steps = [];
   const seen = () => { try { return localStorage.getItem(KEY) === '1'; } catch (_) { return false; } };
   const mark = () => { try { localStorage.setItem(KEY, '1'); } catch (_) {} };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const vis = sel => { const t = document.querySelector(sel); return t && t.offsetParent !== null ? t : null; };
 
   function close() { if (el) { el.remove(); el = null; } mark(); window.removeEventListener('resize', draw); }
   function draw() {
     if (!el) return;
-    const s = steps[i], t = document.querySelector(s.sel);
-    if (!t) { next(); return; }
-    const r = t.getBoundingClientRect(), pad = 6, H = window.innerHeight, W = window.innerWidth;
-    const hole = el.querySelector('.tour-hole'), card = el.querySelector('.tour-card');
-    Object.assign(hole.style, { left: r.left - pad + 'px', top: r.top - pad + 'px', width: r.width + pad * 2 + 'px', height: r.height + pad * 2 + 'px' });
-    card.innerHTML = `<div class="tour-top">${MD.mascot ? MD.mascot(s.pose, 56) : ''}<div><b>${esc(s.t)}</b><p>${esc(s.p)}</p></div></div>
-      <div class="tour-dots" aria-hidden="true">${steps.map((_, k) => `<i${k === i ? ' class="on"' : ''}></i>`).join('')}</div>
-      <div class="tour-btns"><button class="btn ghost" type="button" data-tour="skip">Пропустить</button><button class="btn primary" type="button" data-tour="next">${i === steps.length - 1 ? 'Понятно' : 'Далее'}</button></div>`;
-    const below = r.top + r.height / 2 < H * 0.55;
-    card.style.top = below ? Math.min(H - card.offsetHeight - 16, r.bottom + 16) + 'px' : Math.max(16, r.top - card.offsetHeight - 16) + 'px';
-    card.style.left = '16px'; card.style.right = '16px'; card.style.maxWidth = Math.min(W - 32, 420) + 'px';
+    const s = steps[i], W = window.innerWidth, H = window.innerHeight;
+    const rs = s.sel.map(q => { const t = vis(q); return t && t.getBoundingClientRect(); }).filter(Boolean);
+    if (!rs.length) { next(); return; }
+    const pad = 6, holes = rs.map(r => ({ x: r.left - pad, y: r.top - pad, w: r.width + pad * 2, h: r.height + pad * 2, r: s.round ? (r.width + pad * 2) / 2 : 14 }));
+    el.querySelector('svg').setAttribute('viewBox', `0 0 ${W} ${H}`);
+    el.querySelector('svg').innerHTML = `<defs><mask id="tourMask"><rect width="${W}" height="${H}" fill="white"/>${holes.map(h => `<rect x="${h.x}" y="${h.y}" width="${h.w}" height="${h.h}" rx="${h.r}" fill="black"/>`).join('')}</mask></defs><rect width="${W}" height="${H}" fill="rgba(0,0,0,.4)" mask="url(#tourMask)"/>`;
+    const ring = el.querySelector('.tour-ring'); ring.hidden = !s.pulse;
+    if (s.pulse) Object.assign(ring.style, { left: rs[0].left + 'px', top: rs[0].top + 'px', width: rs[0].width + 'px', height: rs[0].height + 'px' });
+    const card = el.querySelector('.tour-card');
+    card.innerHTML = `<b>${esc(s.t)}</b><p>${esc(s.p)}</p><div class="tour-btns"><button class="tk" type="button" data-tour="skip">Пропустить</button><span class="tn">${i + 1} из ${steps.length}</span><button class="tx" type="button" data-tour="next">${i === steps.length - 1 ? 'Понятно' : 'Далее'}</button></div><span class="tour-tail"></span>`;
+    const t0 = holes[s.tail || 0], cw = Math.min(W - 32, 340);
+    card.style.width = cw + 'px'; card.style.left = Math.round((W - cw) / 2) + 'px';
+    const ch = card.offsetHeight, below = s.pos === 'below';
+    card.style.top = (below ? Math.min(H - ch - 16, t0.y + t0.h + 16) : Math.max(16, t0.y - ch - 16)) + 'px';
+    const tail = card.querySelector('.tour-tail'), cx = t0.x + t0.w / 2 - (W - cw) / 2;
+    tail.style.left = Math.max(20, Math.min(cw - 36, cx - 8)) + 'px';
+    tail.style[below ? 'top' : 'bottom'] = '-7px';
   }
   function next() { if (i >= steps.length - 1) return close(); i++; draw(); }
   function start(force) {
     if (el || (!force && seen())) return;
-    steps = STEPS.filter(s => { const t = document.querySelector(s.sel); return t && t.offsetParent !== null; });
+    steps = STEPS.filter(s => s.sel.some(vis));
     if (!steps.length) return;
     i = 0;
     el = document.createElement('div');
     el.className = 'tour'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Как пользоваться Фином');
-    el.innerHTML = '<div class="tour-hole"></div><div class="tour-card"></div>';
+    el.innerHTML = '<svg aria-hidden="true"></svg><span class="tour-ring" hidden></span><div class="tour-card"></div>';
     document.body.appendChild(el);
     el.addEventListener('click', e => {
       const b = e.target.closest('[data-tour]'); if (!b) return;

@@ -12,6 +12,7 @@ const executablePath = process.env.CHROMIUM || undefined;
 let fails = 0;
 const ok = (name, c, info) => { if (!c) { fails++; console.log('✗', name, info || ''); } else console.log('✓', name); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { await pg.click('#auth [data-act=later]'); await sleep(250); } await pg.click('#fab'); await sleep(250); await pg.click('[data-addway=manual]'); await sleep(900); if (await pg.isVisible('#auth [data-act=later]')) { await pg.click('#auth [data-act=later]'); await sleep(250); } };
 (async () => {
   const b = await chromium.launch({ executablePath, args: ['--no-sandbox'] });
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'light' });
@@ -33,11 +34,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('после знакомства Фин показывает тур по экрану', await vis('.tour'));
   await page.click('[data-tour=skip]'); await sleep(200);
   ok('после пропуска: вход не требуется, видна главная', await vis('#s-home') && !(await vis('#auth')));
-  ok('главная: пустое состояние без лишней кнопки', (await page.textContent('#recentList')).includes('Пока пусто') && !(await vis('#recentList [data-add]')));
+  ok('главная: пустая — приветствие с тремя шагами', await vis('#welcome') && (await page.$$('#welcome [data-wl]')).length === 3 && !(await vis('#homeMain')));
   ok('на главной нет голосового ввода (микрофон только в «+»)', !(await page.$('#s-home [data-ic=mic], #qaMic')));
 
   // ---- 2. добавление: 4 действия, кнопка активна только при сумме и категории
-  await page.click('#fab'); await sleep(200);
+  await fabM(page);
   ok('добавление: «Сохранить» неактивна', await page.isDisabled('#txSave'));
   await page.fill('#txAmount', '12');
   ok('только сумма: всё ещё неактивна', await page.isDisabled('#txSave'));
@@ -56,7 +57,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await page.click('#auth [data-act=later]'); await sleep(200);
   ok('«Не сейчас»: приложение работает как гость', !(await vis('#auth')) && (await page.textContent('#recentList')).includes('Транспорт'));
   // вход через Google с данными гостя: ничего не теряем
-  await page.click('[data-tab=acc]'); await page.click('#loginCard'); await sleep(150);
+  await page.evaluate(() => MD.app.showTab('acc')); await page.click('#loginCard'); await sleep(150);
   await page.click('#auth [data-act=google]'); await sleep(900);
   await page.click('[data-tab=home]'); await sleep(200);
   ok('после входа данные гостя на месте', (await page.textContent('#recentList')).includes('Транспорт'));
@@ -92,7 +93,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('«Отмена» возвращает запись', (await page.$$eval('#recentList .tx', e => e.length)) === before + 1);
 
   // ---- 5. обязательные платежи: три тапа
-  await page.click('[data-tab=acc]'); await sleep(150);
+  await page.evaluate(() => MD.app.showTab('acc')); await sleep(150);
   await page.evaluate(() => MD.app.showTab('pay')); await sleep(200);
   ok('экран платежей пуст с призывом', (await page.textContent('#payBody')).includes('Пока пусто') && await vis('#payBody [data-newpay]'));
   await page.click('[data-newpay] >> nth=0');            // тап 1
@@ -106,20 +107,20 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('платёж создан за три тапа', (await page.textContent('#toast')).includes('Платёж добавлен') && (await page.textContent('#payBody')).includes('Аренда'));
   ok('в списке отметка «Ожидает»', (await page.textContent('#payBody')).includes('Ожидает'));
   await page.click('#s-pay [data-back]'); await page.click('[data-tab=home]'); await sleep(200);
-  const plaque = await page.textContent('#paysStrip');
-  ok('карточка на главной: «Аренда 500,00 Br через 2 дня»', /Аренда\s*500,00\s*\S+\s*[Чч]ерез 2 дня/.test(plaque), plaque);
-  await page.click('#paysStrip .pc-main'); await sleep(200);
+  const plaque = await page.textContent('#payCard');
+  ok('строка на главной: «Резерв 500,00 Br · через 2 дня»', /Резерв\s*500,00\s*\S+\s*·\s*через 2 дня/.test(plaque), plaque);
+  await page.click('#payCard [data-go-pay]'); await sleep(200);
   ok('тап по плашке открывает список платежей', await vis('#s-pay'));
   // совпадение операции: категория Дом, сумма 500, дата +1 день
   await page.click('[data-tab=home]'); await sleep(100);
-  await page.click('#fab'); await sleep(200);
+  await fabM(page);
   await page.fill('#txAmount', '500'); await page.click('[data-cat="Дом"]');
   await page.click('#dToday'); await page.click('#txSave'); await sleep(250); if (await page.isVisible('#txDoneOk')) await page.click('#txDoneOk'); await sleep(300);
   const t = await page.textContent('#toast');
   ok('Фин предлагает отметить оплату аренды', /Это оплата «Аренда»\?/.test(t) && t.includes('Отметить'), t);
   await page.click('#toast button'); await sleep(250);
   ok('одно нажатие: платёж закрыт', (await page.textContent('#toast')).includes('Отмечено'));
-  await page.click('[data-tab=acc]'); await page.evaluate(() => MD.app.showTab('pay')); await sleep(200);
+  await page.evaluate(() => MD.app.showTab('acc')); await page.evaluate(() => MD.app.showTab('pay')); await sleep(200);
   ok('в списке «Оплачено»', (await page.textContent('#payBody')).includes('Оплачено'));
   // правка: тап по платежу
   await page.click('[data-payedit]'); await sleep(200);

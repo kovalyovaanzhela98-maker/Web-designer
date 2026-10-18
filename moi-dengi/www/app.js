@@ -165,6 +165,7 @@ function sanitize(o) {
       name: a.name.trim().slice(0, 24),
       last4: /^\d{4}$/.test(String(a.last4 ?? '')) ? String(a.last4) : '',
       balance: Number.isFinite(bal) ? round2(bal) : 0,
+      kind: ['card', 'cash', 'other'].includes(a.kind) ? a.kind : 'card',
       color: COLORS.some(c => c.bg === a.color) ? a.color : COLORS[0].bg
     });
   }
@@ -226,7 +227,7 @@ const sumOf = (list, type) => round2(list.filter(t => t.type === type).reduce((s
 
 /* Счёт у человека один, общий. Внутри он по-прежнему лежит как единственная «карта», но экранов для неё нет. */
 function ensureAccount() {
-  if (!state.accounts.length) state.accounts.push({ id: 'main', name: 'Мой счёт', last4: '', balance: 0, color: COLORS[0].bg });
+  if (!state.accounts.length) state.accounts.push({ id: 'main', name: 'Мой счёт', last4: '', balance: 0, kind: 'card', color: COLORS[0].bg });
 }
 
 /* ---------- Отрисовка ---------- */
@@ -244,9 +245,11 @@ function render() {
   renderHome();
   renderNudge();
   if (tab === 'ops') renderOps();
-  if (tab === 'stats') renderStats();
+  if (tab === 'stats') { renderStats(); renderSections(); }
   if (tab === 'goals') renderGoals();
   if (tab === 'acc') renderAcc();
+  if (tab === 'events') renderEventsScreen();
+  if (tab === 'accounts') renderAccountsScreen();
   if (tab === 'pay') renderPay();
   if (tab === 'chat' && MD.chat) MD.chat.render();
   if (tab === 'home' || tab === 'stats') nudgeRefresh(false);
@@ -257,85 +260,175 @@ function renderMonthBars() {
   $$('.monthbar-slot').forEach(s => { s.innerHTML = html; });
 }
 
-/* Обязательные платежи на главной: «избранное», как в банке. Карточки по порядку: пора записать, ближайшие, оплаченные */
-const rMoney = n => esc(maskT(money(n)));
-function renderPays() {
-  const blk = $('#paysBlock'), el = $('#paysStrip'), T = new Date(), mk = R.mkOfDate(T), list = state.rec.list;
-  blk.hidden = false;
-  if (!list.length) {
-    el.innerHTML = `<button class="pcard add" type="button" data-go-pay><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>Добавить платёж</b></button>`;
-    return;
-  }
-  let rows = R.monthRows(list, mk, T);
-  if (!rows.length) { const n = R.nextDue(list, T); rows = n ? [{ p: n.p, date: n.date, status: 'wait', mk: n.mk }] : []; }
-  const rank = r => (r.status === 'late' ? 0 : r.status === 'wait' ? 1 : 2);
-  rows = rows.slice().sort((a, b) => rank(a) - rank(b) || a.date - b.date).slice(0, 8);
-  const mid = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  el.innerHTML = rows.map(r => {
-    const p = r.p, ci = catInfo('expense', p.cat), d = r.date, days = Math.round((mid(d) - mid(T)) / 864e5), key = r.mk || mk;
-    const sub = r.status === 'paid' ? 'Оплачено' : days > 0 ? `Через ${days} ${pluralN(days, 'день', 'дня', 'дней')}` : days === 0 ? '' : cap(esc(R.whenText(days)));
-    return `<div class="pcard ${r.status}"><button class="pc-main" type="button" data-go-pay aria-label="${esc(cap(p.name))}, ${esc(sub)}. Все обязательные платежи">
-        <span class="pc-top"><span class="tx-ic" aria-hidden="true">${r.status === 'paid' ? icon('check') : cIcon(ci)}</span><b class="pc-n">${esc(cap(p.name))}</b></span>
-        <span class="pc-bot"><span class="pc-a">${rMoney(p.amount)}</span>${sub ? `<small class="pc-s">${sub}</small>` : ''}</span></button>
-      ${r.status === 'late' ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${key}">Записать</button>` : ''}</div>`;
-  }).join('');
-}
+/* Значки в списках: контурные, серые (iOS). Иллюстрации категорий остаются в выборе категории и в настройках */
+const LINE = { c_groceries: 'cart', c_cafe: 'cup', c_restaurant: 'cup', c_bar: 'cup', c_fast_food: 'pizza', c_clothes: 'shirt', c_beauty: 'scissors', c_health: 'aid', c_pharmacy: 'aid', c_home: 'home', c_repair: 'wrench', c_fuel: 'car', c_mobile_internet: 'phone', c_entertainment: 'ticket', c_games: 'game', c_gifts: 'gift', c_hobby: 'music', c_books: 'book', c_education: 'school', c_kids: 'baby', c_pets: 'paw', c_insurance: 'lock', c_credit: 'bank', c_transport: 'bus', c_subscriptions: 'repeat', c_transfer: 'swap', c_taxes: 'tax', c_shopping: 'laptop', c_charity: 'heart', c_investments: 'chart', c_salary: 'cash', c_freelance: 'laptop', c_cashback: 'coins', c_hotel: 'sofa', c_other: 'grid' };
+const lineIc = ci => { const n = ci[1]; if (ci[0] === 'Банк') return icon('bank'); return icon(LINE[n] || (MD.IC && MD.IC[n] ? n : 'grid')); };
 
-/* Цели на главной: карточки в ряд, у каждой свой цвет */
-function renderGoalsHome() {
-  const el = $('#goalsStrip'), list = state.goals;
-  el.innerHTML = list.map(g => `<button class="grow" type="button" data-goal="${esc(g.id)}" style="--gc:${gCol(g)}"><span class="gr-top"><b>${esc(g.name)}</b><span class="goal-pct">${goalPct(g)}%</span></span><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span><small>${esc(maskT(gm(g, g.saved)))} из ${esc(maskT(gm(g, g.target)))}</small></button>`).join('') +
-    `<button class="grow add" type="button" data-newgoal><span class="pc-ic2" aria-hidden="true">${icon('plus')}</span><b>${list.length ? 'Ещё копилка' : 'Новая копилка'}</b></button>`;
+/* Главная: одна цифра «Свободные деньги», одно событие, одна копилка, платежи и последние записи */
+const rMoney = n => esc(maskT(money(n)));
+const fmtS = n => fmt(n).replace(/[,.]00$/, '');
+const dayWord = d => `${d} ${pluralN(d, 'день', 'дня', 'дней')}`;
+const midnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+function payInfo(T) {
+  const list = state.rec.list; if (!list.length) return null;
+  const mk = R.mkOfDate(T), rows = R.monthRows(list, mk, T), open = rows.filter(r => r.status !== 'paid');
+  const reserve = round2(open.reduce((s, r) => s + r.p.amount, 0));
+  let next = open.slice().sort((a, b) => a.date - b.date)[0];
+  if (!next) { const n = R.nextDue(list, T); if (n) next = { p: n.p, date: n.date, status: 'wait' }; }
+  return { reserve, next, days: next ? Math.round((midnight(next.date) - midnight(T)) / 864e5) : null, late: open.some(r => r.status === 'late') };
 }
-/* Дни рождения и праздники: ближайшие, одной строкой */
-const festTot = e => { const t = MD.events.itemsTotal(e); return t ? ` · ≈ ${money(t)}` : ''; };
-function renderFestHome() {
-  const el = $('#festStrip'), ups = MD.events.upcoming(festList(), new Date()).slice(0, 6);
-  el.innerHTML = `<button class="fpill add" type="button" data-ev=""><span class="fp-ic" aria-hidden="true">${icon('plus')}</span><span class="fp-t"><b>Добавить</b></span></button>` +
-    ups.map(u => { const d = MD.events.daysTo(u.occ, new Date()); return `<button class="fpill" type="button" data-ev="${esc(u.e.id)}"><span class="fp-ic" aria-hidden="true">${icon('gift')}</span><span class="fp-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : `через ${d} ${pluralN(d, 'день', 'дня', 'дней')}`}${festTot(u.e)}</small></span></button>`; }).join('');
+const eventsSoon = T => MD.events.upcoming(festList(), T).map(u => ({ e: u.e, occ: u.occ, d: MD.events.daysTo(u.occ, T) })).filter(x => x.d >= 0 && x.d <= 14);
+/* Свободные деньги = баланс минус обязательные платежи месяца, которые ещё не оплачены, минус отложенное на события ближайших двух недель */
+function freeNow(T, pi, soon) {
+  return round2(totalBalance() - (pi ? pi.reserve : 0) - soon.reduce((s, x) => s + (MD.events.itemsTotal(x.e) || 0), 0));
+}
+const hasData = () => !!(state.tx.length || state.goals.length || state.rec.list.length || festList().length || state.accounts.length > 1);
+const range = (v, k = 0.2) => [Math.max(1, Math.floor(v * (1 - k))), Math.ceil(v * (1 + k))];
+function renderHomeCards(T, pi, soon) {
+  const ev = soon[0];
+  if (ev) {
+    const tot = MD.events.itemsTotal(ev.e) || 0, r = tot > 0 ? range(tot, 0.15) : null;
+    $('#evtCard').innerHTML = `<div class="h-evt"><span class="ev-ic" aria-hidden="true">${icon('gift')}</span><div class="ev-t"><b>${esc(MD.events.whatText(ev.e))} ${ev.d === 0 ? 'сегодня' : ev.d === 1 ? 'завтра' : 'через ' + dayWord(ev.d)}</b><span>${r ? `Отложим от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym()))}?` : 'Отложим на подарок?'}</span><button class="ev-a" type="button" data-evgift="${esc(ev.e.id)}">Отложить на подарок<i aria-hidden="true">${icon('right')}</i></button></div></div>`;
+  } else $('#evtCard').innerHTML = '';
+  const act = state.goals.filter(g => goalPct(g) < 100).sort((a, b) => String(a.deadline).localeCompare(String(b.deadline)))[0];
+  if (act) {
+    const per = G.perPeriodNow(act, T) || 0, r = range(per), unit = act.unit === 'week' ? 'в неделю' : 'в месяц';
+    $('#goalCard').innerHTML = `<div class="h-goal"><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
+      ${per > 0 ? `<p>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</p>` : `<p>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</p>`}
+      <button class="btn-bord" type="button" data-savenow="${esc(act.id)}">Отложить сейчас</button></div>`;
+  } else $('#goalCard').innerHTML = `<div class="grp h-new"><button class="row" type="button" data-newgoal><span class="rw-ic" aria-hidden="true">${icon('goal')}</span><span class="rw-t"><b>Создать копилку</b></span><span class="rw-r">${icon('right')}</span></button></div>`;
+  if (pi) {
+    const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
+    $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${icon('right')}</span></button>`;
+  } else $('#payCard').innerHTML = `<div class="grp h-new"><button class="row" type="button" data-go-pay><span class="rw-ic" aria-hidden="true">${icon('repeat')}</span><span class="rw-t"><b>Добавить обязательный платёж</b></span><span class="rw-r">${icon('right')}</span></button></div>`;
+}
+const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
+function renderHome() {
+  const T = new Date(), w = !hasData();
+  $('#welcome').hidden = !w; $('#homeMain').hidden = w;
+  document.body.classList.toggle('welcome', w);
+  { const n = userName(); $('#greetTitle').textContent = n ? `Привет, ${n}` : 'Привет'; }
+  if (w) return;
+  const pi = payInfo(T), soon = eventsSoon(T);
+  setNum($('#heroSum'), moneyH, freeNow(T, pi, soon));
+  $('#heroAll').textContent = hide ? `На счетах: ${MASK}` : `На счетах: ${money(totalBalance())}`;
+  if (MD.notify.supported()) { const list = monthTx(now0.getFullYear(), now0.getMonth()); MD.notify.pushSummary({ balance: hide ? '••••' : money(totalBalance()), flow: hide ? '' : `+${fmt(sumOf(list, 'income'))}  −${fmt(sumOf(list, 'expense'))}`, month: MONTHS[now0.getMonth()].toLowerCase() }); }
+  renderHomeCards(T, pi, soon);
+  const recent = state.tx.slice().sort(cmpTx).slice(0, 5);
+  let last = '';
+  $('#recentList').innerHTML = recent.length
+    ? `<div class="recent">${recent.map(t => { const h = t.date !== last ? `<div class="day-h">${esc(dayShort(t.date))}</div>` : ''; last = t.date; return h + txRow(t); }).join('')}</div>`
+    : emptyBox('Пока пусто', 'Первые записи появятся здесь.');
 }
 $('#s-home').addEventListener('click', e => {
   const g = e.target.closest('[data-goal]'); if (g) { openGoal(g.dataset.goal); return; }
   if (e.target.closest('[data-newgoal]')) { startNewGoal(); return; }
+  const gi = e.target.closest('[data-evgift]'); if (gi) { giftGoal(gi.dataset.evgift); return; }
+  const wl = e.target.closest('[data-wl]');
+  if (wl) { buzz(8); if (wl.dataset.wl === 'acc') { showTab('accounts'); openAccSheet(null); } else if (wl.dataset.wl === 'ev') openEvent(null); else startNewGoal(); return; }
   const v = e.target.closest('[data-ev]'); if (v) openEvent(v.dataset.ev || null);
 });
-
-/* Карточка «Пора отложить»: цель, в этом периоде ещё не откладывали. Или совет включить напоминание в лучший день */
-function renderSaveCard() {
-  const el = $('#saveCard'), c = G.homeCard(state.goals, state.tx, new Date());
-  if (!c) { el.innerHTML = ''; return; }
-  const g = c.goal, per = esc(maskT(gm(g, c.amount))), unit = g.unit === 'week' ? 'на этой неделе' : 'в этом месяце';
-  el.innerHTML = c.kind === 'due'
-    ? `<div class="save-card due">${MD.mascot('love', 56)}<span class="sc-t"><b>Отложи ${per} на «${esc(g.name)}»</b></span><button class="btn primary" type="button" data-savenow="${esc(g.id)}">Отложил</button></div>`
-    : `<div class="save-card">${MD.mascot('think', 56)}<span class="sc-t"><b>«${esc(g.name)}»: напомнить откладывать ${esc(G.dayName(g.unit === 'week' ? 'week' : 'month', c.day))}?</b></span><button class="btn primary" type="button" data-remindgoal="${esc(g.id)}|${c.day}">Да</button></div>`;
+/* Копилка на подарок к событию: если сумма известна — создаём сразу, срок до дня события */
+function giftGoal(evId) {
+  const T = new Date(), u = MD.events.upcoming(festList(), T).find(x => x.e.id === evId); if (!u) return;
+  const name = ('Подарок: ' + MD.events.whatText(u.e)).slice(0, 40), have = state.goals.find(g => g.name === name);
+  if (have) { openGoal(have.id); return; }
+  const total = MD.events.itemsTotal(u.e) || 0;
+  if (!(total > 0)) { startNewGoal(); return; }
+  const active = state.goals.filter(g => g.saved < g.target).length;
+  if (active >= MD.sub.limit('goals')) return MD.sub.open('goals', openQuiz);
+  const used = new Set(state.goals.map(g => g.nid)); let nid = 0; while (used.has(nid) && nid < 49) nid++;
+  const sd = G.suggestDay(state.tx, 'week'), id = uid(), days = Math.max(7, MD.events.daysTo(u.occ, T));
+  state.goals.push({ id, name, target: round2(total), saved: 0, months: Math.max(1, Math.round(days / 30)), unit: 'week', deadline: G.ymdOf(u.occ), cur: state.currency, created: today(), nid, remind: { on: false, day: sd.day, time: '10:00' }, log: [] });
+  save(); afterDataChange(); render(); buzz(15);
+  toast('Копилка на подарок создана', null, null, 'joy');
+  openGoal(id);
 }
-/* Баннеры: пара наблюдений по записям */
-function renderBanners() {
-  const list = MD.insights.pick(MD.insights.build(state.tx, new Date(), n => maskT(money(n))), new Date(), 1);
-  $('#banners').innerHTML = list.map(b => `<article class="banner tone-${b.tone}"><span class="bi" aria-hidden="true">${icon(b.icon)}</span><b>${esc(b.title)}</b><p>${esc(b.text)}</p></article>`).join('');
-}
-function renderHome() {
-  { const n = userName(); $('#greetTitle').textContent = n ? `Привет, ${n}` : 'Привет'; }
-  const total = totalBalance();
-  setNum($('#heroSum'), moneyH, total);
 
-  const list = monthTx(ym.y, ym.m);
-  const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense'), isNow = ym.y === now0.getFullYear() && ym.m === now0.getMonth();
-  $('#heroMon').textContent = isNow ? MONTHS[ym.m] : `${MONTHS[ym.m]} ${ym.y}`; $('#tileIncL').textContent = ''; $('#tileExpL').textContent = '';
-  $('#sumInc').innerHTML = hide ? MASK : (inc > 0 ? '+' : '') + moneyH(inc);
-  $('#sumExp').innerHTML = hide ? MASK : (exp > 0 ? '−' : '') + moneyH(exp);
-  if (MD.notify.supported()) MD.notify.pushSummary({ balance: hide ? '••••' : money(total), flow: hide ? '' : `+${fmt(inc)}  −${fmt(exp)}`, month: MONTHS[ym.m].toLowerCase() });
-  renderPays();
-  renderGoalsHome();
-  renderFestHome();
-  renderSaveCard();
-  renderBanners();
-
-  const recent = state.tx.slice().sort(cmpTx).slice(0, 5);
-  $('#recentList').innerHTML = recent.length
-    ? `<div class="recent">${recent.map(txRow).join('')}</div>`
-    : emptyBox('Пока пусто', 'Первые записи появятся здесь.');
+/* ---------- Экраны: события, счета, разделы статистики ---------- */
+const ACC_KINDS = { card: 'Карта', cash: 'Наличные', other: 'Другое' };
+const KIND_IC = { card: 'wallet', cash: 'cash', other: 'bank' };
+function renderSections() {
+  const act = state.goals.filter(g => goalPct(g) < 100).length, rc = state.rec.list.length, ev = festList().length, ac = state.accounts.length;
+  $('#secGoals').innerHTML = `${act ? act : ''}${icon('right')}`;
+  $('#secPays').innerHTML = `${rc ? rc : ''}${icon('right')}`;
+  $('#secEvents').innerHTML = `${ev ? ev : ''}${icon('right')}`;
+  $('#secAccs').innerHTML = `${ac}${icon('right')}`;
 }
+function renderEventsScreen() {
+  const T = new Date(), ups = MD.events.upcoming(festList(), T);
+  if (!ups.length) { $('#eventsBody').innerHTML = emptyBox('Пока нет событий', 'Добавь день рождения или праздник, и Фин напомнит заранее.', { attr: 'data-ev=""', label: 'Добавить событие' }); return; }
+  const groups = []; ups.forEach(u => { const k = `${u.occ.getFullYear()}-${u.occ.getMonth()}`; let g = groups.find(x => x.k === k); if (!g) { g = { k, m: u.occ.getMonth(), y: u.occ.getFullYear(), list: [] }; groups.push(g); } g.list.push(u); });
+  $('#eventsBody').innerHTML = groups.map(g => `<div class="grp-t">${MONTHS[g.m]}${g.y !== T.getFullYear() ? ' ' + g.y : ''}</div><div class="grp">${g.list.map(u => {
+    const gift = state.goals.some(x => x.name === ('Подарок: ' + MD.events.whatText(u.e)).slice(0, 40)), d = MD.events.daysTo(u.occ, T);
+    return `<div class="row ev-row"><button class="ev-main" type="button" data-ev="${esc(u.e.id)}"><span class="rw-ic" aria-hidden="true">${icon('gift')}</span><span class="rw-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${u.occ.getDate()} ${MONTHS_G[u.occ.getMonth()]} · ${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : 'через ' + dayWord(d)}</small></span></button>${gift ? '' : `<button class="ev-gift" type="button" data-evgift="${esc(u.e.id)}">Копилка</button>`}</div>`;
+  }).join('')}</div>`).join('');
+}
+$('#s-events').addEventListener('click', e => {
+  const gi = e.target.closest('[data-evgift]'); if (gi) { giftGoal(gi.dataset.evgift); return; }
+  const v = e.target.closest('[data-ev]'); if (v) openEvent(v.dataset.ev || null);
+});
+function renderAccountsScreen() {
+  const tot = totalBalance();
+  $('#accountsBody').innerHTML = `<div class="h-free acc-tot"><small>Общий баланс</small><div class="hero-sum">${moneyH(tot)}</div></div>
+    <div class="grp">${state.accounts.map(a => `<button class="row acc-row" type="button" data-acc="${esc(a.id)}"><span class="rw-ic" aria-hidden="true">${icon(KIND_IC[a.kind] || 'wallet')}</span><span class="rw-t"><b>${esc(a.name)}</b><small>${esc(ACC_KINDS[a.kind] || 'Карта')}</small></span><span class="rw-r am">${rMoney(accBalance(a))}</span></button>`).join('')}</div>
+    <button class="btn-bord wide" type="button" data-accnew>Добавить счёт</button>`;
+}
+let accEdit = null, accKind = 'card';
+function openAccSheet(id) {
+  const a = id ? accById(id) : null; accEdit = a ? a.id : null; accKind = a ? (a.kind || 'card') : 'card';
+  $('#accTitle').textContent = a ? 'Счёт' : 'Новый счёт';
+  $('#accName').value = a ? a.name : ''; $('#accErr').hidden = true;
+  $$('#accKind [data-akind]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.akind === accKind)));
+  $('#accDel').hidden = !a || state.accounts.length < 2;
+  openLayer($('#lyAccount'));
+}
+$('#accKind').addEventListener('click', e => { const b = e.target.closest('[data-akind]'); if (!b) return; accKind = b.dataset.akind; $$('#accKind [data-akind]').forEach(x => x.setAttribute('aria-checked', String(x === b))); });
+$('#accForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#accName').value.replace(/\s+/g, ' ').trim().slice(0, 24);
+  if (!name) { $('#accErr').textContent = 'Напиши название счёта.'; $('#accErr').hidden = false; return; }
+  if (state.accounts.some(a => a.id !== accEdit && a.name.toLowerCase() === name.toLowerCase())) { $('#accErr').textContent = 'Такой счёт уже есть.'; $('#accErr').hidden = false; return; }
+  if (accEdit) { const a = accById(accEdit); a.name = name; a.kind = accKind; }
+  else state.accounts.push({ id: uid(), name, last4: '', balance: 0, kind: accKind, color: COLORS[state.accounts.length % COLORS.length].bg });
+  save(); closeLayer($('#lyAccount')); render(); buzz(12);
+});
+$('#accDel').addEventListener('click', () => {
+  const a = accById(accEdit); if (!a || state.accounts.length < 2) return;
+  const n = state.tx.filter(t => t.acc === a.id).length;
+  confirmDlg('Удалить счёт?', n ? `Его записи (${n}) перейдут на счёт «${state.accounts.find(x => x.id !== a.id).name}».` : 'Счёт пустой.', 'Удалить').then(ok => {
+    if (!ok) return;
+    const to = state.accounts.find(x => x.id !== a.id); state.tx.forEach(t => { if (t.acc === a.id) t.acc = to.id; });
+    state.accounts = state.accounts.filter(x => x.id !== a.id); save(); closeLayer($('#lyAccount')); render();
+  });
+});
+$('#accountsBody').addEventListener('click', e => { const r = e.target.closest('[data-acc]'); if (r) { openAccSheet(r.dataset.acc); return; } if (e.target.closest('[data-accnew]')) openAccSheet(null); });
+
+/* ---------- Добавить запись: выбор способа ---------- */
+function openAddSheet() {
+  $('#addOpts').hidden = false; $('#addTextForm').hidden = true; $('#addTextIn').value = '';
+  openLayer($('#lyAdd'));
+}
+$('#lyAdd').addEventListener('click', e => {
+  const b = e.target.closest('[data-addway]'); if (!b) return;
+  buzz(10);
+  if (b.dataset.addway === 'manual') { closeLayer($('#lyAdd')); openTx(); }
+  else if (b.dataset.addway === 'photo') $('#addPhoto').click();
+  else { $('#addOpts').hidden = true; $('#addTextForm').hidden = false; setTimeout(() => $('#addTextIn').focus(), 50); }
+});
+$('#addTextBack').addEventListener('click', () => { $('#addOpts').hidden = false; $('#addTextForm').hidden = true; });
+$('#addTextForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = $('#addTextIn').value.trim(); if (!v) return;
+  const items = normalizeItems(MD.parseNotes(v, { today: new Date(), accounts: state.accounts }));
+  if (!items.length) { toast(HINT, null, null, 'oops'); return; }
+  closeLayer($('#lyAdd')); setTimeout(() => spoken(v, false), 60);
+});
+$('#addPhoto').addEventListener('change', e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  closeLayer($('#lyAdd'));
+  setTimeout(() => { showTab('chat'); if (MD.chat && MD.chat.receipt) MD.chat.receipt(f); }, 80);
+});
 
 /* Режим выбора в истории: отметить несколько операций и изменить сразу */
 const sel = { on: false, ids: new Set() };
@@ -351,12 +444,12 @@ function dayTitle(s) {
 }
 
 function txRow(t) {
-  const ci = catInfo(t.type, t.cat), a = accById(t.acc), on = sel.on && sel.ids.has(t.id);
-  return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}</div>
+  const ci = catInfo(t.type, t.cat), on = sel.on && sel.ids.has(t.id);
+  return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}<span>Удалить</span></div>
     <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить">
-      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</div>
+      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" aria-hidden="true">${lineIc(ci)}</div>
       <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}${t.orig ? `<div class="tx-n tx-orig">${t.orig.est ? '≈ ' : ''}${esc(fmt(t.orig.a))} ${esc(sym(t.orig.cur))}</div>` : ''}</div>
-      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${pill(t.amount, t.type, ci)}</div></div>
+      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${hide ? MASK : esc(signed(t.amount, t.type))}</div></div>
     </div></div>`;
 }
 
@@ -520,12 +613,14 @@ function renderStats() {
 }
 
 /* ---------- Вкладки ---------- */
-let tabPushed = false, payFrom = 'acc';
+let tabPushed = false, payFrom = 'acc', base = 'home';
+const MAIN_TABS = ['home', 'stats'];
 function showTab(name, fromPop) {
+  if (MAIN_TABS.includes(name)) base = name;
   if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
   tab = name;
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
-  const navName = name === 'ops' ? 'home' : name === 'pay' ? payFrom : name;
+  const navName = MAIN_TABS.includes(name) ? name : base;
   $$('.nav-b').forEach(b => { const on = b.dataset.tab === navName; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); const i = $('i[data-ic]', b); if (i) i.innerHTML = on ? MD.iconFill(i.dataset.ic) : icon(i.dataset.ic); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
@@ -581,7 +676,7 @@ function shiftMonth(d) { if (tab === 'stats') { shiftPeriod(d); return; } const 
 })();
 $$('.nav-b').forEach(b => b.addEventListener('click', () => { buzz(8); showTab(b.dataset.tab); }));
 document.addEventListener('click', e => {
-  if (e.target.closest('[data-back]')) { showTab(tab === 'pay' ? payFrom : 'home'); return; }
+  if (e.target.closest('[data-back]')) { showTab(base); return; }
   const g = e.target.closest('[data-go]');
   if (g) showTab(g.dataset.go);
   if (e.target.closest('[data-go-pay]')) openPayScreen();
@@ -620,12 +715,6 @@ $('#s-stats').addEventListener('click', e => {
   if (c) { statCat = statCat === c.dataset.cat ? null : c.dataset.cat; buzz(6); renderStats(); }
 });
 document.addEventListener('click', e => { const hs = e.target.closest('[data-hshift]'); if (hs) shiftMonth(Number(hs.dataset.hshift)); });
-{ // свайп по баланс-блоку меняет месяц
-  let sx = null, sy = 0;
-  const hero = document.querySelector('.hero');
-  hero.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
-  hero.addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) shiftMonth(dx < 0 ? 1 : -1); }, { passive: true });
-}
 /* Имя в профиле: показывается в приветствии на главной */
 $('#nameIn').addEventListener('input', e => { state.name = e.target.value.replace(/\s+/g, ' ').slice(0, 30); save(); renderHome(); });
 $('#nameIn').addEventListener('blur', e => { state.name = state.name.trim(); e.target.value = state.name; save(); renderHome(); renderAccount(); });
@@ -722,10 +811,12 @@ function renderTxForm() {
   const editing = !!tx.editId || tx.draftIdx != null, open = !editing || tx.catOpen || !tx.cat;
   $('#txCats').hidden = !open;
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
-    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="${cs(c)};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</span></button>`).join('');
+    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" aria-hidden="true">${lineIc(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</span></button>`).join('');
+  $('#txAccRow').hidden = state.accounts.length < 2;
+  $('#txAcc').innerHTML = state.accounts.map(a => `<option value="${esc(a.id)}"${a.id === tx.acc ? ' selected' : ''}>${esc(a.name)}</option>`).join('');
   const cc = $('#txCatCur'), ci = tx.cat ? catInfo(tx.type, tx.cat) : null;
   cc.hidden = open;
-  if (ci) cc.innerHTML = `<span class="ci" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(tx.cat)}</b><span class="ch">Изменить</span>`;
+  if (ci) cc.innerHTML = `<span class="ci" aria-hidden="true">${lineIc(ci)}</span><b>${esc(tx.cat)}</b><span class="ch">Изменить</span>`;
   const other = tx.cat === OTHER, showNote = other || tx.noteOpen || !!$('#txNote').value;
   $('#txNoteF').hidden = !showNote; $('#txNoteBtn').hidden = showNote;
   $('#txNoteL').textContent = other ? 'Что именно? (обязательно)' : 'Заметка (необязательно)';
@@ -737,6 +828,7 @@ function renderTxForm() {
   $('#txNoteX').hidden = !$('#txNote').value;
 }
 $('#txCatCur').addEventListener('click', () => { tx.catOpen = true; renderTxForm(); });
+$('#txAcc').addEventListener('change', e => { tx.acc = e.target.value; });
 $('#txNoteBtn').addEventListener('click', () => { tx.noteOpen = true; renderTxForm(); setTimeout(() => $('#txNote').focus(), 40); });
 /* Валюта операции: подписка в долларах, евро или рублях пересчитывается в основную валюту по курсу на дату */
 function renderCurRow() {
@@ -978,7 +1070,7 @@ function afterAdd(items, first, pay, quiet) {
   if (first) setTimeout(offerLogin, 1800);
 }
 function offerLogin() {
-  if (!cloud.enabled || me || layers.length) return;
+  if (!cloud.enabled || me || layers.length || ignorePops > 0) return;
   let asked = false; try { asked = localStorage.getItem('moidengi_loginask') === '1'; localStorage.setItem('moidengi_loginask', '1'); } catch (_) {}
   if (!asked) MD.authUI.show();
 }
@@ -1599,7 +1691,7 @@ const FEST_PRESETS = ['День рождения', 'Новый год', '8 Ма�
 let ev = null;
 const festList = () => state.fest.list;
 const evById = id => festList().find(e => e.id === id);
-function festSave() { save(); MD.notify.applyEvents(festList()); renderAccount(); renderFestHome(); if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel(); }
+function festSave() { save(); MD.notify.applyEvents(festList()); renderAccount(); render(); if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel(); }
 /* Записали подарок: предлагаем внести чей-то праздник, чтобы заранее откладывать деньги */
 function maybeAskFest(items) {
   if (!state.fest.ask || !items.some(i => i.type === 'expense' && i.cat === 'Подарки')) return;
@@ -1690,7 +1782,7 @@ $('#evForm').addEventListener('submit', async e => {
   const i = festList().findIndex(x => x.id === clean.id);
   if (i >= 0) festList()[i] = clean; else festList().push(clean);
   const r = clean.remind.on ? await MD.notify.applyEvents(festList()) : (MD.notify.applyEvents(festList()), { ok: true });
-  save(); closeLayer($('#lyEvent')); ev = null; buzz(15); renderAccount(); renderFestHome();
+  save(); closeLayer($('#lyEvent')); ev = null; buzz(15); renderAccount(); render();
   if (panel && panel.kind === 'fest' && !$('#lyLink').hidden) renderPanel();
   if (r && r.reason === 'denied') toast('Праздник записан, но уведомления выключены. Включи их в настройках телефона.', null, null, 'oops');
   else toast(clean.remind.on && MD.notify.supported() ? 'Праздник записан, напомню заранее' : 'Праздник записан', null, null, 'happy');
@@ -2315,7 +2407,7 @@ function quickAdd(kind) {
   showTab('home', true);
   openTx(null, { type: kind === 'income' ? 'income' : 'expense', voice: kind === 'voice' });
 }
-$('#fab').addEventListener('click', () => { buzz(10); openTx(); });
+$('#fab').addEventListener('click', () => { buzz(10); openAddSheet(); });
 
 /* Что отдаём помощнику и подписке */
 function addTx(items) {
