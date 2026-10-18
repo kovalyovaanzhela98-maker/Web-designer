@@ -1348,3 +1348,16 @@ body.welcome .nav-add{box-shadow:0 0 0 8px color-mix(in srgb,var(--g) 22%,transp
 #lyTx .amt-in{display:flex;justify-content:center;align-items:center;gap:6px}
 #lyTx .amt-in input{width:2ch;min-width:1.4ch;flex:none;padding:0!important}
 #lyTx .amt-in .amt-cur{position:static!important;transform:none!important;left:auto}
+
+/* Шторки: крестик с кружком, мягкая тень, строка заметки */
+.sheet{box-shadow:0 -10px 36px rgba(0,0,0,.2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sheet{box-shadow:0 -10px 36px rgba(0,0,0,.6)}}
+:root[data-theme="dark"] .sheet{box-shadow:0 -10px 36px rgba(0,0,0,.6)}
+.sheet>.sheet-head .icon-btn{width:32px;height:32px;right:16px;background:rgba(120,120,128,.16);color:var(--muted)}
+.sheet>.sheet-head .icon-btn svg{width:18px;height:18px}
+.sheet>.sheet-head .icon-btn svg *{stroke-width:56}
+.note-row{width:100%;justify-content:flex-start;gap:10px;color:var(--muted);text-align:left;border-top:.5px solid var(--line)}
+.note-row svg{width:20px;height:20px;flex:none}
+.note-row:active,.note-row:focus-visible{color:var(--g)}
+#lyTx .cam-btn{right:44px}
+#lyTx .amt-in{padding-right:84px;padding-left:8px}

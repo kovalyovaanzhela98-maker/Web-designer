@@ -424,9 +424,11 @@ $('#addTextForm').addEventListener('submit', e => {
   if (!items.length) { toast(HINT, null, null, 'oops'); return; }
   closeLayer($('#lyAdd')); setTimeout(() => spoken(v, false), 60);
 });
+$('#txCam').addEventListener('click', () => { buzz(8); $('#addPhoto').click(); });
 $('#addPhoto').addEventListener('change', e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  closeLayer($('#lyAdd'));
+  if (!$('#lyTx').hidden) closeLayer($('#lyTx'));
+  if (!$('#lyAdd').hidden) closeLayer($('#lyAdd'));
   setTimeout(() => { showTab('chat'); if (MD.chat && MD.chat.receipt) MD.chat.receipt(f); }, 80);
 });
 

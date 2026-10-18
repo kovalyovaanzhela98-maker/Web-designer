@@ -236,6 +236,7 @@
       <div class="tx-rest">
         <div class="amt-line">
           <label class="amt-in"><input id="txAmount" data-autofocus type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
+          <button type="button" class="voice-btn cam-btn" id="txCam" aria-label="Сфотографировать чек"><i data-ic="camera"></i></button>
           <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i></button>
         </div>
                 <div class="seg" role="radiogroup" aria-label="Тип записи">
@@ -258,8 +259,8 @@
               <input id="txDate" class="pick-hidden" type="date" aria-label="Другая дата" tabindex="-1">
             </div>
           </div>
+          <button type="button" class="tt-row note-row" id="txNoteBtn"><i data-ic="pencil"></i><span>Добавить заметку</span></button>
         </div>
-        <button type="button" class="link note-link" id="txNoteBtn">Добавить заметку</button>
         <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span id="txNoteL">Заметка</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
         <div class="msg err" id="txNoteErr" hidden></div>
         <div class="save-bar"><button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button></div>
