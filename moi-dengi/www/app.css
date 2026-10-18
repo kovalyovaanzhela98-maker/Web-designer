@@ -1326,3 +1326,25 @@ body.welcome .nav-add{box-shadow:0 0 0 8px color-mix(in srgb,var(--g) 22%,transp
 .cat-tile[aria-checked=true] .ci{color:var(--g)!important}
 .cat-cur .ci{background:var(--surface)!important;color:var(--g)!important}
 .pay-row .tx-ic{background:var(--bg)!important;color:var(--muted)!important}
+
+/* Новая запись как в макете: ручка и крестик, сумма крупно без рамки, переключатель под ней, категории, строки, «Сохранить» у клавиатуры */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#lyTx .sheet>.sheet-head{min-height:36px;margin-bottom:0;justify-content:flex-end}
+#lyTx .tx-rest{gap:8px}
+#lyTx .amt-line{justify-content:center;align-items:center;position:relative;gap:0}
+#lyTx .amt-in{flex:1}
+#lyTx .amt-in input{height:72px;font-size:48px;font-weight:700;text-align:center;background:transparent!important;border:0!important;box-shadow:none;padding:0 56px 0 0;letter-spacing:-1px}
+#lyTx .amt-in .amt-cur{right:auto;left:calc(50% + 4px);font-size:28px;color:var(--muted);font-weight:600;position:absolute;top:50%;transform:translateY(-50%);pointer-events:none}
+#lyTx .voice-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);width:36px;height:36px;min-height:0;border-radius:50%;background:var(--surface);color:var(--muted)}
+#lyTx .voice-btn svg{width:20px;height:20px}
+#lyTx .seg{margin:0 56px 4px}
+#lyTx .cur-row{justify-content:center;flex-wrap:nowrap;gap:4px}
+#lyTx .cur-row .chip{background:transparent;box-shadow:none;border:0;color:var(--muted);font-size:13px;min-height:28px;padding:0 10px}
+#lyTx .cur-row .chip[aria-checked=true]{color:var(--g);background:transparent;box-shadow:none}
+#lyTx .cat-grid{margin:0 -16px;padding:2px 16px 6px}
+#lyTx .cat-tile{width:64px;font-size:12px}
+#lyTx .cat-tile .ci{width:48px;height:48px}
+
+#lyTx .amt-in{display:flex;justify-content:center;align-items:center;gap:6px}
+#lyTx .amt-in input{width:2ch;min-width:1.4ch;flex:none;padding:0!important}
+#lyTx .amt-in .amt-cur{position:static!important;transform:none!important;left:auto}

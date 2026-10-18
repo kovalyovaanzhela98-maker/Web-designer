@@ -804,6 +804,7 @@ document.addEventListener('input', e => { const t = e.target; if (t && t.matches
 const tx = { cur: null, orig: null, last: null, type: 'expense', cat: '', acc: null, editId: null, pay: null, draftIdx: null, catOpen: false, noteOpen: false };
 const OTHER = 'Другое';
 function renderTxForm() {
+  fitAmt();
   $$('#lyTx .seg-b').forEach(b => b.setAttribute('aria-checked', String(b.dataset.type === tx.type)));
   $('#txCur').textContent = sym(tx.cur || state.currency);
   renderCurRow();
@@ -829,6 +830,8 @@ function renderTxForm() {
 }
 $('#txCatCur').addEventListener('click', () => { tx.catOpen = true; renderTxForm(); });
 $('#txAcc').addEventListener('change', e => { tx.acc = e.target.value; });
+const fitAmt = () => { const el = $('#txAmount'); el.style.width = Math.max(1.4, el.value.length * 0.95 + 0.5) + 'ch'; };
+$('#txAmount').addEventListener('input', fitAmt);
 $('#txNoteBtn').addEventListener('click', () => { tx.noteOpen = true; renderTxForm(); setTimeout(() => $('#txNote').focus(), 40); });
 /* Валюта операции: подписка в долларах, евро или рублях пересчитывается в основную валюту по курсу на дату */
 function renderCurRow() {

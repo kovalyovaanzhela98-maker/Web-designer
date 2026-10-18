@@ -231,17 +231,17 @@
   <div class="scrim" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="txTitle">
     <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-head"><h2 id="txTitle">Новая запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="sheet-head"><h2 id="txTitle" class="sr">Новая запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <form id="txForm" novalidate>
-      <div class="seg" role="radiogroup" aria-label="Тип записи">
+      <div class="tx-rest">
+        <div class="amt-line">
+          <label class="amt-in"><input id="txAmount" data-autofocus type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
+          <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i></button>
+        </div>
+                <div class="seg" role="radiogroup" aria-label="Тип записи">
         <button type="button" role="radio" class="seg-b" data-type="expense" aria-checked="true">Расход</button>
         <button type="button" role="radio" class="seg-b" data-type="income" aria-checked="false">Доход</button>
       </div>
-      <div class="tx-rest">
-        <div class="amt-line">
-          <label class="amt-in"><input id="txAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
-          <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i></button>
-        </div>
         <div class="chips cur-row" id="txCurRow" role="radiogroup" aria-label="Валюта операции"></div>
         <div class="note cur-note" id="txCurNote" hidden></div>
         <div class="msg err" id="txAmountErr" hidden></div>
