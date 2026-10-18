@@ -49,6 +49,11 @@ eq('номера уведомлений в своём диапазоне', ns.ev
 eq('в день платежа и за 3 дня', [R.pushBody(mk(), 0, money), R.pushBody(mk(), 3, money)], ['Сегодня аренда 500 Br, записать', 'Через 3 дня аренда 500 Br, записать']);
 eq('Netflix не ломаем', R.pushBody(mk({ name: 'Netflix' }), 1, money), 'Завтра Netflix 500 Br, записать');
 
+// свой срок напоминания: за 10 дней
+const nc = R.notifications([mk({ remind: 'custom', leadN: 10, days: [{ from: '0000-00', day: 28 }] })], now, money);
+eq('свой срок: за 10 дней до 28-го', [f(nc[0].at), nc[0].body.startsWith('Через 10 дней')], ['2026-10-18', true]);
+eq('свой срок сохраняется санитайзером', R.sanitize({ list: [{ name: 'А', amount: 5, cat: 'Другое', days: [{ from: '0000-00', day: 3 }], remind: 'custom', leadN: 0 }, { name: 'Б', amount: 5, cat: 'Другое', days: [{ from: '0000-00', day: 3 }], remind: 'custom', leadN: 99 }] }).list.map(x => [x.remind, x.leadN]), [['custom', 0], ['custom', 60]]);
+
 // санитайзер
 const s = R.sanitize({ list: [{ name: '  Кредит ', amount: '1200.5', cat: 'Другое', days: [{ from: '2026-10', day: 40 }, { from: '0000-00', day: 3 }], remind: '3', time: '09:30', paid: { '2026-09': 't', bad: 1 }, nid: 4 }, { name: '', amount: 5, days: [{ day: 1 }] }, { name: 'Без дня', amount: 5 }, { name: 'Дубль', amount: 9, days: [{ day: 2 }], nid: 4 }] }, ['Дом', 'Другое']);
 eq('санитайзер', [s.list.length, s.list[0].name, s.list[0].amount, s.list[0].days, s.list[0].remind, s.list[0].paid, s.list[1].nid], [2, 'Кредит', 1200.5, [{ from: '0000-00', day: 3 }, { from: '2026-10', day: 31 }], '3', { '2026-09': 't' }, 0]);

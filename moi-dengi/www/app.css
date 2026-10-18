@@ -1361,3 +1361,136 @@ body.welcome .nav-add{box-shadow:0 0 0 8px color-mix(in srgb,var(--g) 22%,transp
 .note-row:active,.note-row:focus-visible{color:var(--g)}
 #lyTx .cam-btn{right:44px}
 #lyTx .amt-in{padding-right:84px;padding-left:8px}
+
+/* ============================================================
+   Проверка по правилам Apple: единая сетка отступов (16 по краям, 12–24 между блоками),
+   сегменты и поиск как в iOS, моно-иконки и чёрные суммы на всех экранах, зона касания 44.
+   Камера и голос при добавлении убраны пока.
+   ============================================================ */
+#txCam,#txVoice,[data-addway=photo]{display:none!important}
+#lyTx .amt-in{padding:0!important}
+#lyTx .amt-line{padding:0}
+
+/* Заголовок и блоки под ним */
+.hdr{min-height:44px}
+.hdr .title{font-size:34px;font-weight:700;letter-spacing:.2px}
+.hdr .pill-btn,.hdr [data-back]{min-height:44px}
+.hdr .pill-btn{background:transparent;color:var(--g);height:44px;font-weight:400;font-size:17px;gap:4px}
+.hdr .pill-btn svg{width:20px;height:20px}
+#s-ops>*+*,#s-stats>*+*,#s-pay>*+*,#s-goals>*+*,#s-events>*+*,#s-accounts>*+*,#s-acc>*+*{margin-top:16px}
+#s-ops>.hdr+*,#s-stats>.hdr+*,#s-pay>.hdr+*,#s-goals>.hdr+*,#s-events>.hdr+*,#s-accounts>.hdr+*,#s-acc>.hdr+*{margin-top:8px}
+
+/* Сегменты, месяц и поиск в стиле iOS */
+.seg{background:rgba(118,118,128,.12);border-radius:10px;padding:2px;gap:0}
+.seg-b{height:36px;border-radius:8px;font-size:15px;font-weight:500;color:var(--text)}
+.seg-b[aria-checked=true]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg{background:rgba(118,118,128,.24)}:root:not([data-theme="light"]) .seg-b[aria-checked=true]{background:#636366;box-shadow:none}}
+:root[data-theme="dark"] .seg{background:rgba(118,118,128,.24)}:root[data-theme="dark"] .seg-b[aria-checked=true]{background:#636366;box-shadow:none}
+.monthbar,.period-bar{background:transparent;padding:0;gap:0}
+.monthbar .mb,.period-bar button.mb{width:44px;height:44px;color:var(--g)}
+.monthbar .mlabel,.period-bar .pl{font-size:17px;font-weight:600;min-height:44px}
+.search input[type=search]{height:36px;min-height:36px;border-radius:10px;border:0;background:rgba(118,118,128,.12);padding-left:36px;font-size:17px}
+.search svg{left:10px;width:18px;height:18px}
+.ops-seg,.period-seg,.stats-seg{margin-top:0}
+.range-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* История */
+#opsList{display:flex;flex-direction:column;gap:16px}
+.day{background:var(--surface);overflow:hidden;padding:0}
+.day-h{display:flex;justify-content:space-between;padding:12px 16px 4px;font-size:13px;color:var(--muted)}
+.day .tx{padding:8px 16px;min-height:56px}
+.day .swipe+.swipe::before{left:64px}
+
+/* Статистика: одна гамма, суммы чёрные, линия спокойная */
+.cloud{display:none!important}
+#catCard{padding:16px}
+#catList{background:transparent!important;padding:0!important}
+#catList h3{font-size:13px;font-weight:400;color:var(--muted);margin:0 16px 6px}
+#catList .cats{background:var(--surface);border-radius:12px;gap:0;overflow:hidden}
+#catList .cats li{margin:0;padding:8px 16px 10px;border-radius:0;position:relative;min-height:56px}
+#catList .cats li+li::before{content:"";position:absolute;top:0;left:64px;right:16px;border-top:.5px solid var(--line)}
+#catList .cats li.on{background:color-mix(in srgb,var(--g) 10%,var(--surface))}
+.cat-top{gap:12px;font-weight:400;font-size:17px}
+.cat-top .cat-ico{flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:var(--bg)!important;color:var(--muted)!important;display:grid;place-items:center}
+.cat-top .cat-ico svg{width:20px;height:20px}
+.cat-top .cat-ico img{width:22px;height:22px;filter:grayscale(1);opacity:.7}
+.cat-top .pc{flex:0 0 auto;font-size:15px}
+.cat-top .pill,.cat-top .pill.cat{background:transparent!important;color:var(--text)!important;padding:0;height:auto;font-size:17px;font-weight:400}
+.cat-top .pill small,.cat-top .pill b small{opacity:1;color:var(--muted)}
+#catList .bar{margin:6px 0 0 48px;height:4px;border-radius:2px;background:color-mix(in srgb,var(--muted) 18%,transparent)}
+#catList .bar i{background:color-mix(in srgb,var(--muted) 70%,transparent)!important;border-radius:2px}
+#catList li.on .bar i{background:var(--g)!important}
+.curve-sum,.curve-h b{color:var(--text)!important}
+.curve-box path[stroke]:not([stroke-dasharray]){stroke:var(--g)}
+.curve-box #gArea stop{stop-color:var(--g)}
+.curve-box .halo{fill:var(--g)!important}.curve-box .now-dot{stroke:var(--g)!important}
+#scrubMark line,#scrubMark circle{stroke:var(--g)!important}
+.ins>div{border-radius:12px;padding:12px 16px}
+.ins b{color:var(--text)}
+
+/* Платежи: без красных плашек, одна спокойная кнопка в строке */
+.pay-sum{padding:12px 16px!important;font-size:15px;align-items:center}
+.pay-sum b{color:var(--text);font-weight:600}
+#payBody .block{margin-top:24px;gap:6px}
+#payBody .h2-row .h2,.gblock .h2-row .h2{font-size:13px;font-weight:400;color:var(--muted);margin:0 16px}
+#payBody .card{padding:0!important}
+.pay-row{border-top:0!important;position:relative;padding:0 16px;gap:8px}
+.pay-row+.pay-row::before{content:"";position:absolute;top:0;left:64px;right:16px;border-top:.5px solid var(--line)}
+.pay-row .pr-main{padding:8px 0;min-height:56px;gap:12px}
+.pay-row .tx-ic{flex:0 0 36px;width:36px;height:36px}
+.pay-row .pr-b b{font-weight:400;font-size:17px}
+.pay-row .pr-b small{font-size:15px}
+.pay-row .pr-r b{font-weight:400;font-size:17px}
+.pay-row.late{background:transparent;margin:0;padding:0 16px;border-radius:0}
+.pay-row.late .pr-b small{color:var(--warn-t)}
+.late-act{background:transparent!important;color:var(--g)!important;height:44px;min-width:44px;padding:0 0 0 4px;font-size:17px;font-weight:600}
+
+/* Копилки, события, профиль */
+.goal{padding:16px;gap:10px}
+.goal-top b{font-size:17px;font-weight:600}
+.goal-dot{display:none}
+#goalsBody .say-wrap{margin-top:16px}
+.goal-rows{display:flex;flex-direction:column;gap:16px}
+.ev-row{padding:0}
+.ev-main{padding:8px 0 8px 16px}
+.ev-gift{padding:0 16px 0 8px;min-height:44px}
+.grp .field{margin:0;padding:0}
+.grp .field input{background:transparent}
+.acc-tot small{font-size:13px}
+
+/* Чипы: активный выделяется заливкой, а не рамкой */
+.chip,.chip[aria-checked=true]{box-shadow:none!important}
+.chip{background:rgba(118,118,128,.12);color:var(--text)}
+.chip[aria-checked=true]{background:rgba(118,118,128,.28);color:var(--text)}
+#lyTx .cur-row .chip{background:transparent;color:var(--muted)}
+#lyTx .cur-row .chip[aria-checked=true]{background:rgba(118,118,128,.2);color:var(--text)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip{background:rgba(118,118,128,.24)}:root:not([data-theme="light"]) .chip[aria-checked=true]{background:rgba(118,118,128,.5)}:root:not([data-theme="light"]) #lyTx .cur-row .chip{background:transparent}:root:not([data-theme="light"]) .btn.save{background:#2E9E4F;color:#fff}}
+:root[data-theme="dark"] .chip{background:rgba(118,118,128,.24)}:root[data-theme="dark"] .chip[aria-checked=true]{background:rgba(118,118,128,.5)}:root[data-theme="dark"] #lyTx .cur-row .chip{background:transparent}:root[data-theme="dark"] .btn.save{background:#2E9E4F;color:#fff}
+
+/* Дата: без подписи, три плашки на всю ширину */
+.tt-dates{padding:8px 16px}
+.tt-dates .date-row{display:flex;width:100%;gap:8px;justify-content:stretch}
+.tt-dates .date-row .chip{flex:1 1 0;justify-content:center;min-height:36px;padding:0 4px}
+.tt-dates .dq-wrap:empty{display:none}
+
+/* Нижнее меню: отступ под жестовой полосой и кнопками Android всегда есть */
+.nav{height:calc(49px + var(--sab));padding-bottom:var(--sab)}
+.nav-b{padding-bottom:0}
+.screen{padding-bottom:calc(var(--nav-h) + 48px + var(--sab))}
+
+/* Один ритм отступов: между блоками экрана задают поля 8/16/24, а не общий gap */
+#s-home,#s-goals,#s-pay,#s-ops,#s-stats,#s-events,#s-accounts,#s-acc{gap:0}
+.swipe+.swipe{border-top:0}
+.day{margin-bottom:0}
+.cat-top .nm{font-weight:400}
+.tt-dates .date-row .chip{font-size:15px;white-space:nowrap}
+
+#s-goals>header,#s-pay>header,#s-ops>header{margin-bottom:0}
+.hdr:has([data-back]):not(.chat-hdr) .pill-btn{padding:0;font-weight:400}
+.hdr:has([data-back]) .title{margin:0}
+#payBody .pay-sum{padding:12px 16px!important}
+.pay-row .pr-b small{white-space:normal;overflow:visible;text-overflow:clip}
+.fin-say .bubble{background:var(--surface)!important;color:var(--text);border:0!important;border-radius:12px}
+.fin-say .bubble em{color:var(--text);font-style:normal;font-weight:600}
+.fin-say-m{flex:none}
+#lyTx .amt-in input{text-align:right!important}

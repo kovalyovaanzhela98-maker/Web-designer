@@ -250,7 +250,7 @@
         <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
         <div class="grp tx-grp">
           <div class="tt-row" id="txAccRow" hidden><span>Счёт</span><select id="txAcc" aria-label="Счёт"></select></div>
-          <div class="tt-row"><span>Дата</span>
+          <div class="tt-row tt-dates">
             <div class="date-row">
               <span id="dQuick" class="dq-wrap"></span>
               <button type="button" class="chip" id="dToday">Сегодня</button>
@@ -457,6 +457,7 @@
       <div class="cat-grid" id="payCats" role="radiogroup" aria-label="Категория"></div>
       <div class="fl">Напомнить</div>
       <div class="chips" id="payRemind" role="radiogroup" aria-label="Напоминание"></div>
+      <label class="field t" id="payLeadF" hidden><input id="payLead" type="text" inputmode="numeric" maxlength="2" value="7" autocomplete="off"><span>За сколько дней до платежа (0 — в день платежа)</span></label>
       <label class="field t" id="payTimeF" hidden><input id="payTime" type="time" value="10:00"><span>Во сколько</span></label>
       <div class="msg err" id="payErr" role="alert" hidden></div>
       <button class="btn primary wide" type="submit" id="paySave">Сохранить</button>

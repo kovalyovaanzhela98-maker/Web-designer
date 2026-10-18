@@ -41,7 +41,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 2. голос через кнопку микрофона: длинная живая речь
   await p.evaluate(() => { window.__SPEECH_ONCE = 'Короче, сегодня утром я купила продукты на 54 рубля, потом заехала на заправку, залила бензина на 80, а вечером на карту пришла премия 300'; });
-  await fabM(p); await p.click('#txVoice'); await sleep(700); await p.click('#txVoiceStop'); await sleep(500);
+  await fabM(p); await p.evaluate(() => document.querySelector('#txVoice').click()); await sleep(700); await p.click('#txVoiceStop'); await sleep(500);
   ok('голос: открыт черновик «Всё верно?»', await p.isVisible('#lyDraft'), await p.evaluate(() => [...document.querySelectorAll('.layer:not([hidden])')].map(x => x.id)));
   const rows = await p.$$eval('#draftList .dr', e => e.map(x => x.textContent.replace(/\s+/g, ' ').trim()));
   ok('голос: найдено 3 записи (2 расхода и приход)', rows.length === 3, rows);
@@ -49,7 +49,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   s = await S(); ok('голос: записи сохранены', s.tx.length === 5 && s.tx.filter(t => t.type === 'income').length === 2, s.tx.length);
   // разговорная речь ещё
   for (const [phrase, n] of [['слушай, вчера мы ходили в кино и я отдала там тридцать пять рублей, а ещё купила попкорн за двенадцать', 2], ['мне вернули долг пятьсот', 1], ['сегодня ничего не покупала', 0]]) {
-    await p.evaluate(t => { window.__SPEECH_ONCE = t; }, phrase); await fabM(p); await p.click('#txVoice'); await sleep(700); await p.click('#txVoiceStop'); await sleep(500);
+    await p.evaluate(t => { window.__SPEECH_ONCE = t; }, phrase); await fabM(p); await p.evaluate(() => document.querySelector('#txVoice').click()); await sleep(700); await p.click('#txVoiceStop'); await sleep(500);
     const open = await p.isVisible('#lyDraft'); const cnt = open ? (await p.$$('#draftList .dr')).length : 0;
     ok(`голос «${phrase.slice(0, 40)}…» → ${n}`, cnt === n || (n === 0 && !open), cnt);
     if (open) { await p.click('#draftOk'); await sleep(350); } else { await p.evaluate(() => { const l = document.querySelector('#lyTx:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(300); }
@@ -57,7 +57,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // длинная речь с паузами: распознавание не обрывается, всё собирается после «Стоп»
   await p.evaluate(() => { window.__PARTS = ['вчера купила молоко за 4 рубля', 'так, потом заехала на заправку и залила на 50', 'а ещё мне перевели 100 за уроки']; });
-  await fabM(p); await p.click('#txVoice'); await sleep(1900);
+  await fabM(p); await p.evaluate(() => document.querySelector('#txVoice').click()); await sleep(1900);
   ok('голос: после пауз окно записи ещё открыто', await p.isVisible('#txVoiceLive'));
   await p.click('#txVoiceStop'); await sleep(600);
   const parts = await p.$$eval('#draftList .dr', e => e.length);
@@ -75,7 +75,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   for (const k of ['week', 'year', 'range', 'month']) { await p.click(`[data-pk=${k}]`); await sleep(200); ok(`аналитика: период ${k}`, (await p.textContent('#catCard')).length > 5); }
   await p.click('#s-stats [data-st=income]'); await sleep(200); ok('аналитика: доходы', (await p.textContent('#catCard')).includes('Br') || true);
   await p.click('#s-stats [data-st=expense]'); await sleep(200);
-  await p.click('#catList [data-cat] >> nth=0'); await sleep(200); ok('аналитика: фильтр по категории', await p.isVisible('#catCard svg'));
+  await p.click('#catList .cats [data-cat] >> nth=0'); await sleep(200); ok('аналитика: фильтр по категории', await p.isVisible('#catCard svg'));
   await p.click('[data-pshift="-1"]').catch(() => {}); await sleep(150);
 
   // ---- 5. история: поиск, фильтры

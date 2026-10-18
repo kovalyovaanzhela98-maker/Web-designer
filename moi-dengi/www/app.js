@@ -361,7 +361,7 @@ function renderEventsScreen() {
   const groups = []; ups.forEach(u => { const k = `${u.occ.getFullYear()}-${u.occ.getMonth()}`; let g = groups.find(x => x.k === k); if (!g) { g = { k, m: u.occ.getMonth(), y: u.occ.getFullYear(), list: [] }; groups.push(g); } g.list.push(u); });
   $('#eventsBody').innerHTML = groups.map(g => `<div class="grp-t">${MONTHS[g.m]}${g.y !== T.getFullYear() ? ' ' + g.y : ''}</div><div class="grp">${g.list.map(u => {
     const gift = state.goals.some(x => x.name === ('Подарок: ' + MD.events.whatText(u.e)).slice(0, 40)), d = MD.events.daysTo(u.occ, T);
-    return `<div class="row ev-row"><button class="ev-main" type="button" data-ev="${esc(u.e.id)}"><span class="rw-ic" aria-hidden="true">${icon('gift')}</span><span class="rw-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${u.occ.getDate()} ${MONTHS_G[u.occ.getMonth()]} · ${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : 'через ' + dayWord(d)}</small></span></button>${gift ? '' : `<button class="ev-gift" type="button" data-evgift="${esc(u.e.id)}">Копилка</button>`}</div>`;
+    return `<div class="row ev-row"><button class="ev-main" type="button" data-ev="${esc(u.e.id)}"><span class="rw-ic" aria-hidden="true">${icon('gift')}</span><span class="rw-t"><b>${esc(MD.events.whatText(u.e))}</b><small>${u.occ.getDate()} ${MONTHS_G[u.occ.getMonth()].slice(0, 3)} · ${d === 0 ? 'сегодня' : d === 1 ? 'завтра' : 'через ' + dayWord(d)}</small></span></button>${gift ? '' : `<button class="ev-gift" type="button" data-evgift="${esc(u.e.id)}">Копилка</button>`}</div>`;
   }).join('')}</div>`).join('');
 }
 $('#s-events').addEventListener('click', e => {
@@ -832,7 +832,7 @@ function renderTxForm() {
 }
 $('#txCatCur').addEventListener('click', () => { tx.catOpen = true; renderTxForm(); });
 $('#txAcc').addEventListener('change', e => { tx.acc = e.target.value; });
-const fitAmt = () => { const el = $('#txAmount'); el.style.width = Math.max(1.4, el.value.length * 0.95 + 0.5) + 'ch'; };
+const fitAmt = () => { const el = $('#txAmount'); const v = el.value; el.style.width = Math.max(1.2, v.replace(/[.,\s]/g, '').length * 1.02 + (v.length - v.replace(/[.,\s]/g, '').length) * 0.5 + 0.3) + 'ch'; };
 $('#txAmount').addEventListener('input', fitAmt);
 $('#txNoteBtn').addEventListener('click', () => { tx.noteOpen = true; renderTxForm(); setTimeout(() => $('#txNote').focus(), 40); });
 /* Валюта операции: подписка в долларах, евро или рублях пересчитывается в основную валюту по курсу на дату */
@@ -1399,7 +1399,8 @@ function renderQuiz() {
       break;
     case 'saved':
       say = ['hello', 'Сколько уже есть?'];
-      html = qIn('qNum', 'Сколько уже есть', sym(q.cur)) + qBtn('saved', 'Далее') + qBtn('saved0', 'Пока ноль', 'soft');
+      if (!q.sc) q.sc = q.cur;
+      html = `<div class="chips" role="radiogroup" aria-label="Валюта накоплений">${Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-qscur="${c}" aria-checked="${c === q.sc}">${c}</button>`).join('')}</div>` + qIn('qNum', 'Сколько уже есть', sym(q.sc)) + (q.sc !== q.cur ? `<div class="note">Пересчитаем в ${esc(q.cur)} по курсу на сегодня.</div>` : '') + qBtn('saved', 'Далее') + qBtn('saved0', 'Пока ноль', 'soft');
       break;
     case 'term':
       say = ['notify', 'За сколько хочешь накопить? Хоть за две недели.'];
@@ -1470,12 +1471,14 @@ function quizNum(allowZero) {
   hideErr(err);
   return { v, fail: m => { showErr(err, m); return null; } };
 }
-$('#quizBody').addEventListener('click', e => {
+$('#quizBody').addEventListener('click', async e => {
   const q = quiz; if (!q) return;
   const k = e.target.closest('[data-kind]');
   if (k) { q.pick = k.dataset.kind; buzz(6); renderQuiz(); return; }
   const qc = e.target.closest('[data-qcur]');
-  if (qc) { const v = ($('#qNum') || {}).value; q.cur = qc.dataset.qcur; renderQuiz(); if ($('#qNum')) $('#qNum').value = v || ''; buzz(6); return; }
+  if (qc) { const v = ($('#qNum') || {}).value; q.cur = qc.dataset.qcur; q.sc = q.cur; renderQuiz(); if ($('#qNum')) $('#qNum').value = v || ''; buzz(6); return; }
+  const qs = e.target.closest('[data-qscur]');
+  if (qs) { const v = ($('#qNum') || {}).value; q.sc = qs.dataset.qscur; renderQuiz(); if ($('#qNum')) $('#qNum').value = v || ''; buzz(6); return; }
   const tm = e.target.closest('[data-term]');
   if (tm) { q.termPick = tm.dataset.term; const inp = $('#qNum'); if (inp) inp.value = ''; buzz(6); $$('#quizBody [data-term]').forEach(x => x.setAttribute('aria-checked', String(x.dataset.term === q.termPick))); return; }
   if (e.target.id === 'qDate') { /* выбор даты снимает быстрые варианты */ }
@@ -1496,8 +1499,8 @@ $('#quizBody').addEventListener('click', e => {
   }
   if (a === 'saved' || a === 'saved0') {
     if (a === 'saved0') q.saved = 0;
-    else { const n = quizNum(true); if (!Number.isFinite(n.v) || n.v < 0) return n.fail('Введи сумму, например 500, или нажми «Пока ноль».'); q.saved = n.v; }
-    qGo('term'); return;
+    else { const n = quizNum(true); if (!Number.isFinite(n.v) || n.v < 0) return n.fail('Введи сумму, например 500, или нажми «Пока ноль».'); q.saved = n.v; if (q.sc && q.sc !== q.cur && n.v > 0) { try { q.saved = (await MD.rates.convert(n.v, q.sc, q.cur, today())).amount; } catch (_) {} } }
+    q.sc = q.cur; qGo('term'); return;
   }
   if (a === 'term' || a === 'doTerm') {
     const typed = ($('#qNum').value || '').trim(), dateV = ($('#qDate') || {}).value || '';
@@ -1942,7 +1945,7 @@ function payRowHtml(r, mk) {
   const p = r.p, ci = catInfo('expense', p.cat), d = r.date, late = r.status === 'late';
   const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Записать</span>` : '<span class="st">Ожидает</span>';
   return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span>
-    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(R.scheduleText(p, d))} · ${esc(p.cat)}</small></span>
+    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(R.scheduleText(p, d))}</small></span>
     <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${st}</span></button>${late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать</button>` : ''}</div>`;
 }
 function renderPay() {
@@ -1967,8 +1970,8 @@ let pm = null;
 const payDefaultDay = () => new Date().getDate();
 function openPaySheet(id) {
   const p = id && payById(id);
-  pm = p ? { id: p.id, name: p.name, amount: p.amount, day: R.curDay(p), mode: p.once ? 'once' : 'monthly', once: p.once || '', cat: p.cat, remind: p.remind, time: p.time, catOpen: false }
-    : { id: null, name: '', amount: '', day: payDefaultDay(), mode: 'monthly', once: '', cat: '', remind: 'off', time: '10:00' };
+  pm = p ? { id: p.id, name: p.name, amount: p.amount, day: R.curDay(p), mode: p.once ? 'once' : 'monthly', once: p.once || '', cat: p.cat, remind: p.remind, leadN: p.leadN == null ? 7 : p.leadN, time: p.time, catOpen: false }
+    : { id: null, name: '', amount: '', day: payDefaultDay(), mode: 'monthly', once: '', cat: '', remind: 'off', leadN: 7, time: '10:00' };
   $('#payHead').textContent = p ? 'Платёж' : 'Новый платёж';
   $('#payName').value = pm.name; $('#payAmount').value = pm.amount ? String(pm.amount).replace('.', ',') : ''; $('#payDay').value = pm.day; $('#payTime').value = pm.time; $('#payOnce').value = pm.once || today();
   $('#payCur').textContent = sym();
@@ -1990,7 +1993,7 @@ function renderPaySheet() {
   if (!open) { const ci = catInfo('expense', pm.cat); $('#payCatCur').innerHTML = `<span class="ci" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(pm.cat)}</b><span class="ch">Изменить</span>`; }
   $('#payCats').innerHTML = CATS.expense.map(c => `<button type="button" role="radio" class="cat-tile" data-pcat="${esc(c[0])}" aria-checked="${c[0] === pm.cat}"><span class="ci" style="${cs(c)};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
   $('#payRemind').innerHTML = R.REMIND.map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${esc(r.label)}</button>`).join('');
-  $('#payTimeF').hidden = pm.remind === 'off';
+  $('#payTimeF').hidden = pm.remind === 'off'; $('#payLeadF').hidden = pm.remind !== 'custom'; $('#payLead').value = pm.leadN;
   $$('#payMode [data-pmode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.pmode === pm.mode)));
   $('#payDayF').hidden = pm.mode === 'once'; $('#payOnceF').hidden = pm.mode !== 'once';
 }
@@ -2012,6 +2015,7 @@ $('#payAmount').addEventListener('input', e => {
   if (i >= 0) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/[.,]/g, '').slice(0, 2);
   if (v !== e.target.value) e.target.value = v; hideErr($('#payErr'));
 });
+$('#payLead').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 2); if (pm) pm.leadN = Math.min(60, Number(e.target.value) || 0); });
 $('#payDay').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 2); hideErr($('#payErr')); });
 $('#payForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -2025,14 +2029,14 @@ $('#payForm').addEventListener('submit', async e => {
   const time = /^\d{2}:\d{2}$/.test($('#payTime').value) ? $('#payTime').value : '10:00', T = new Date();
   let p = pm.id && payById(pm.id);
   if (p) {
-    Object.assign(p, { name, amount: round2(amount), cat: pm.cat, remind: pm.remind, time });
+    Object.assign(p, { name, amount: round2(amount), cat: pm.cat, remind: pm.remind, leadN: pm.leadN, time });
     if (pm.mode === 'once') { p.once = once; p.days = [{ from: '0000-00', day: Number(once.slice(8)) }]; p.start = once.slice(0, 7); }
     else if (p.once) { p.once = ''; p.days = [{ from: '0000-00', day }]; p.start = R.startMonth(day, T); }
     else R.setDay(p, day, T);                          // новый день со следующего месяца, прошлые отметки остаются
   } else {
     p = pm.mode === 'once'
-      ? { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once, days: [{ from: '0000-00', day: Number(once.slice(8)) }], remind: pm.remind, time, start: once.slice(0, 7), paid: {}, nid: R.freeNid(state.rec.list) }
-      : { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once: '', days: [{ from: '0000-00', day }], remind: pm.remind, time, start: R.startMonth(day, T), paid: {}, nid: R.freeNid(state.rec.list) };
+      ? { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once, days: [{ from: '0000-00', day: Number(once.slice(8)) }], remind: pm.remind, leadN: pm.leadN, time, start: once.slice(0, 7), paid: {}, nid: R.freeNid(state.rec.list) }
+      : { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once: '', days: [{ from: '0000-00', day }], remind: pm.remind, leadN: pm.leadN, time, start: R.startMonth(day, T), paid: {}, nid: R.freeNid(state.rec.list) };
     state.rec.list.push(p);
   }
   const edit = !!pm.id, remind = pm.remind !== 'off';

@@ -20,7 +20,8 @@
     { id: 'off', label: 'Не напоминать', lead: null },
     { id: '0', label: 'В день платежа', lead: 0 },
     { id: '1', label: 'За 1 день', lead: 1 },
-    { id: '3', label: 'За 3 дня', lead: 3 }
+    { id: '3', label: 'За 3 дня', lead: 3 },
+    { id: 'custom', label: 'Свой срок', lead: 7 }
   ];
   const PRESETS = [['Аренда', 'Дом'], ['Подписка', 'Подписки'], ['Кредит', 'Другое'], ['Связь', 'Связь']];
 
@@ -45,7 +46,7 @@
         once,
         id: typeof p.id === 'string' && p.id ? p.id.slice(0, 40) : 'p' + nid + Date.now().toString(36),
         name, amount: r2(amount), cat: cats && !cats.includes(p.cat) ? 'Другое' : str(p.cat, 30) || 'Другое', days,
-        remind, time: /^\d{2}:\d{2}$/.test(p.time) ? p.time : '10:00',
+        remind, leadN: p.leadN == null || !Number.isFinite(Number(p.leadN)) ? 7 : Math.max(0, Math.min(60, Math.floor(Number(p.leadN)))), time: /^\d{2}:\d{2}$/.test(p.time) ? p.time : '10:00',
         start: once ? once.slice(0, 7) : /^\d{4}-\d{2}$/.test(p.start) ? p.start : '0000-00', paid, nid
       });
     }
@@ -167,7 +168,8 @@
   function notifications(list, now, money) {
     const out = [], cur = mkOfDate(now);
     for (const p of list) {
-      const r = REMIND.find(x => x.id === p.remind); if (!r || r.lead === null) continue;
+      const r0 = REMIND.find(x => x.id === p.remind); if (!r0 || r0.lead === null) continue;
+      const r = r0.id === 'custom' ? { lead: Math.max(0, Math.min(60, Number(p.leadN) || 0)) } : r0;
       const [h, mi] = p.time.split(':').map(Number);
       for (let i = 0; i < 12; i++) {
         const mk = shiftMk(cur, i);
