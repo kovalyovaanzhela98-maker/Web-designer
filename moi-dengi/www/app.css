@@ -2006,3 +2006,43 @@ body.kb .nav-add{display:none}
 .search input[type=search]{min-height:48px}
 .btn.wide{padding-inline:18px}
 @media(max-width:390px){.stats-view-tabs{gap:5px;padding:4px}.stats-view-tabs button{padding-inline:12px;font-size:13px}#s-stats{gap:14px!important}.nav{bottom:calc(16px + var(--sab))!important;padding:6px 8px!important}}
+
+
+/* ---------- Точечные правки интерфейса: октябрь 2026 ---------- */
+/* Поиск: позиционируем контейнер иконки, а не только вложенный SVG */
+.search{position:relative}
+.search>i[data-ic]{position:absolute;left:14px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;color:var(--muted);pointer-events:none;z-index:1}
+.search>i[data-ic] svg{display:block;width:20px;height:20px;flex:0 0 20px}
+/* Главная: свободные деньги — полноценная кликабельная плашка */
+.h-free{cursor:pointer}
+#heroSum{cursor:pointer}
+/* Сводка Фина визуально отделяется от стандартных карточек, но остаётся в общей системе */
+.home-briefing{background:color-mix(in srgb,var(--accent) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:var(--r-lg)}
+/* Единые стеклянные/полупрозрачные кнопки действий */
+.pill-btn,.btn.soft,.btn.ghost{font-size:calc(var(--fs-cap) - 1px);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid color-mix(in srgb,var(--line) 75%,transparent)}
+.pill-btn{min-height:40px}
+.btn.soft{background:color-mix(in srgb,var(--surface) 50%,transparent)}
+/* Плюс должен визуально доминировать над чатом с ИИ */
+.nav-add{margin-inline:4px;width:calc(100% - 8px);max-width:72px;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent),0 0 18px color-mix(in srgb,var(--accent) 28%,transparent)}
+.nav-mid{padding-inline:4px}
+.nav{padding-left:8px;padding-right:8px}
+.nav-b[aria-current=page] .np{background:transparent;box-shadow:0 0 14px color-mix(in srgb,var(--accent) 28%,transparent)}
+/* Свайп-удаление компактнее, строки операций без фиолетовой подложки */
+.swipe-bg{inset:7px 0;border-radius:12px;padding-right:14px}
+.swipe-bg svg{width:18px;height:18px}
+.swipe-bg span{font-size:var(--fs-cap)}
+.tx{background:transparent}
+.swipe.selmode .tx,.swipe.picked .tx{background:transparent}
+#bulkBar [data-bulk]:not([data-bulk="del"]){display:none!important}
+#bulkBar [data-bulk="del"]{min-height:40px;padding-block:0}
+/* Сегменты — спокойная полупрозрачная активная заливка */
+.seg-b[aria-checked=true]{background:color-mix(in srgb,var(--surface) 50%,transparent);box-shadow:none;color:var(--text)}
+.seg-b[aria-checked=true][data-type=expense],.seg-b[aria-checked=true][data-type=income]{color:var(--text)}
+/* Валютные табы занимают всю ширину контейнера */
+#txCurRow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:4px}
+#txCurRow .chip{justify-content:center;min-width:0;padding-inline:4px;width:100%}
+/* Пустые состояния: заголовок и пояснение по центру */
+.stats-empty-state{text-align:center}
+.stats-empty-state b,.stats-empty-state span{display:block;text-align:center;margin-inline:auto}
+/* Аккуратные интервалы между основными карточками */
+#homeBriefing,#goalCard,#payCard,#evtCard{margin-block:0}
