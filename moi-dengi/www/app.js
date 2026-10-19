@@ -18,9 +18,17 @@ const WD_S = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
 const icon = MD.icon;
 const cIcon = ci => icon(ci[1]);
+const HOME_CAT_ICONS = {
+  'Продукты':'bag','Кафе':'cup','Транспорт':'location','Дом':'home','Здоровье':'heart','Одежда':'bag-alt',
+  'Связь':'wifi','Подписки':'repeat','Подарки':'gift','Развлечения':'headphones','Кредиты':'card','Переводы':'swap',
+  'Налоги':'document','Банк':'safe','Техника':'display','Другое':'category','Зарплата':'wallet','Подработка':'work','Возврат':'dollar'
+};
+const HOME_CAT_SLUGS = {c_groceries:'bag',c_cafe:'cup',c_transport:'location',c_home:'home',c_health:'heart',c_clothes:'bag-alt',c_mobile_internet:'wifi',c_subscriptions:'repeat',c_gifts:'gift',c_entertainment:'headphones',c_credit:'card',c_transfer:'swap',c_taxes:'document',c_insurance:'safe',c_shopping:'bag',c_salary:'wallet',c_freelance:'work',c_cashback:'dollar'};
+const homeIcon = name => `<span class="pack-icon" aria-hidden="true"><img class="pack-icon-light" src="img/icons/pack/light/${name}.svg" alt=""><img class="pack-icon-dark" src="img/icons/pack/dark/${name}.svg" alt=""></span>`;
+const homeCategoryIcon = ci => homeIcon(HOME_CAT_ICONS[ci[0]] || HOME_CAT_SLUGS[ci[1]] || 'category');
 /* Цвет значка категории: свой цвет человека побеждает общий зелёный */
 const cs = ci => { const t = MD.toneOf(ci[2]), im = ci[3] && ci[3].custom ? '!important' : ''; return `--c:${t.solid}${im};--cbg:${t.bg};--ctx:${t.text};--ctd:${t.textDark}`; };
-function paintIcons(root = document) { $$('i[data-ic]', root).forEach(i => { i.innerHTML = icon(i.dataset.ic); }); }
+function paintIcons(root = document) { $$('i[data-ic]', root).forEach(i => { i.innerHTML = icon(i.dataset.ic); }); $$('i[data-home-icon]', root).forEach(i => { i.innerHTML = homeIcon(i.dataset.homeIcon); }); }
 
 /* ---------- Утилиты ---------- */
 function $(s, r = document) { return r.querySelector(s); }
@@ -165,6 +173,7 @@ function sanitize(o) {
       name: a.name.trim().slice(0, 24),
       last4: /^\d{4}$/.test(String(a.last4 ?? '')) ? String(a.last4) : '',
       balance: Number.isFinite(bal) ? round2(bal) : 0,
+      setup: !!a.setup || a.name.trim() !== 'Мой счёт' || (Number.isFinite(bal) && bal !== 0),
       kind: ['card', 'cash', 'other'].includes(a.kind) ? a.kind : 'card',
       color: COLORS.some(c => c.bg === a.color) ? a.color : COLORS[0].bg
     });
@@ -215,7 +224,7 @@ const monthKey = (y = ym.y, m = ym.m) => `${y}-${pad(m + 1)}`;
 
 const totalBalance = () => round2(state.accounts.reduce((s, a) => s + accBalance(a), 0));
 function accBalance(a) {
-  let b = 0;
+  let b = Number.isFinite(Number(a.balance)) ? Number(a.balance) : 0;
   for (const t of state.tx) if (t.acc === a.id) b += t.type === 'income' ? t.amount : -t.amount;
   return round2(b);
 }
@@ -231,7 +240,14 @@ function ensureAccount() {
 }
 
 /* ---------- Отрисовка ---------- */
-function setNum(el, html, value) { el._v = value; el.innerHTML = html(value); }
+function setNum(el, html, value) {
+  const from = Number.isFinite(el._v) ? el._v : value, to = Number(value);
+  if (!Number.isFinite(to) || from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) { el._v = value; el.innerHTML = html(value); return; }
+  cancelAnimationFrame(el._numFrame);
+  const began = performance.now(), duration = 300;
+  const tick = now => { const p = Math.min(1, (now - began) / duration), eased = 1 - Math.pow(1 - p, 3), current = from + (to - from) * eased; el.innerHTML = html(current); if (p < 1) el._numFrame = requestAnimationFrame(tick); else { el._v = value; el._numFrame = 0; } };
+  el._numFrame = requestAnimationFrame(tick);
+}
 const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 /* Пустые экраны: не «нет данных», а что делать дальше */
 const emptyBox = (title, text, act) => `<div class="empty"><span class="emp-m" aria-hidden="true">${MD.mascot('sleepy', 96)}</span><b>${esc(title)}</b>${esc(text)}${act ? `<button class="btn primary" type="button" ${act.attr}>${esc(act.label)}</button>` : ''}</div>`;
@@ -262,7 +278,7 @@ function renderMonthBars() {
 
 /* Значки в списках: контурные, серые (iOS). Иллюстрации категорий остаются в выборе категории и в настройках */
 const LINE = { c_groceries: 'cart', c_cafe: 'cup', c_restaurant: 'cup', c_bar: 'cup', c_fast_food: 'pizza', c_clothes: 'shirt', c_beauty: 'scissors', c_health: 'aid', c_pharmacy: 'aid', c_home: 'home', c_repair: 'wrench', c_fuel: 'car', c_mobile_internet: 'phone', c_entertainment: 'ticket', c_games: 'game', c_gifts: 'gift', c_hobby: 'music', c_books: 'book', c_education: 'school', c_kids: 'baby', c_pets: 'paw', c_insurance: 'lock', c_credit: 'bank', c_transport: 'bus', c_subscriptions: 'repeat', c_transfer: 'swap', c_taxes: 'tax', c_shopping: 'laptop', c_charity: 'heart', c_investments: 'chart', c_salary: 'cash', c_freelance: 'laptop', c_cashback: 'coins', c_hotel: 'sofa', c_other: 'grid' };
-const lineIc = ci => { const n = ci[1]; if (ci[0] === 'Банк') return icon('bank'); return icon(LINE[n] || (MD.IC && MD.IC[n] ? n : 'grid')); };
+const lineIc = ci => { if (ci[0] === 'Банк') return icon('bank'); return icon(ci[1]); };
 
 /* Главная: одна цифра «Свободные деньги», одно событие, одна копилка, платежи и последние записи */
 const rMoney = n => esc(maskT(money(n)));
@@ -282,42 +298,45 @@ const eventsSoon = T => MD.events.upcoming(festList(), T).map(u => ({ e: u.e, oc
 function freeNow(T, pi, soon) {
   return round2(totalBalance() - (pi ? pi.reserve : 0) - soon.reduce((s, x) => s + (MD.events.itemsTotal(x.e) || 0), 0));
 }
-const hasData = () => !!(state.tx.length || state.goals.length || state.rec.list.length || festList().length || state.accounts.length > 1);
+const hasData = () => !!(state.tx.length || state.goals.length || state.rec.list.length || festList().length || state.accounts.length > 1 || state.accounts.some(a => a.setup));
 const range = (v, k = 0.2) => [Math.max(1, Math.floor(v * (1 - k))), Math.ceil(v * (1 + k))];
 function renderHomeCards(T, pi, soon) {
   const ev = soon[0];
   if (ev) {
     const tot = MD.events.itemsTotal(ev.e) || 0, r = tot > 0 ? range(tot, 0.15) : null;
-    $('#evtCard').innerHTML = `<div class="h-evt"><span class="ev-ic" aria-hidden="true">${icon('gift')}</span><div class="ev-t"><b>${esc(MD.events.whatText(ev.e))} ${ev.d === 0 ? 'сегодня' : ev.d === 1 ? 'завтра' : 'через ' + dayWord(ev.d)}</b><span>${r ? `Отложим от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym()))}?` : 'Отложим на подарок?'}</span><button class="ev-a" type="button" data-evgift="${esc(ev.e.id)}">Отложить на подарок<i aria-hidden="true">${icon('right')}</i></button></div></div>`;
+    $('#evtCard').innerHTML = `<div class="h-evt"><span class="ev-ic" aria-hidden="true">${homeIcon('gift')}</span><div class="ev-t"><b>${esc(MD.events.whatText(ev.e))} ${ev.d === 0 ? 'сегодня' : ev.d === 1 ? 'завтра' : 'через ' + dayWord(ev.d)}</b><span>${r ? `Отложим от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym()))}?` : 'Отложим на подарок?'}</span><button class="ev-a" type="button" data-evgift="${esc(ev.e.id)}">Отложить на подарок<i aria-hidden="true">${homeIcon('next')}</i></button></div></div>`;
   } else $('#evtCard').innerHTML = '';
   const act = state.goals.filter(g => goalPct(g) < 100).sort((a, b) => String(a.deadline).localeCompare(String(b.deadline)))[0];
   if (act) {
     const per = G.perPeriodNow(act, T) || 0, r = range(per), unit = act.unit === 'week' ? 'в неделю' : 'в месяц';
-    $('#goalCard').innerHTML = `<div class="h-goal"><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
+    $('#goalCard').innerHTML = `<div class="h-goal"><div class="h-goal-title">Копилки</div><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
       ${per > 0 ? `<p>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</p>` : `<p>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</p>`}
       <button class="btn-bord" type="button" data-savenow="${esc(act.id)}">Отложить сейчас</button></div>`;
-  } else $('#goalCard').innerHTML = `<div class="grp h-new"><button class="row" type="button" data-newgoal><span class="rw-ic" aria-hidden="true">${icon('goal')}</span><span class="rw-t"><b>Создать копилку</b></span><span class="rw-r">${icon('right')}</span></button></div>`;
+  } else $('#goalCard').innerHTML = `<section class="h-empty-card h-goal-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Откладывайте на важное</small></span></div><button type="button" class="h-empty-action" data-newgoal>Создать копилку<span aria-hidden="true">${icon('right')}</span></button></section>`;
   if (pi) {
     const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
-    $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${icon('right')}</span></button>`;
-  } else $('#payCard').innerHTML = `<div class="grp h-new"><button class="row" type="button" data-go-pay><span class="rw-ic" aria-hidden="true">${icon('repeat')}</span><span class="rw-t"><b>Добавить обязательный платёж</b></span><span class="rw-r">${icon('right')}</span></button></div>`;
+    $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
+  } else $('#payCard').innerHTML = `<section class="h-empty-card h-pay-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('repeat')}</span><span><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span></div><button type="button" class="h-empty-action" data-go-pay>Настроить платежи<span aria-hidden="true">${icon('right')}</span></button></section>`;
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
 function renderHome() {
-  const T = new Date(), w = !hasData();
+  const T = new Date(), params = new URLSearchParams(location.search), forceDashboard = params.get('home') === '1' && params.get('welcome') !== '1', w = !hasData() && !forceDashboard;
   $('#welcome').hidden = !w; $('#homeMain').hidden = w;
   document.body.classList.toggle('welcome', w);
-  { const n = userName(); $('#greetTitle').textContent = n ? `Привет, ${n}` : 'Привет'; }
+  $('#firstTxCoach').hidden = w || !state.accounts.some(a => a.setup) || state.tx.length > 0;
+  $('#greetTitle').textContent = 'Главная';
   if (w) return;
   const pi = payInfo(T), soon = eventsSoon(T);
   setNum($('#heroSum'), moneyH, freeNow(T, pi, soon));
   $('#heroAll').textContent = hide ? `На счетах: ${MASK}` : `На счетах: ${money(totalBalance())}`;
+  const monthList = monthTx(now0.getFullYear(), now0.getMonth());
+  $('#homePeriod').textContent = MONTHS[now0.getMonth()];
   if (MD.notify.supported()) { const list = monthTx(now0.getFullYear(), now0.getMonth()); MD.notify.pushSummary({ balance: hide ? '••••' : money(totalBalance()), flow: hide ? '' : `+${fmt(sumOf(list, 'income'))}  −${fmt(sumOf(list, 'expense'))}`, month: MONTHS[now0.getMonth()].toLowerCase() }); }
   renderHomeCards(T, pi, soon);
   const recent = state.tx.slice().sort(cmpTx).slice(0, 5);
   let last = '';
   $('#recentList').innerHTML = recent.length
-    ? `<div class="recent">${recent.map(t => { const h = t.date !== last ? `<div class="day-h">${esc(dayShort(t.date))}</div>` : ''; last = t.date; return h + txRow(t); }).join('')}</div>`
+    ? `<div class="recent">${recent.map(t => { const h = t.date !== last ? `<div class="day-h">${esc(dayShort(t.date))}</div>` : ''; last = t.date; return h + txRow(t, true); }).join('')}</div>`
     : emptyBox('Пока пусто', 'Первые записи появятся здесь.');
 }
 $('#s-home').addEventListener('click', e => {
@@ -325,7 +344,7 @@ $('#s-home').addEventListener('click', e => {
   if (e.target.closest('[data-newgoal]')) { startNewGoal(); return; }
   const gi = e.target.closest('[data-evgift]'); if (gi) { giftGoal(gi.dataset.evgift); return; }
   const wl = e.target.closest('[data-wl]');
-  if (wl) { buzz(8); if (wl.dataset.wl === 'acc') { showTab('accounts'); openAccSheet(null); } else if (wl.dataset.wl === 'ev') openEvent(null); else startNewGoal(); return; }
+  if (wl) { buzz(8); if (wl.dataset.wl === 'acc') { const first = state.accounts.find(a => !a.setup); openAccSheet(first ? first.id : null); } else if (wl.dataset.wl === 'ev') openEvent(null); else startNewGoal(); return; }
   const v = e.target.closest('[data-ev]'); if (v) openEvent(v.dataset.ev || null);
 });
 /* Копилка на подарок к событию: если сумма известна — создаём сразу, срок до дня события */
@@ -374,11 +393,17 @@ function renderAccountsScreen() {
     <div class="grp">${state.accounts.map(a => `<button class="row acc-row" type="button" data-acc="${esc(a.id)}"><span class="rw-ic" aria-hidden="true">${icon(KIND_IC[a.kind] || 'wallet')}</span><span class="rw-t"><b>${esc(a.name)}</b><small>${esc(ACC_KINDS[a.kind] || 'Карта')}</small></span><span class="rw-r am">${rMoney(accBalance(a))}</span></button>`).join('')}</div>
     <button class="btn-bord wide" type="button" data-accnew>Добавить счёт</button>`;
 }
-let accEdit = null, accKind = 'card';
+let accEdit = null, accKind = 'card', accSetup = false;
 function openAccSheet(id) {
   const a = id ? accById(id) : null; accEdit = a ? a.id : null; accKind = a ? (a.kind || 'card') : 'card';
-  $('#accTitle').textContent = a ? 'Счёт' : 'Новый счёт';
+  accSetup = !hasData() && !state.accounts.some(x => x.setup) && !state.tx.length && state.accounts.length <= 1;
+  $('#accTitle').textContent = accSetup ? 'Добавить первый счёт' : a ? 'Счёт' : 'Новый счёт';
   $('#accName').value = a ? a.name : ''; $('#accErr').hidden = true;
+  $('#accStartBalance').value = String(a ? (a.balance || 0) : 0).replace('.', ',');
+  $('#accStartBalanceRow').hidden = !accSetup;
+  $('#accCurrencyRow').hidden = !accSetup;
+  $('#accCurrency').value = state.currency;
+  $('#accBalanceUnit').textContent = sym(state.currency);
   $$('#accKind [data-akind]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.akind === accKind)));
   $('#accDel').hidden = !a || state.accounts.length < 2;
   openLayer($('#lyAccount'));
@@ -389,8 +414,11 @@ $('#accForm').addEventListener('submit', e => {
   const name = $('#accName').value.replace(/\s+/g, ' ').trim().slice(0, 24);
   if (!name) { $('#accErr').textContent = 'Напиши название счёта.'; $('#accErr').hidden = false; return; }
   if (state.accounts.some(a => a.id !== accEdit && a.name.toLowerCase() === name.toLowerCase())) { $('#accErr').textContent = 'Такой счёт уже есть.'; $('#accErr').hidden = false; return; }
-  if (accEdit) { const a = accById(accEdit); a.name = name; a.kind = accKind; }
-  else state.accounts.push({ id: uid(), name, last4: '', balance: 0, kind: accKind, color: COLORS[state.accounts.length % COLORS.length].bg });
+  const openingBalance = accSetup ? parseAmount($('#accStartBalance').value, true) : 0;
+  if (accSetup && !Number.isFinite(openingBalance)) { $('#accErr').textContent = 'Введи баланс цифрами, например 500 или 500,50.'; $('#accErr').hidden = false; return; }
+  if (accEdit) { const a = accById(accEdit); a.name = name; a.kind = accKind; if (accSetup) { a.balance = round2(openingBalance); a.setup = true; } }
+  else state.accounts.push({ id: uid(), name, last4: '', balance: round2(openingBalance), setup: true, kind: accKind, color: COLORS[state.accounts.length % COLORS.length].bg });
+  if (accSetup) state.currency = $('#accCurrency').value;
   save(); closeLayer($('#lyAccount')); render(); buzz(12);
 });
 $('#accDel').addEventListener('click', () => {
@@ -445,11 +473,11 @@ function dayTitle(s) {
   return `${WD_S[d.getDay()]}, ${base}`;
 }
 
-function txRow(t) {
+function txRow(t, useHomeIcon = false) {
   const ci = catInfo(t.type, t.cat), on = sel.on && sel.ids.has(t.id);
   return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}<span>Удалить</span></div>
     <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить">
-      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" aria-hidden="true">${lineIc(ci)}</div>
+      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" aria-hidden="true">${useHomeIcon ? homeCategoryIcon(ci) : lineIc(ci)}</div>
       <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}${t.orig ? `<div class="tx-n tx-orig">${t.orig.est ? '≈ ' : ''}${esc(fmt(t.orig.a))} ${esc(sym(t.orig.cur))}</div>` : ''}</div>
       <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${hide ? MASK : esc(signed(t.amount, t.type))}</div></div>
     </div></div>`;
@@ -542,13 +570,12 @@ function renderStats() {
   {
     const top = esc(rows[0][0]), topSum = esc(maskT(money(rows[0][1]))), share = Math.round(rows[0][1] / total * 100);
     const main = statType === 'income' ? `Главный источник: <em>${top}</em>, ${share}% (${topSum}).` : `Больше всего ушло на <em>${top}</em>: ${share}% (${topSum}).`;
-    let head, pose;
+    let head;
     if (prev > 0) {
       const pct = Math.round((total - prev) / prev * 100), good = statType === 'expense' ? pct <= 0 : pct >= 0;
       head = pct === 0 ? `Столько же, сколько ${P.prevPhrase}` : `${statType === 'expense' ? 'Расходы' : 'Доходы'} на <em>${Math.abs(pct)}%</em> ${pct < 0 ? 'меньше' : 'больше'}, чем ${P.prevPhrase}`;
-      pose = pct === 0 ? 'hello' : good ? 'joy' : 'think';
-    } else { head = `${cap(statType === 'expense' ? 'расходов' : 'доходов')} ${P.word}: <em>${esc(maskT(money(total)))}</em>`; pose = 'hello'; }
-    $('#statSay').innerHTML = MD.say(pose, `${head}<small>${main}</small>`, 64);
+    } else { head = `${cap(statType === 'expense' ? 'расходов' : 'доходов')} ${P.word}: <em>${esc(maskT(money(total)))}</em>`; }
+    $('#statSay').innerHTML = `<div class="stat-insight"><span class="stat-insight-ico" aria-hidden="true">${icon('spark')}</span><p>${head}<small>${main}</small></p></div>`;
   }
   insEl.innerHTML = `<div class="ins"><div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / P.elapsed))))}</b></div><div><small>${statType === 'expense' ? 'Самая крупная трата' : 'Самый крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
 
@@ -558,49 +585,31 @@ function renderStats() {
   if (per.kind === 'year') {
     buckets = Array.from({ length: 12 }, (_, i) => ({ l: MONTHS[i].slice(0, 3), v: 0, now: per.year === now0.getFullYear() && i === now0.getMonth() }));
     shown.forEach(t => { buckets[Number(t.date.slice(5, 7)) - 1].v += t.amount; });
-  } else if (P.days > 62) {
-    const n = Math.ceil(P.days / 7); buckets = Array.from({ length: n }, (_, i) => ({ l: dd(addD(P.from, i * 7)), v: 0, now: false }));
+  } else if (P.days > 62 || (per.kind === 'month' && P.days > 14)) {
+    const n = Math.ceil(P.days / 7); buckets = Array.from({ length: n }, (_, i) => { const d = addD(P.from, i * 7); return { l: per.kind === 'month' ? String(d.getDate()) : dd(d), v: 0, now: false }; });
     shown.forEach(t => { buckets[Math.min(n - 1, Math.floor(daysBetween(P.from, parseYmd(t.date)) / 7))].v += t.amount; });
   } else {
     buckets = Array.from({ length: P.days }, (_, i) => { const d = addD(P.from, i); return { l: per.kind === 'week' ? WD_S[d.getDay()] : String(d.getDate()), v: 0, now: ymd(d) === today() }; });
     shown.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
   }
-  // Накопительная линия: траты растут с начала периода; прошлый период — пунктир; будущее не рисуем
-  const mk = (txs, base) => {
-    const bk = buckets.map(() => 0), pb = parseYmd(base);
-    txs.forEach(t => {
-      let i;
-      if (per.kind === 'year') i = Number(t.date.slice(5, 7)) - 1;
-      else if (P.days > 62) i = Math.floor(daysBetween(pb, parseYmd(t.date)) / 7);
-      else i = daysBetween(pb, parseYmd(t.date));
-      if (i >= 0 && i < bk.length) bk[i] += t.amount;
-    });
-    let run = 0; return bk.map(v => (run += v));
-  };
+  // Bar chart shows actual spend per day/week/month, so one transaction reads as a real value rather than a broken line.
   const nb = buckets.length, W = 300, H = 150;
-  const cum = mk(shown, P.f), prevCum = mk(state.tx.filter(t => t.type === statType && inPer(t, P.pf, P.pt) && (!statCat || t.cat === statCat)), P.pf);
   const nowI = buckets.findIndex(b => b.now), last = nowI >= 0 ? nowI : nb - 1;
-  const mx = Math.max(cum[last] || 0, ...prevCum, 1), col = statType === 'expense' ? 'var(--negative)' : 'var(--positive)';
-  const xAt = i => (nb === 1 ? W / 2 : 8 + i * (W - 16) / (nb - 1)), yAt = v => H - 8 - (v / mx) * (H - 22);
-  const pts = []; for (let i = 0; i <= last; i++) pts.push([xAt(i), yAt(cum[i])]);
-  const smooth = ps => { let d = `M${ps[0][0].toFixed(1)} ${ps[0][1].toFixed(1)}`; for (let i = 1; i < ps.length; i++) { const [x0, y0] = ps[i - 1], [x1, y1] = ps[i], m2 = (x0 + x1) / 2; d += ` C${m2.toFixed(1)} ${y0.toFixed(1)} ${m2.toFixed(1)} ${y1.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`; } return d; };
-  const path = smooth(pts.length > 1 ? pts : [pts[0], [pts[0][0] + 0.1, pts[0][1]]]);
-  const area = `${path} L${pts[pts.length - 1][0].toFixed(1)} ${H - 8} L${pts[0][0].toFixed(1)} ${H - 8} Z`;
-  const ppts = prevCum.map((v, i) => [xAt(i), yAt(v)]);
+  const mx = Math.max(1, ...buckets.slice(0, last + 1).map(b => b.v)), col = 'var(--accent)';
+  const slot = W / nb, barW = Math.max(2, Math.min(18, slot * .58));
+  const xAt = i => i * slot + (slot - barW) / 2, yAt = v => H - 8 - (v / mx) * (H - 22);
   const peak = buckets.reduce((m, b, i) => (i <= last && b.v > buckets[m].v ? i : m), 0), hi = buckets[peak];
-  const grid = [0.25, 0.5, 0.75].map(f => `<line class="grid" x1="0" x2="${W}" y1="${yAt(f * mx).toFixed(1)}" y2="${yAt(f * mx).toFixed(1)}" stroke-width="1"/>`).join('');
-  const tp = pts[pts.length - 1];
-  const curve = `<defs><linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".22"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>${grid}
-    ${prevCum.some(v => v > 0) ? `<path d="${smooth(ppts)}" fill="none" stroke="var(--muted)" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"/>` : ''}
-    <path class="area" d="${area}"/><path d="${path}" fill="none" stroke="${col}" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"/>
-    <g id="scrubMark" hidden><line y1="6" y2="${H - 8}" stroke="${col}" stroke-opacity=".4" stroke-width="1"/><circle r="4" fill="var(--surface)" stroke="${col}" stroke-width="2.5"/></g>
-    ${nowI >= 0 ? `<circle class="halo" cx="${tp[0].toFixed(1)}" cy="${tp[1].toFixed(1)}" r="10" style="fill:${col}"/><circle class="now-dot" cx="${tp[0].toFixed(1)}" cy="${tp[1].toFixed(1)}" r="4.5" style="stroke:${col}"/>` : ''}`;
+  const grid = [0.25, 0.5, 0.75].map(f => { const y = yAt(f * mx); return `<line class="grid" x1="0" x2="${W}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke-width="1"/>`; }).join('');
+  const bars = buckets.map((b, i) => {
+    if (i > last || b.v <= 0) return '';
+    const h = Math.max(2, (b.v / mx) * (H - 22)), y = H - 8 - h;
+    return `<rect x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(5, barW / 2).toFixed(1)}" fill="${col}" opacity="${i === nowI ? 1 : .62}"/>`;
+  }).join('');
   const step = nb <= 12 ? 1 : Math.ceil(nb / 6);
-  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${xAt(i).toFixed(1)}" y="${H + 16}" text-anchor="${i === 0 && nb > 1 ? 'start' : i === nb - 1 && nb > 1 ? 'end' : 'middle'}">${esc(b.l)}</text>` : '').join('');
-  const nowTip = nowI >= 0 ? `<span class="pill neu now-tip" style="left:${(tp[0] / W * 100).toFixed(1)}%;top:${Math.max(0, tp[1] / (H + 22) * 100 - 2).toFixed(1)}%">${esc(maskT(money(cum[nowI])))}</span>` : '';
-  card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div>${hi.v > 0 ? `<div class="curve-pk"><small class="muted">Пик</small><b>${esc(per.kind !== 'year' && P.days <= 62 ? dd(addD(P.from, peak)) : hi.l)}</b></div>` : ''}</div>
-    <div class="curve-box" id="curveBox"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="График ${word} ${P.word}: накопленная сумма, пунктир — ${P.prevPhrase}">${curve}${labels}</svg>${nowTip}<span class="pill cat scrub-tip" id="scrubTip" hidden></span></div>`;
-  chartScrub = { nb, last, W, H, cum, buckets, xAt, yAt, per, P, col };
+  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${(i * slot + slot / 2).toFixed(1)}" y="${H + 16}" text-anchor="middle">${esc(b.l)}</text>` : '').join('');
+  card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div>${hi.v > 0 ? `<div class="curve-pk"><small class="muted">Максимум</small><b>${esc(per.kind !== 'year' && P.days <= 62 ? dd(addD(P.from, peak)) : hi.l)}</b></div>` : ''}</div>
+    <div class="curve-box"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Столбчатая диаграмма ${word} ${P.word}">${grid}${bars}${labels}</svg></div>`;
+  chartScrub = null;
   dayCard.hidden = true; dayCard.innerHTML = '';
 
   const hashN = n => { let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
@@ -621,9 +630,10 @@ function showTab(name, fromPop) {
   if (MAIN_TABS.includes(name)) base = name;
   if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
   tab = name;
+  document.body.classList.toggle('nav-hidden', !MAIN_TABS.includes(name));
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
   const navName = MAIN_TABS.includes(name) ? name : base;
-  $$('.nav-b').forEach(b => { const on = b.dataset.tab === navName; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); const i = $('i[data-ic]', b); if (i) i.innerHTML = on ? MD.iconFill(i.dataset.ic) : icon(i.dataset.ic); });
+  $$('.nav-b').forEach(b => { const on = b.dataset.tab === navName; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); const i = $('i[data-ic]', b); if (i) i.innerHTML = icon(i.dataset.ic); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
     else if (name === 'home' && tabPushed) { ignorePops++; history.back(); tabPushed = false; }
@@ -731,6 +741,7 @@ function openLayer(el, tries = 0) {
   $('#toast').hidden = true;
   el.hidden = false;
   layers.push(el);
+  document.body.classList.add('layer-open');
   history.pushState({ layer: layers.length }, '');
   setTimeout(() => {
     if (el !== layers[layers.length - 1]) return;
@@ -743,6 +754,7 @@ function closeLayer(el) {
   if (i < 0) return;
   layers.splice(i, 1);
   el.hidden = true;
+  document.body.classList.toggle('layer-open', layers.length > 0);
   ignorePops++;
   history.back();
   if (el._onClose) { const f = el._onClose; el._onClose = null; f(); }
@@ -751,7 +763,7 @@ function closeLayer(el) {
 window.addEventListener('popstate', () => {
   if (ignorePops > 0) { ignorePops--; return; }
   const top = layers.pop();
-  if (top) { top.hidden = true; if (top._onClose) { const f = top._onClose; top._onClose = null; f(); } return; }
+  if (top) { top.hidden = true; document.body.classList.toggle('layer-open', layers.length > 0); if (top._onClose) { const f = top._onClose; top._onClose = null; f(); } return; }
   if (tabPushed) { tabPushed = false; showTab('home', true); }
 });
 document.addEventListener('keydown', e => {
@@ -814,7 +826,7 @@ function renderTxForm() {
   const editing = !!tx.editId || tx.draftIdx != null, open = !editing || tx.catOpen || !tx.cat;
   $('#txCats').hidden = !open;
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
-    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" aria-hidden="true">${lineIc(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</span></button>`).join('');
+    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="${cs(c)}" aria-hidden="true">${lineIc(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</span></button>`).join('');
   $('#txAccRow').hidden = state.accounts.length < 2;
   $('#txAcc').innerHTML = state.accounts.map(a => `<option value="${esc(a.id)}"${a.id === tx.acc ? ' selected' : ''}>${esc(a.name)}</option>`).join('');
   const cc = $('#txCatCur'), ci = tx.cat ? catInfo(tx.type, tx.cat) : null;
@@ -851,7 +863,12 @@ async function updateCurNote() {
   el.hidden = false; el.textContent = `${r.est ? '≈ ' : ''}${money(r.amount)} по курсу на ${parseYmd(date).getDate()} ${MONTHS_G[parseYmd(date).getMonth()]}${r.est ? ' (курс примерный)' : ''}`;
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-txcur]'); if (!b) return; tx.cur = b.dataset.txcur; $('#txCur').textContent = sym(tx.cur); renderCurRow(); });
-function syncSave() { $('#txSave').disabled = !(parseAmount($('#txAmount').value) > 0 && tx.cat); }
+function syncSave() {
+  const hasAmount = parseAmount($('#txAmount').value) > 0;
+  $('#txSave').disabled = !hasAmount;
+  $('#txSave').classList.toggle('waiting-category', hasAmount && !tx.cat);
+  if (tx.cat) hideErr($('#txCatErr'));
+}
 $('#txAmount').addEventListener('input', e => {
   let v = e.target.value.replace(/[^\d.,]/g, '');
   const i = v.search(/[.,]/);
@@ -930,7 +947,7 @@ $('#txForm').addEventListener('submit', async e => {
   const amt = parseAmount($('#txAmount').value);
   const err = $('#txAmountErr');
   if (!(amt > 0)) { showErr(err, 'Впиши сумму, например 150.'); $('#txAmount').focus(); return; }
-  if (!tx.cat) { showErr(err, 'Выбери категорию, и сохраним.'); return; }
+  if (!tx.cat) { showErr($('#txCatErr'), 'Выберите категорию'); $('#txCats').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
   hideErr(err);
   const note = $('#txNote').value.trim().slice(0, 120);
   if (tx.cat === OTHER && !note) {
@@ -2061,7 +2078,7 @@ $('#payDelete').addEventListener('click', () => {
 
 /* ---------- Профиль ---------- */
 const loggedIn = () => !!(cloud.enabled && me);
-const startBal = () => 0;
+const startBal = () => state.accounts.length ? Number(state.accounts[0].balance) || 0 : 0;
 const okIc = () => `<span class="pl-ok" role="img" aria-label="Привязано">${icon('check')}</span>`;
 function setPlate(sel, sub, right, disabled) {
   const el = $(sel);

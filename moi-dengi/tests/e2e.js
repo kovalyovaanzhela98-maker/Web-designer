@@ -31,17 +31,20 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('знакомство 3: «Далее» и «Пропустить» видны', (await vis('[data-next]')) && (await vis('[data-skip]')));
   ok('знакомство: ровно 3 экрана', (await page.$$eval('.intro-t', e => e.length)) === 3);
   await page.click('[data-skip]'); await sleep(900);
-  ok('после знакомства Фин показывает тур по экрану', await vis('.tour'));
-  await page.click('[data-tour=skip]'); await sleep(200);
-  ok('после пропуска: вход не требуется, видна главная', await vis('#s-home') && !(await vis('#auth')));
-  ok('главная: пустая — приветствие с тремя шагами', await vis('#welcome') && (await page.$$('#welcome [data-wl]')).length === 3 && !(await vis('#homeMain')));
+  ok('после знакомства: вход не требуется, виден первый запуск', await vis('#s-home') && !(await vis('#auth')));
+  ok('первый запуск: предложено добавить счёт', await vis('#welcome') && await vis('#welcome [data-wl=acc]') && !(await vis('#homeMain')));
+  await page.click('#welcome [data-wl=acc]'); await sleep(200);
+  await page.fill('#accName', 'Карта'); await page.fill('#accStartBalance', '500'); await page.click('#accSave'); await sleep(350);
+  ok('после счёта открыт главный экран и тренер первой записи', await vis('#homeMain') && await vis('#firstTxCoach'));
   ok('на главной нет голосового ввода (микрофон только в «+»)', !(await page.$('#s-home [data-ic=mic], #qaMic')));
 
   // ---- 2. добавление: 4 действия, кнопка активна только при сумме и категории
   await fabM(page);
   ok('добавление: «Сохранить» неактивна', await page.isDisabled('#txSave'));
   await page.fill('#txAmount', '12');
-  ok('только сумма: всё ещё неактивна', await page.isDisabled('#txSave'));
+  ok('только сумма: кнопка серая, но доступна для валидации', !await page.isDisabled('#txSave') && await page.locator('#txSave').evaluate(e => e.classList.contains('waiting-category')));
+  await page.click('#txSave');
+  ok('без категории показана ошибка выбора', await vis('#txCatErr') && (await page.textContent('#txCatErr')).includes('Выберите категорию'));
   await page.click('[data-cat="Транспорт"]');
   ok('сумма + категория: активна', !(await page.isDisabled('#txSave')));
   ok('один слой открыт', (await openLayers()) === 1);
@@ -59,7 +62,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   // вход через Google с данными гостя: ничего не теряем
   await page.evaluate(() => MD.app.showTab('acc')); await page.click('#loginCard'); await sleep(150);
   await page.click('#auth [data-act=google]'); await sleep(900);
-  await page.click('[data-tab=home]'); await sleep(200);
+  await page.click('#s-acc [data-back]'); await sleep(200);
   ok('после входа данные гостя на месте', (await page.textContent('#recentList')).includes('Транспорт'));
 
   // ---- 3. быстрая запись: «Всё верно?»
@@ -112,7 +115,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await page.click('#payCard [data-go-pay]'); await sleep(200);
   ok('тап по плашке открывает список платежей', await vis('#s-pay'));
   // совпадение операции: категория Дом, сумма 500, дата +1 день
-  await page.click('[data-tab=home]'); await sleep(100);
+  await page.click('#s-pay [data-back]'); await sleep(100);
   await fabM(page);
   await page.fill('#txAmount', '500'); await page.click('[data-cat="Дом"]');
   await page.click('#dToday'); await page.click('#txSave'); await sleep(250); if (await page.isVisible('#txDoneOk')) await page.click('#txDoneOk'); await sleep(300);

@@ -13,6 +13,10 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
+<div class="splash" id="splash" role="status" aria-label="Загрузка приложения">
+  <div class="splash-tile" aria-hidden="true"><img src="img/fin/fin-mark.svg" alt=""></div>
+  <span class="splash-loader" aria-hidden="true"></span>
+</div>
 <div id="auth" class="auth" hidden></div>
 
 <div id="app">
@@ -20,22 +24,32 @@
   <!-- ГЛАВНАЯ: баланс с итогами месяца, избранные обязательные платежи, «пора отложить», одно наблюдение, быстрая запись, последние пять -->
   <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
     <div id="welcome" hidden>
-      <div class="welc"><span class="welc-ic" aria-hidden="true"><i data-ic="wallet"></i></span><h1>Добро пожаловать!</h1><p>Давайте настроим ваш финансовый контроль. Это займёт 2 минуты</p></div>
-      <div class="grp wl-list">
-        <button class="row" type="button" data-wl="acc"><span class="rw-ic" aria-hidden="true"><i data-ic="wallet"></i></span><span class="rw-t"><b>Добавить первый счёт</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
-        <button class="row" type="button" data-wl="ev"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>Добавить дни рождения</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
-        <button class="row" type="button" data-wl="goal"><span class="rw-ic" aria-hidden="true"><i data-ic="goal"></i></span><span class="rw-t"><b>Создать первую копилку</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <header class="setup-head">
+        <h1>Давайте начнём</h1>
+        <p>Чтобы рассчитать ваши свободные деньги, нам нужно знать, сколько у вас есть. Это займёт минуту.</p>
+      </header>
+      <div class="setup-options" aria-label="Добавить счёт">
+        <button class="setup-card setup-card-primary" type="button" data-wl="acc">
+          <span class="setup-ico" aria-hidden="true"><i data-home-icon="wallet"></i></span>
+          <span class="setup-copy"><b>Добавить вручную</b><small>Наличные, карта, вклад</small></span>
+          <span class="setup-chevron" aria-hidden="true"><i data-home-icon="next"></i></span>
+        </button>
+        <div class="setup-card setup-card-soon" role="note" aria-label="Подключить банк — скоро">
+          <span class="setup-ico" aria-hidden="true"><i data-home-icon="safe"></i></span>
+          <span class="setup-copy"><b>Подключить банк</b><small>Автоматическая загрузка операций</small></span>
+          <span class="setup-soon">Скоро</span>
+        </div>
       </div>
-      <div class="wl-hint" id="wlHint"><span>Начните здесь</span></div>
+      <div class="setup-trust"><i data-ic="lock" aria-hidden="true"></i><span>Номер карты и доступ к банку не нужны. Данные счёта сохраняются в приложении.</span></div>
     </div>
     <div id="homeMain">
-      <header class="h-top"><span class="h-greet" id="greetTitle">Привет</span><span class="h-acts"><button class="h-ib" type="button" data-go="chat" aria-label="Помощник"><i data-ic="chat"></i></button><button class="h-ib" type="button" data-go="acc" aria-label="Профиль"><i data-ic="person"></i></button></span></header>
+      <header class="h-top"><span class="h-greet" id="greetTitle">Привет</span><span class="h-acts"><button class="h-ib" type="button" data-go="chat" aria-label="Помощник"><i data-home-icon="message"></i></button><button class="h-ib" type="button" data-go="acc" aria-label="Профиль"><i data-home-icon="profile"></i></button></span></header>
       <div id="nudgeBox"></div>
       <section class="h-free" aria-labelledby="heroLabel">
-        <small id="heroLabel">Свободные деньги</small>
+        <div class="h-free-head"><small id="heroLabel">Свободные деньги</small><small class="h-period" id="homePeriod"></small></div>
         <button class="hero-sum" id="heroSum" type="button" data-go="stats" aria-label="Открыть статистику"></button>
         <em id="heroAll"></em>
-      </section>
+              </section>
       <div id="evtCard"></div>
       <div id="goalCard"></div>
       <div id="payCard"></div>
@@ -205,10 +219,14 @@
 </div>
 
 <nav class="nav" aria-label="Разделы">
-  <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-ic="home"></i></span><span class="nl">Главная</span></button>
-  <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-ic="plus"></i></button></span>
-  <button class="nav-b" data-tab="stats"><span class="np"><i data-ic="chart"></i></span><span class="nl">Статистика</span></button>
+  <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-home-icon="home"></i></span><span class="nl">Главная</span></button>
+  <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-home-icon="add"></i></button></span>
+  <button class="nav-b" data-tab="stats"><span class="np"><i data-home-icon="chart"></i></span><span class="nl">Статистика</span></button>
 </nav>
+<aside class="first-tx-coach" id="firstTxCoach" role="status" aria-live="polite" hidden>
+  <span class="first-tx-coach-ico" aria-hidden="true"><i data-home-icon="document"></i></span>
+  <span><b>Отлично, счёт готов</b><small>Нажмите «+», чтобы записать первую трату</small></span>
+</aside>
 <div class="bulkbar" id="bulkBar" hidden>
   <b id="bulkCount">0</b>
   <button type="button" data-bulk="date">Дата</button>
@@ -236,9 +254,8 @@
       <div class="tx-rest">
         <div class="amt-line">
           <label class="amt-in"><input id="txAmount" data-autofocus type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
-          <button type="button" class="voice-btn cam-btn" id="txCam" aria-label="Сфотографировать чек"><i data-ic="camera"></i></button>
-          <button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i></button>
         </div>
+        <div class="tx-utilities"><button type="button" class="voice-btn cam-btn" id="txCam" aria-label="Сфотографировать чек"><i data-ic="camera"></i><span>Чек</span></button><button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i><span>Голосом</span></button></div>
                 <div class="seg" role="radiogroup" aria-label="Тип записи">
         <button type="button" role="radio" class="seg-b" data-type="expense" aria-checked="true">Расход</button>
         <button type="button" role="radio" class="seg-b" data-type="income" aria-checked="false">Доход</button>
@@ -246,6 +263,7 @@
         <div class="chips cur-row" id="txCurRow" role="radiogroup" aria-label="Валюта операции"></div>
         <div class="note cur-note" id="txCurNote" hidden></div>
         <div class="msg err" id="txAmountErr" hidden></div>
+        <div class="msg err" id="txCatErr" hidden></div>
         <button type="button" class="cat-cur" id="txCatCur" hidden></button>
         <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
         <div class="grp tx-grp">
@@ -261,7 +279,7 @@
           </div>
           <button type="button" class="tt-row note-row" id="txNoteBtn"><i data-ic="pencil"></i><span>Добавить заметку</span></button>
         </div>
-        <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder=" " autocomplete="off"><span id="txNoteL">Заметка</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
+        <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder="Заметка (необязательно)" autocomplete="off" aria-label="Заметка (необязательно)"><span id="txNoteL">Заметка (необязательно)</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
         <div class="msg err" id="txNoteErr" hidden></div>
         <div class="save-bar"><button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button></div>
         <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить запись</button>
@@ -278,9 +296,8 @@
       <span class="td-ic" aria-hidden="true"><i data-ic="check"></i></span>
       <b id="txDoneT">Записано</b>
       <small id="txDoneD"></small>
-      <button class="btn primary wide" type="button" data-more="expense" id="moreExp">Ещё расход</button>
-      <button class="btn soft wide" type="button" data-more="income" id="moreInc">Ещё доход</button>
-      <button class="btn ghost wide" type="button" id="txDoneOk">Готово</button>
+      <button class="btn primary wide" type="button" id="txDoneOk">Готово</button>
+      <div class="tx-done-more"><button class="btn ghost" type="button" data-more="expense" id="moreExp">Ещё расход</button><button class="btn ghost" type="button" data-more="income" id="moreInc">Ещё доход</button></div>
     </div>
   </div>
 </div>
@@ -396,6 +413,8 @@
     <div class="sheet-head"><h2 id="accTitle">Новый счёт</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <form id="accForm" novalidate autocomplete="off">
       <label class="field"><input id="accName" type="text" maxlength="24" placeholder=" " data-autofocus><span>Название, например «Карта»</span></label>
+      <label class="field unit" id="accStartBalanceRow"><input id="accStartBalance" type="text" inputmode="decimal" placeholder=" " autocomplete="off"><span>Баланс сейчас</span><span class="u" id="accBalanceUnit">Br</span></label>
+      <label class="field t setup-currency" id="accCurrencyRow"><select id="accCurrency" aria-label="Валюта счёта"><option value="BYN">BYN · белорусский рубль</option><option value="RUB">RUB · российский рубль</option><option value="USD">USD · доллар США</option><option value="EUR">EUR · евро</option></select><span>Валюта</span></label>
       <div class="msg err" id="accErr" hidden></div>
       <div class="seg" role="radiogroup" aria-label="Тип счёта" id="accKind">
         <button type="button" role="radio" class="seg-b" data-akind="card" aria-checked="true">Карта</button>
@@ -522,6 +541,7 @@
 <script src="js/brain.js"></script>
 <script src="js/cloud.js"></script>
 <script src="js/auth-ui.js"></script>
+<script src="js/splash.js"></script>
 <script src="js/intro.js"></script>
 <script src="js/tour.js"></script>
 <script src="js/voice.js"></script>

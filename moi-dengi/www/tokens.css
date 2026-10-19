@@ -1,3 +1,6 @@
+@font-face{font-family:Inter;src:url("fonts/inter-latin-wght-normal.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0000-024F}
+@font-face{font-family:Inter;src:url("fonts/inter-cyrillic-wght-normal.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:Geist;src:url("fonts/geist-variable.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}
 /* ============================================================
    «Фин» — токены дизайн-системы (единственный источник правды).
    Меняешь значение здесь — меняется всё приложение и брендбук.
@@ -22,19 +25,19 @@
   --ci-a:16%;--ci-text-key:text;
   --grad-hero:linear-gradient(135deg,#4F9A63 0%,#2C6B45 100%);--grad-fab:linear-gradient(135deg,#6CB67A 0%,#3A8A57 100%);
   --hero-shadow:none;
-  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,Roboto,"Segoe UI",sans-serif;
-  --font-text:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,"Segoe UI",sans-serif;
+  --font-display:Geist,Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,Roboto,"Segoe UI",sans-serif;
+  --font-text:Inter,Geist,-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,"Segoe UI",sans-serif;
   --font-num:var(--font-text);
   /* Dynamic Type: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline/Body 17, Callout 16, Subhead 15, Footnote 13, Caption 12 */
   --fs-big:34px;--fs-34:34px;--fs-title:34px;--fs-22:22px;--fs-card:17px;--fs-15:15px;--fs-cap:13px;--fs-11:12px;
   --w-body:400;--w-cap:400;--w-label:500;--w-strong:600;
-  --r-hero:12px;--r-lg:12px;--r-md:12px;--r-sm:8px;--r-pill:999px;--r-card:12px;
-  --gap:16px;--pad:16px;
+  --r-hero:20px;--r-lg:16px;--r-md:12px;--r-sm:8px;--r-pill:999px;--r-card:18px;
+  --gap:16px;--pad:20px;
   --shadow:none;--shadow-2:none;
   --ease:cubic-bezier(.2,.8,.2,1);--dur:.25s;
   --nav-h:80px;
   --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
-  --sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px),14px);
+  --sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
   --cat-peach-solid:#FF9466;--cat-peach-bg:#FFF0EA;--cat-peach-text:#99593D;--cat-peach-text-dark:#FF9466;
   --cat-coral-solid:#F25C6E;--cat-coral-bg:#FDE8EB;--cat-coral-text:#B24451;--cat-coral-text-dark:#F47887;
   --cat-butter-solid:#F5B82E;--cat-butter-bg:#FEF5E2;--cat-butter-text:#8B691A;--cat-butter-text-dark:#F5B82E;
@@ -49,35 +52,35 @@
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --brand-primary:#30D158;--brand-primary-2:#28B84C;--brand-accent:#30D158;--brand-warm:#3A2E1F;
-    --positive:#30D158;--positive-t:#30D158;--negative:#FF453A;--negative-t:#FF6961;--warning:#FF9F0A;--warning-t:#FFB340;--neutral:#8E8E93;
-    --bg:#000000;--surface:#1C1C1E;--float:#2C2C2E;--sheet:#000000;--field:#2C2C2E;--toast:#2C2C2E;
-    --text:#FFFFFF;--muted:#A1A1A8;--ph:#8E8E93;
-    --line:rgba(84,84,88,.45);--outline:1px solid rgba(84,84,88,.45);--card-b:1px solid transparent;
-    --accent:var(--brand-primary);--accent-d:#30D158;--accent-t:#30D158;--on-accent:#000000;--lime:#30D158;--on-lime:#000000;
-    --btn:#30D158;--on-btn:#000000;--cream:#FFFFFF;--accent-bg:#12301A;
-    --tone-mint:#12301A;--tone-lime:#1C1C1E;--tone-peach:#2E2118;--tone-sky:#14233A;--tone-lilac:#221F3A;--tone-sun:#2E2814;--on-tone:#FFFFFF;
-    --r1:#30D158;--r2:#FF9F0A;--r3:#0A84FF;--r4:#FF453A;--r5:#5E5CE6;--r6:#8E8E93;
+    --brand-primary:#94A78C;--brand-primary-2:#819779;--brand-accent:#AFC0A7;--brand-warm:#28302D;
+    --positive:#42D6A0;--positive-t:#6AE2B4;--negative:#F47783;--negative-t:#FF8B95;--warning:#EAB86E;--warning-t:#F4C984;--neutral:#91A3B2;
+    --bg:#0A1420;--surface:#111F2C;--float:#1A2A38;--sheet:#0C1723;--field:#192936;--toast:#1C2D3C;
+    --text:#F1F4F1;--muted:#9AA8AE;--ph:#788A91;
+    --line:rgba(143,166,174,.16);--outline:1px solid rgba(143,166,174,.2);--card-b:1px solid rgba(143,166,174,.1);
+    --accent:var(--brand-primary);--accent-d:#819779;--accent-t:#AFC0A7;--on-accent:#0A1420;--lime:#AFC0A7;--on-lime:#0A1420;
+    --btn:#94A78C;--on-btn:#0C1723;--cream:#F1F4F1;--accent-bg:#1C2E30;
+    --tone-mint:#173337;--tone-lime:#202D32;--tone-peach:#382D2A;--tone-sky:#1B3043;--tone-lilac:#292B43;--tone-sun:#382F22;--on-tone:#F1F4F1;
+    --r1:#42D6A0;--r2:#EAB86E;--r3:#8CB9EC;--r4:#F47783;--r5:#A998E8;--r6:#91A3B2;
     --scrim:rgba(0,0,0,.55);
     --ci-a:22%;--ci-text-key:text-dark;
-    --grad-hero:linear-gradient(135deg,#238A52 0%,#0E4A2B 100%);--grad-fab:linear-gradient(135deg,#34D169 0%,#1F9A4C 100%);
+    --grad-hero:linear-gradient(135deg,#142D45 0%,#182D31 100%);--grad-fab:linear-gradient(135deg,#AFC0A7 0%,#819779 100%);
     --hero-shadow:none;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-    --brand-primary:#30D158;--brand-primary-2:#28B84C;--brand-accent:#30D158;--brand-warm:#3A2E1F;
-    --positive:#30D158;--positive-t:#30D158;--negative:#FF453A;--negative-t:#FF6961;--warning:#FF9F0A;--warning-t:#FFB340;--neutral:#8E8E93;
-    --bg:#000000;--surface:#1C1C1E;--float:#2C2C2E;--sheet:#000000;--field:#2C2C2E;--toast:#2C2C2E;
-    --text:#FFFFFF;--muted:#A1A1A8;--ph:#8E8E93;
-    --line:rgba(84,84,88,.65);--outline:1px solid rgba(84,84,88,.65);--card-b:1px solid transparent;
-    --accent:var(--brand-primary);--accent-d:#30D158;--accent-t:#30D158;--on-accent:#000000;--lime:#30D158;--on-lime:#000000;
-    --btn:#30D158;--on-btn:#000000;--cream:#FFFFFF;--accent-bg:#12301A;
-    --tone-mint:#12301A;--tone-lime:#1C1C1E;--tone-peach:#2E2118;--tone-sky:#14233A;--tone-lilac:#221F3A;--tone-sun:#2E2814;--on-tone:#FFFFFF;
-    --r1:#30D158;--r2:#FF9F0A;--r3:#0A84FF;--r4:#FF453A;--r5:#5E5CE6;--r6:#8E8E93;
+    --brand-primary:#94A78C;--brand-primary-2:#819779;--brand-accent:#AFC0A7;--brand-warm:#28302D;
+    --positive:#42D6A0;--positive-t:#6AE2B4;--negative:#F47783;--negative-t:#FF8B95;--warning:#EAB86E;--warning-t:#F4C984;--neutral:#91A3B2;
+    --bg:#0A1420;--surface:#111F2C;--float:#1A2A38;--sheet:#0C1723;--field:#192936;--toast:#1C2D3C;
+    --text:#F1F4F1;--muted:#9AA8AE;--ph:#788A91;
+    --line:rgba(143,166,174,.16);--outline:1px solid rgba(143,166,174,.2);--card-b:1px solid rgba(143,166,174,.1);
+    --accent:var(--brand-primary);--accent-d:#819779;--accent-t:#AFC0A7;--on-accent:#0A1420;--lime:#AFC0A7;--on-lime:#0A1420;
+    --btn:#94A78C;--on-btn:#0C1723;--cream:#F1F4F1;--accent-bg:#1C2E30;
+    --tone-mint:#173337;--tone-lime:#202D32;--tone-peach:#382D2A;--tone-sky:#1B3043;--tone-lilac:#292B43;--tone-sun:#382F22;--on-tone:#F1F4F1;
+    --r1:#42D6A0;--r2:#EAB86E;--r3:#8CB9EC;--r4:#F47783;--r5:#A998E8;--r6:#91A3B2;
     --scrim:rgba(0,0,0,.55);
     --ci-a:22%;--ci-text-key:text-dark;
-    --grad-hero:linear-gradient(135deg,#238A52 0%,#0E4A2B 100%);--grad-fab:linear-gradient(135deg,#34D169 0%,#1F9A4C 100%);
+    --grad-hero:linear-gradient(135deg,#142D45 0%,#182D31 100%);--grad-fab:linear-gradient(135deg,#AFC0A7 0%,#819779 100%);
     --hero-shadow:none;
     color-scheme:dark;
 }

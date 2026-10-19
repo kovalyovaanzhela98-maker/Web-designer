@@ -7,6 +7,12 @@
   const KEY = 'moidengi_intro';
   let seen = true;
   try { seen = localStorage.getItem(KEY) === '1' || !!localStorage.getItem('moidengi_v1'); } catch (_) {}
+  if (document.getElementById('splash')) {
+    root.addEventListener('fin:splash-finished', bootIntro, { once: true });
+    return;
+  }
+  bootIntro();
+  function bootIntro() {
   if (seen) return;
   const BASE = root.INTRO_BASE || 'img/onboard/';
   const ic = n => (root.MD && root.MD.icon ? root.MD.icon(n) : '');
@@ -38,7 +44,7 @@
     window.removeEventListener('popstate', onPop);
     if (pushed > 0) history.go(-pushed);
     el.remove();
-    if (root.MD && root.MD.tour) setTimeout(() => root.MD.tour.start(), 400);
+    if (root.MD && root.MD.tour && !document.body.classList.contains('welcome')) setTimeout(() => root.MD.tour.start(), 400);
   };
   function draw() {
     el.querySelectorAll('.intro-art i').forEach((n, k) => n.classList.toggle('on', k === i));
@@ -58,4 +64,5 @@
   el.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
   el.addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (dx < -50) next(); else if (dx > 50) prev(); }, { passive: true });
   draw();
+  }
 })(typeof window !== 'undefined' ? window : globalThis);

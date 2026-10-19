@@ -1,5 +1,5 @@
-/* Иконки «Фин»: набор Ionicons (MIT, ionic.io/ionicons) в стиле iOS: тонкая линия со скруглениями, как SF Symbols.
-   Сетка 512, обводка currentColor; активные пункты меню — закрашенные. Иллюстрации категорий лежат отдельно (img/cat). */
+/* Локальные векторные outline-иконки «Фин»: единый контурный язык, включая категории.
+   Категории рисуются на сетке 24 × 24 с общей толщиной линии и без эмодзи/объёмных иллюстраций. */
 (function (root) {
 const IC = {
   calendar: "<rect width=\"416\" height=\"384\" x=\"48\" y=\"80\" fill=\"none\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"32\" rx=\"48\"/><circle cx=\"296\" cy=\"232\" r=\"24\"/><circle cx=\"376\" cy=\"232\" r=\"24\"/><circle cx=\"296\" cy=\"312\" r=\"24\"/><circle cx=\"376\" cy=\"312\" r=\"24\"/><circle cx=\"136\" cy=\"312\" r=\"24\"/><circle cx=\"216\" cy=\"312\" r=\"24\"/><circle cx=\"136\" cy=\"392\" r=\"24\"/><circle cx=\"216\" cy=\"392\" r=\"24\"/><circle cx=\"296\" cy=\"392\" r=\"24\"/><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M128 48v32M384 48v32\"/><path fill=\"none\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M464 160H48\"/>",
@@ -94,9 +94,51 @@ const FILL = {
   person: "<path d=\"M332.64 64.58C313.18 43.57 286 32 256 32c-30.16 0-57.43 11.5-76.8 32.38-19.58 21.11-29.12 49.8-26.88 80.78C156.76 206.28 203.27 256 256 256s99.16-49.71 103.67-110.82c2.27-30.7-7.33-59.33-27.03-80.6M432 480H80a31 31 0 0 1-24.2-11.13c-6.5-7.77-9.12-18.38-7.18-29.11C57.06 392.94 83.4 353.61 124.8 326c36.78-24.51 83.37-38 131.2-38s94.42 13.5 131.2 38c41.4 27.6 67.74 66.93 76.18 113.75 1.94 10.73-.68 21.34-7.18 29.11A31 31 0 0 1 432 480\"/>"
 };
 
-  /* Иллюстрации категорий (img/cat/*.svg, 40 шт.) рисуем картинкой, интерфейсные значки — линейными SVG */
+  /* Категории — локальные 24dp контурные пиктограммы без градиентов и объёма. */
   const CAT = ["c_bar", "c_beauty", "c_books", "c_cafe", "c_cashback", "c_charity", "c_clothes", "c_credit", "c_education", "c_entertainment", "c_fast_food", "c_freelance", "c_fuel", "c_games", "c_gifts", "c_groceries", "c_health", "c_hobby", "c_home", "c_hotel", "c_insurance", "c_investments", "c_kids", "c_mobile_internet", "c_other", "c_pets", "c_pharmacy", "c_repair", "c_restaurant", "c_salary", "c_savings", "c_shopping", "c_sport", "c_subscriptions", "c_taxes", "c_taxi", "c_transfer", "c_transport", "c_travel", "c_utilities"];
-  const icon = n => CAT.indexOf(n) >= 0 ? `<img class="ic ic-cat" src="img/cat/${n.slice(2)}.svg" alt="" aria-hidden="true" draggable="false">` : `<svg class="ic" viewBox="0 0 512 512" aria-hidden="true">${IC[n] || ''}</svg>`;
+  const CAT_PATH = {
+    c_bar:'<path d="M6 3h12l-1 7a5 5 0 0 1-10 0L6 3Z"/><path d="M12 15v5m-4 0h8"/>',
+    c_beauty:'<path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-2-5.8L4 11l6-2.2L12 3Z"/><path d="m19 15 1 2.5 2 1-2 1-1 2.5-1-2.5-2-1 2-1 1-2.5Z"/>',
+    c_books:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5v-12Z"/><path d="M4 16a2.5 2.5 0 0 1 2.5-2.5H20M8 7h8"/>',
+    c_cafe:'<path d="M5 8h12v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z"/><path d="M17 10h1a2 2 0 1 1 0 4h-2M8 4v2m4-2v2"/>',
+    c_cashback:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 9a7 7 0 0 1 12-2l2 2M4 15l2 2a7 7 0 0 0 12-2"/>',
+    c_charity:'<path d="M20.8 8.8c0 4.1-8.8 10-8.8 10s-8.8-5.9-8.8-10A4.8 4.8 0 0 1 12 6a4.8 4.8 0 0 1 8.8 2.8Z"/>',
+    c_clothes:'<path d="m8 4 4 2 4-2 5 3-2 4-3-1v11H8V10l-3 1-2-4 5-3Z"/><path d="M8 4a4 4 0 0 0 8 0"/>',
+    c_credit:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-14 5h4"/>',
+    c_education:'<path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11v5c3 3 9 3 12 0v-5m4-2v7"/>',
+    c_entertainment:'<path d="M4 5h16v14H4z"/><path d="m9 5 3 4 3-4M9 19l3-4 3 4"/>',
+    c_fast_food:'<path d="M4 8h16M5 8c1-3 3-4 7-4s6 1 7 4M5 12h14l-1 7H6l-1-7Zm3 3h8"/>',
+    c_freelance:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/>',
+    c_fuel:'<path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M3 21h14m-11-4h8V7H6v10Zm10-8h2l3 3v5a2 2 0 0 1-4 0"/>',
+    c_games:'<path d="M6 9h12a4 4 0 0 1 3.8 5l-1 3a2 2 0 0 1-3.2 1l-2.5-2H9l-2.5 2a2 2 0 0 1-3.2-1l-1-3A4 4 0 0 1 6 9Z"/><path d="M7 12v4m-2-2h4m7-1h.01M18 15h.01"/>',
+    c_gifts:'<path d="M3 10h18v11H3zM2 6h20v4H2zM12 6v15"/><path d="M12 6H8a2.5 2.5 0 1 1 2.5-2.5L12 6Zm0 0h4a2.5 2.5 0 1 0-2.5-2.5L12 6Z"/>',
+    c_groceries:'<path d="M4 9h16l-1.5 11h-13L4 9Z"/><path d="m8 9 4-5 4 5m-7 4v4m6-4v4"/>',
+    c_health:'<path d="M12 20s-8-4.8-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.2-8 10-8 10Z"/><path d="M12 9v6m-3-3h6"/>',
+    c_hobby:'<path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1.7-3l-.5-.8a1.5 1.5 0 0 1 1.3-2.2H18a3 3 0 0 0 3-3A9 9 0 0 0 12 3Z"/><circle cx="7.5" cy="10" r=".8"/><circle cx="11" cy="7" r=".8"/><circle cx="16" cy="8" r=".8"/>',
+    c_home:'<path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1v-9Z"/>',
+    c_hotel:'<path d="M3 19V6m0 10h18v3M6 16v-5h5a3 3 0 0 1 3 3v2m0-4h3a3 3 0 0 1 3 3v1"/>',
+    c_insurance:'<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>',
+    c_investments:'<path d="M3 17 9 11l4 4 8-9"/><path d="M15 6h6v6M3 21h18"/>',
+    c_kids:'<circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0M10 8h.01M14 8h.01"/>',
+    c_mobile_internet:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/>',
+    c_other:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+    c_pets:'<path d="M12 20c-4 0-7-2-7-5 0-2 2-4 4-5 1-1 1-3 3-3s2 2 3 3c2 1 4 3 4 5 0 3-3 5-7 5Z"/><circle cx="5" cy="7" r="1.5"/><circle cx="9" cy="4" r="1.5"/><circle cx="15" cy="4" r="1.5"/><circle cx="19" cy="7" r="1.5"/>',
+    c_pharmacy:'<path d="m8 4 12 12a4 4 0 0 1-6 6L2 10a4 4 0 0 1 6-6Z"/><path d="m7 13 6-6"/>',
+    c_repair:'<path d="M14 6a5 5 0 0 0-6 6l-5 5a2 2 0 0 0 3 3l5-5a5 5 0 0 0 6-6l-3 3-3-3 3-3Z"/>',
+    c_restaurant:'<path d="M7 3v7m-3-7v4a3 3 0 0 0 6 0V3M7 10v11m9-18v18m0-18c3 2 4 5 4 9h-4"/>',
+    c_salary:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-7 5h3"/>',
+    c_savings:'<path d="M5 10c1-3 4-4 8-4 4 0 6 2 6 5v4a4 4 0 0 1-4 4H9a5 5 0 0 1-5-5v-2m14-2h3v4h-3M8 19v2m8-2v2M8 10h.01"/><path d="M13 6V4h4"/>',
+    c_shopping:'<path d="M4 8h16l-1 13H5L4 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+    c_sport:'<path d="M6 9v6m-3-5v4m18-4v4m-3-5v6M6 12h12"/>',
+    c_subscriptions:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 9a7 7 0 0 1 12-2l2 2M4 15l2 2a7 7 0 0 0 12-2"/>',
+    c_taxes:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5m-9 3h5m-5 4h5m-5 4h3"/>',
+    c_taxi:'<path d="m5 11 2-5h10l2 5 2 2v5h-2m-14 0H3v-5l2-2Z"/><path d="M5 11h14M7 18h10m-9-4h.01m8 0h.01"/>',
+    c_transfer:'<path d="M4 7h15l-3-3m4 13H5l3 3"/>',
+    c_transport:'<path d="M5 17V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11m-14 0h14m-14 0v3m14-3v3M5 9h14m-11 4h.01m8 0h.01"/>',
+    c_travel:'<path d="m3 11 18-7-7 18-3-8-8-3Z"/><path d="m11 14 5-5"/>',
+    c_utilities:'<path d="m13 2-9 12h7l-1 8 10-13h-7l0-7Z"/>'
+  };
+  const icon = n => CAT.indexOf(n) >= 0 ? `<svg class="ic ic-cat" viewBox="0 0 24 24" aria-hidden="true">${CAT_PATH[n] || CAT_PATH.c_other}</svg>` : `<svg class="ic" viewBox="0 0 512 512" aria-hidden="true">${IC[n] || ''}</svg>`;
   root.MD = root.MD || {};
   root.MD.CAT_SLUGS = CAT;
   root.MD.IC = IC;

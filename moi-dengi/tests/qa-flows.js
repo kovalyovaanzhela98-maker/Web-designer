@@ -22,7 +22,8 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   });
   const S = () => p.evaluate(() => JSON.parse(localStorage.getItem('moidengi_v1') || '{}'));
   const now = new Date(), pad = n => String(n).padStart(2, '0'), ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  await p.goto('http://localhost:5198/?mock=1'); await sleep(500);
+  // QA starts from the dashboard after bootstrap; first-run onboarding is covered by e2e.js.
+  await p.goto('http://localhost:5198/?mock=1&home=1'); await sleep(500);
 
   // ---- 1. ручное добавление расхода и дохода
   await fabM(p);
@@ -120,7 +121,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await p.evaluate(() => MD.app.showTab('pay')); await sleep(250);
   await p.click('[data-newpay] >> nth=0'); await sleep(250); await p.click('[data-pp="Аренда"]'); await p.fill('#payAmount', '400'); await p.fill('#payDay', String(Math.max(1, now.getDate() - 1))); await p.click('#paySave'); await sleep(400);
   s = await S(); ok('платёж добавлен', s.rec.list.length === 1);
-  await p.click('[data-tab=home]'); await sleep(250);
+  await p.click('#s-pay [data-back]'); await sleep(250);
   ok('платёж на главной', (await p.textContent('#payCard')).includes('Резерв'));
   await p.evaluate(() => MD.app.showTab('pay')); await sleep(250);
   const wr = await p.$('#payBody [data-paywrite]'); if (wr) { await wr.click(); await sleep(350); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(400); s = await S(); ok('платёж: записали и отметился оплаченным', Object.keys(s.rec.list[0].paid).length === 1, s.rec.list[0].paid); }
@@ -142,10 +143,10 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   // ---- 11. имя, аналитика с главной, меню из четырёх кнопок
   await p.evaluate(() => MD.app.showTab('acc')); await sleep(200);
   await p.fill('#nameIn', 'Анна'); await p.click('#acctBox'); await sleep(200);
-  await p.click('[data-tab=home]'); await sleep(200);
-  ok('пустое состояние: приветствие', await p.isVisible('#welcome'));
+  await p.click('#s-acc [data-back]'); await sleep(200);
+  ok('демо-дашборд открыт без экрана первого счёта', await p.isVisible('#homeMain') && !(await p.isVisible('#welcome')));
   await fabM(p); await p.fill('#txAmount', '10'); await p.click('#txCats [data-cat="Кафе"]'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(1100); if (await p.isVisible('#auth [data-act=later]')) { await p.click('#auth [data-act=later]'); await sleep(250); }
-  ok('имя в приветствии', (await p.textContent('#greetTitle')).includes('Анна'));
+  ok('имя сохранено в профиле', (await S()).name === 'Анна');
   ok('в меню ровно три кнопки: главная, плюс, статистика', (await p.$$eval('.nav .nav-b, .nav .nav-add', e => e.length)) === 3);
   ok('на главной «Свободные деньги» и «На счетах»', (await p.textContent('#heroLabel')).includes('Свободные') && (await p.textContent('#heroAll')).includes('На счетах'));
   await p.click('#heroSum'); await sleep(250); ok('тап по балансу открывает аналитику', await p.isVisible('#s-stats'));
@@ -186,6 +187,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await p.click('#linkBody [data-pn="cat-add"]'); await sleep(200); await p.fill('#pnCatName', 'Питомцы'); await p.click('#linkBody [data-pn="cat-icon:paw"]'); await p.click('#linkBody [data-pn="cat-save"]'); await sleep(400);
   ok('категория «Питомцы» создана', (await S()).cats.some(c => c.n === 'Питомцы' && c.i === 'paw'));
   await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250);
+  await p.click('#s-acc [data-back]'); await sleep(200);
   for (let i = 0; i < 2; i++) { await fabM(p); await p.fill('#txAmount', '15'); await p.click('[data-cat="Другое"]'); await p.fill('#txNote', 'Парикмахерская'); await p.click('#txSave'); await sleep(300); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(300); }
   ok('одинаковые названия в «Другом» превратились в категорию', (await S()).cats.some(c => c.n === 'Парикмахерская' && c.isNew), (await S()).cats);
 
