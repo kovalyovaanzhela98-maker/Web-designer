@@ -1,4 +1,3 @@
-# Re-run preview now that the repository is public.
 name: Preview «Фин»
 
 on:
@@ -31,8 +30,6 @@ jobs:
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload web app
         uses: actions/upload-pages-artifact@v3
