@@ -740,6 +740,7 @@ function shiftMonth(d) { if (tab === 'stats') { shiftPeriod(d); return; } const 
 $$('.nav-b').forEach(b => b.addEventListener('click', () => { buzz(8); showTab(b.dataset.tab); }));
 document.addEventListener('click', e => {
   if (e.target.closest('[data-back]')) { showTab(base); return; }
+  if (e.target.closest('.h-free') && !e.target.closest('[data-go]')) { showTab('stats'); return; }
   const g = e.target.closest('[data-go]');
   if (g) showTab(g.dataset.go);
   if (e.target.closest('[data-go-pay]')) openPayScreen();
