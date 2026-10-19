@@ -1,3 +1,4 @@
+# Re-run preview now that the repository is public.
 name: Preview «Фин»
 
 on:
