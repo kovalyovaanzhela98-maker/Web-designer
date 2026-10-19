@@ -1,12 +1,10 @@
 name: Preview «Фин»
 
+# Запуск вручную (Actions → Preview «Фин» → Run workflow). Чтобы он работал, один раз включи:
+#   1) Settings → Pages → Source: GitHub Actions
+#   2) Settings → Environments → github-pages → Deployment branches: All branches
+# Пока этого нет, задача падает за пару секунд ещё до первого шага, поэтому на каждый push он не запускается.
 on:
-  push:
-    branches:
-      - claude/dengi-app-checklist-677mcj
-    paths:
-      - 'moi-dengi/www/**'
-      - '.github/workflows/preview-moi-dengi.yml'
   workflow_dispatch:
 
 permissions:
