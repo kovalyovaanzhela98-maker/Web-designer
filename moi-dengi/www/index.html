@@ -4,11 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0A0A0F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0B0B1A">
 <title>Фин</title>
 <link rel="icon" href="icon.png">
-<script>try{var t=localStorage.getItem("fin_theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script>document.documentElement.setAttribute("data-theme","dark");try{localStorage.removeItem("fin_theme")}catch(e){}</script>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="app.css">
 </head>
@@ -180,16 +179,6 @@
       <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджеты и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Подсказки о привычках</b></span><span class="sw-t" aria-checked="true"></span></button>
-    </div>
-
-    <div class="grp-t theme-title">Тема</div>
-    <div class="grp theme-grp">
-      <div class="theme-row"><span class="rw-t"><small id="themeNote"></small></span>
-        <div class="seg" id="themeSeg" role="radiogroup" aria-label="Тема оформления">
-          <button type="button" role="radio" class="seg-b" data-theme-pick="auto" aria-checked="true">Авто</button>
-          <button type="button" role="radio" class="seg-b" data-theme-pick="light" aria-checked="false">Светлая</button>
-          <button type="button" role="radio" class="seg-b" data-theme-pick="dark" aria-checked="false">Тёмная</button>
-        </div></div>
     </div>
 
     <div class="grp export-row">

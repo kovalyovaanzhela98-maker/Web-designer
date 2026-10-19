@@ -2148,20 +2148,9 @@ function setPlate(sel, sub, right, disabled) {
   if (right !== null) $('.rw-r', el).innerHTML = right;
   el.disabled = !!disabled;
 }
-/* Тема: как в телефоне, светлая или тёмная. Выбор помнится на этом телефоне */
-const themePref = () => { try { const t = localStorage.getItem('fin_theme'); return t === 'light' || t === 'dark' ? t : 'auto'; } catch (_) { return 'auto'; } };
-function applyTheme(t) {
-  const el = document.documentElement;
-  if (t === 'auto') el.removeAttribute('data-theme'); else el.setAttribute('data-theme', t);
-  try { if (t === 'auto') localStorage.removeItem('fin_theme'); else localStorage.setItem('fin_theme', t); } catch (_) {}
-}
-function renderTheme() {
-  const t = themePref();
-  $$('#themeSeg [data-theme-pick]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.themePick === t)));
-  $('#themeNote').textContent = t === 'auto' ? 'Подстраивается под телефон' : t === 'dark' ? 'Всегда тёмная' : 'Всегда светлая';
-}
-$('#themeSeg').addEventListener('click', e => { const b = e.target.closest('[data-theme-pick]'); if (!b) return; applyTheme(b.dataset.themePick); renderTheme(); });
-function renderAcc() { renderAccount(); renderTheme(); }
+/* Тема одна: тёмная. Выбор темы убран из настроек */
+document.documentElement.setAttribute('data-theme', 'dark');
+function renderAcc() { renderAccount(); }
 function renderAccount() {
   const u = me || previewMe(), on = loggedIn() || !!previewMe(), canLogin = cloud.enabled && !me;
   $('#setFoot').textContent = on ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';

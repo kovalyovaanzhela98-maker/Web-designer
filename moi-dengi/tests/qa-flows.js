@@ -128,9 +128,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 9. профиль
   await p.evaluate(() => MD.app.showTab('acc')); await sleep(250);
-  await p.click('[data-theme-pick=dark]'); await sleep(150); ok('тема: тёмная', (await p.getAttribute('html', 'data-theme')) === 'dark');
-  await p.click('[data-theme-pick=light]'); ok('тема: светлая', (await p.getAttribute('html', 'data-theme')) === 'light');
-  await p.click('[data-theme-pick=auto]'); ok('тема: авто', (await p.getAttribute('html', 'data-theme')) === null);
+  ok('тема: только тёмная, выбора темы нет', (await p.getAttribute('html', 'data-theme')) === 'dark' && !(await p.$('[data-theme-pick]')));
   for (const id of ['plCurrency', 'plRemind', 'plQuick', 'plNudgeCats', 'plData'].filter(i => i !== 'plNudgeCats')) { await p.click('#' + id); await sleep(300); const open = await p.isVisible('#lyLink'); ok(`профиль: ${id} открывается`, open || (await p.isVisible('.layer:not([hidden])'))); await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250); }
   await p.click('#plNudge'); await sleep(200); s = await S(); ok('подсказки Фина выключены', s.nudge.on === false); await p.click('#plNudge'); await sleep(200);
   if (await p.$('#plPlus')) { await p.click('#plPlus'); await sleep(300); ok('покупка: окно', await p.isVisible('#lyPlus')); await p.click('[data-plus=buy]'); await sleep(500); ok('покупка: «Навсегда» включён', await p.evaluate(() => MD.sub.isPlus())); }
