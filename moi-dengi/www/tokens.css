@@ -118,3 +118,12 @@
   --accent:#A8D923;--accent-d:#97C51C;--accent-t:#426000;--on-accent:#151523;--lime:#A8D923;--on-lime:#151523;--btn:#B7E638;--on-btn:#171729;--accent-bg:#F0F8D9;
   --positive:#78A900;--positive-t:#527500;--inc:var(--positive);--inc-t:var(--positive-t);--inc-bg:rgba(168,217,35,.14);--scrim:rgba(18,17,38,.4);--grad-hero:linear-gradient(135deg,#5144FF 0%,#3022C8 100%);--grad-fab:linear-gradient(145deg,#D6FF72 0%,#B9F42F 100%);color-scheme:light;
 }
+
+/* Indigo is the sole interface accent in both themes. */
+:root,:root[data-theme="dark"],:root[data-theme="light"]{
+  --accent:#3D2CFF;--accent-d:#3022D6;--accent-t:#756BFF;--btn:#3D2CFF;--on-btn:#FFFFFF;
+  --on-accent:#FFFFFF;--focus:#3D2CFF;--lime:#3D2CFF;--on-lime:#FFFFFF;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#3D2CFF;
+  --grad-hero:radial-gradient(ellipse at 84% 12%,rgba(61,44,255,.38),transparent 60%),linear-gradient(145deg,#17162D,#111120);
+  --grad-fab:linear-gradient(145deg,#5144FF,#3022D6);
+}

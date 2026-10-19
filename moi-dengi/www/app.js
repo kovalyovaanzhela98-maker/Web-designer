@@ -522,7 +522,7 @@ function renderOps() {
     (!q || t.cat.toLowerCase().includes(q) || t.note.toLowerCase().includes(q) || ((accById(t.acc) || {}).name || '').toLowerCase().includes(q)));
   const el = $('#opsList');
   if (!list.length) {
-    el.innerHTML = q ? emptyBox('Ничего не нашлось', 'Попробуй другое слово или часть названия.') : emptyBox(`В ${MONTHS_P[ym.m]} пока пусто`, 'Нажми +, чтобы добавить запись. Фин подскажет.', { attr: 'data-add', label: 'Добавить запись' });
+    el.innerHTML = q ? emptyBox('Ничего не нашлось', 'Попробуй другое слово или часть названия.') : `<div class="stats-empty-state"><b>Здесь пока пусто</b><span>Нажми +, чтобы добавить трату, или выбери другой период</span></div>`;
     return;
   }
   const days = {};
@@ -578,6 +578,13 @@ function renderPeriodBar(P) {
 let chartScrub = null;
 function renderStats() {
   $$('#s-stats [data-stview]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.stview === (window.statsView || 'accounts'))));
+  const tabs = $('.stats-view-tabs'), selectedTab = $('.stats-view-tabs [aria-selected="true"]');
+  if (tabs && selectedTab) {
+    const items = $$('.stats-view-tabs [data-stview]'), index = items.indexOf(selectedTab);
+    if (index === 0) tabs.scrollLeft = 0;
+    else if (index === items.length - 1) tabs.scrollLeft = tabs.scrollWidth;
+    else selectedTab.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
   const activeView = window.statsView || 'accounts', accountView = $('#statsAccountView'), alt = $('#statsAlt');
   accountView.hidden = activeView !== 'accounts'; alt.hidden = activeView === 'accounts';
   if (activeView !== 'accounts') {
@@ -586,7 +593,8 @@ function renderStats() {
     } else if (activeView === 'large') {
       const expenses = state.tx.filter(t => t.type === 'expense').slice().sort((a,b) => b.amount-a.amount), top = expenses[0], cats = {};
       expenses.forEach(t => { cats[t.cat] = (cats[t.cat] || 0) + t.amount; }); const topCat = Object.entries(cats).sort((a,b) => b[1]-a[1])[0];
-      alt.innerHTML = `<div class="stats-alt-head"><h2>Крупные траты</h2><p>Самые большие расходы за всё время</p></div>${top ? `<div class="stat-insight"><span class="stat-insight-ico">${icon('spark')}</span><p>Крупнейшая трата — <em>${esc(top.cat)}</em><small>${topCat ? `Больше всего расходов также в категории ${esc(topCat[0])} — ${esc(maskT(money(topCat[1])))}.` : ''} Проверь, какие покупки можно перенести или сократить.</small></p></div><div class="grp stats-glass-list">${expenses.slice(0,8).map(t => txRow(t)).join('')}</div>` : `<div class="card stats-empty"><b>Пока нет расходов</b><span>После первых операций здесь появится разбор самых крупных трат.</span></div>`}`;
+      const staticRows = expenses.slice(0, 8).map(t => { const ci = catInfo(t.type, t.cat); return `<div class="tx stats-static-row"><span class="tx-ic" aria-hidden="true">${categoryIcon(ci)}</span><span class="tx-body"><span class="tx-t">${esc(t.cat)}</span>${t.note ? `<span class="tx-n">${esc(t.note)}</span>` : ''}</span><span class="tx-a exp">−${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}</span></div>`; }).join('');
+      alt.innerHTML = `<div class="stats-alt-head"><h2>Крупные траты</h2><p>Самые большие расходы за всё время</p></div>${top ? `<div class="stat-insight"><span class="stat-insight-ico">${icon('spark')}</span><p>Крупнейшая трата — <em>${esc(top.cat)}</em><small>${topCat ? `Больше всего расходов также в категории ${esc(topCat[0])} — ${esc(maskT(money(topCat[1])))}.` : ''} Проверь, какие покупки можно перенести или сократить.</small></p></div><div class="grp stats-glass-list">${staticRows}</div>` : `<div class="stats-empty-state"><b>Здесь пока пусто</b><span>Нажми +, чтобы добавить трату, или выбери другой период</span></div>`}`;
     } else {
       const upcoming = MD.events.upcoming(festList(), new Date()).map(u => ({ e: u.e, occ: u.occ, d: MD.events.daysTo(u.occ, new Date()) }));
       alt.innerHTML = `<div class="stats-alt-head"><h2>События</h2><p>Праздники, даты и отложенные суммы</p></div>${upcoming.length ? `<div class="grp stats-glass-list">${upcoming.map(x => `<button class="row" type="button" data-go="events"><span class="rw-ic"><i data-ic="gift"></i></span><span class="rw-t"><b>${esc(MD.events.whatText(x.e))}</b><small>${x.d === 0 ? 'Сегодня' : x.d === 1 ? 'Завтра' : `Через ${dayWord(x.d)}`}</small></span><span class="rw-r">${x.e.total ? esc(maskT(money(x.e.total))) : ''}</span></button>`).join('')}</div>` : `<div class="card stats-empty"><b>Ближайших событий нет</b><span>Добавь праздник или важную дату, чтобы спланировать накопления.</span><button class="btn primary" type="button" data-go="events">Добавить событие</button></div>`}`;
@@ -595,20 +603,13 @@ function renderStats() {
   }
   const P = periodInfo();
   renderPeriodBar(P);
-  const accountSelect = $('#statsAccFilter');
-  if (accountSelect) {
-    const selected = window.statsAccount || 'all';
-    accountSelect.innerHTML = `<option value="all">Все счета</option>${state.accounts.map(a => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('')}`;
-    accountSelect.value = selected;
-    if (accountSelect.value !== selected) { window.statsAccount = 'all'; accountSelect.value = 'all'; }
-  }
   $$('#s-stats [data-st]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.st === statType)));
-  const list = state.tx.filter(t => t.type === statType && inPer(t, P.f, P.t) && ((window.statsAccount || 'all') === 'all' || t.acc === window.statsAccount));
+  const list = state.tx.filter(t => t.type === statType && inPer(t, P.f, P.t));
   const total = sumOf(list, statType);
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = emptyBox('Здесь пока пусто', statType === 'expense' ? 'Добавь первую трату — и здесь появится разбор расходов.' : 'Добавь первый доход — и здесь появится сводка поступлений.', { attr: 'data-add', label: statType === 'expense' ? 'Добавить трату' : 'Добавить доход' });
+    card.innerHTML = `<div class="stats-empty-state"><b>Здесь пока пусто</b><span>Нажми +, чтобы добавить трату, или выбери другой период</span></div>`;
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
@@ -618,7 +619,7 @@ function renderStats() {
   const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
   if (statCat && by[statCat] == null) statCat = null;
   // Сравнение с прошлым таким же периодом, главная категория, среднее и самая крупная
-  const prev = sumOf(state.tx.filter(t => t.type === statType && inPer(t, P.pf, P.pt) && ((window.statsAccount || 'all') === 'all' || t.acc === window.statsAccount)), statType);
+  const prev = sumOf(state.tx.filter(t => t.type === statType && inPer(t, P.pf, P.pt)), statType);
   const big = list.slice().sort((a, b) => b.amount - a.amount)[0];
   {
     const top = esc(rows[0][0]), topSum = esc(maskT(money(rows[0][1]))), share = Math.round(rows[0][1] / total * 100);
@@ -662,20 +663,20 @@ function renderStats() {
   }).join('');
   const step = nb <= 12 ? 1 : Math.ceil(nb / 6);
   const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${(i * slot + slot / 2).toFixed(1)}" y="${H + 16}" text-anchor="middle">${esc(b.l)}</text>` : '').join('');
-  card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div>${hi.v > 0 ? `<div class="curve-pk"><small class="muted">Максимум</small><b>${esc(per.kind !== 'year' && P.days <= 62 ? dd(addD(P.from, peak)) : hi.l)}</b></div>` : ''}</div>
+  card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div></div>
     <div class="curve-box"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Столбчатая диаграмма ${word} ${P.word}">${grid}<line class="chart-base" x1="0" x2="${W}" y1="${H - 8}" y2="${H - 8}" stroke-width="1"/>${bars}${labels}</svg></div>`;
   chartScrub = null;
   dayCard.hidden = true; dayCard.innerHTML = '';
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = catInfo(statType, name), pc = sum / total * 100;
-    return `<li class="${statCat === name ? 'on' : ''}" data-cat="${esc(name)}" role="button" tabindex="0" aria-pressed="${statCat === name}" style="${cs(ci)}"><div class="cat-top"><span class="cat-ico ci" aria-hidden="true">${categoryIcon(ci)}</span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span>${pill(sum, statType, ci)}</div><div class="bar"><i style="width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
+    return `<li style="${cs(ci)}"><div class="cat-top"><span class="cat-ico ci" aria-hidden="true">${categoryIcon(ci)}</span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span>${pill(sum, statType, ci)}</div><div class="bar"><i style="width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
   }).join('')}</ul>`;
 }
 
 /* ---------- Вкладки ---------- */
 let tabPushed = false, payFrom = 'acc', base = 'home';
-const MAIN_TABS = ['home', 'stats', 'ops'];
+const MAIN_TABS = ['home', 'ops', 'stats'];
 function showTab(name, fromPop) {
   if (MAIN_TABS.includes(name)) base = name;
   if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
@@ -776,10 +777,7 @@ $('#s-stats').addEventListener('click', e => {
   if (e.target.closest('[data-pnow]')) { per.anchor = new Date(); per.year = new Date().getFullYear(); ym = { y: now0.getFullYear(), m: now0.getMonth() }; renderStats(); return; }
   const f = e.target.closest('[data-st]');
   if (f) { statType = f.dataset.st; statCat = null; renderStats(); }
-  const c = e.target.closest('[data-cat]');
-  if (c) { statCat = statCat === c.dataset.cat ? null : c.dataset.cat; buzz(6); renderStats(); }
 });
-$('#statsAccFilter').addEventListener('change', e => { window.statsAccount = e.target.value; renderStats(); });
 document.addEventListener('click', e => { const hs = e.target.closest('[data-hshift]'); if (hs) shiftMonth(Number(hs.dataset.hshift)); });
 /* Имя в профиле: показывается в приветствии на главной */
 

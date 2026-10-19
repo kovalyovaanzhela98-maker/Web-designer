@@ -78,7 +78,7 @@
 
   <!-- АНАЛИТИКА -->
   <section class="screen" id="s-stats" data-screen="stats" aria-label="Аналитика" hidden>
-    <header class="hdr"><h1 class="title">Статистика</h1></header>
+    <header class="hdr"><h1 class="title">Аналитика</h1></header>
     <div class="stats-view-tabs" role="tablist" aria-label="Раздел статистики">
       <button type="button" role="tab" data-stview="accounts" aria-selected="true">Счета</button>
       <button type="button" role="tab" data-stview="goals" aria-selected="false">Копилки</button>
@@ -88,7 +88,6 @@
     <div id="statsAlt" hidden></div>
     <div id="statsAccountView">
     <div id="periodBar"></div>
-    <label class="stats-account-select"><span>Счёт</span><select id="statsAccFilter" aria-label="Счёт для статистики"></select></label>
     <div class="seg stats-seg" role="radiogroup" aria-label="Что показать">
       <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
       <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
@@ -98,13 +97,6 @@
     <div class="say-wrap" id="statSay"></div>
     <div id="insights"></div>
     <div class="card" id="dayCard"></div>
-    <div class="grp-t">Разделы</div>
-    <div class="grp sect-list">
-      <button class="row" type="button" data-go="goals"><span class="rw-ic" aria-hidden="true"><i data-ic="goal"></i></span><span class="rw-t"><b>Копилки</b></span><span class="rw-r" id="secGoals"></span></button>
-      <button class="row" type="button" data-go-pay><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Обязательные платежи</b></span><span class="rw-r" id="secPays"></span></button>
-      <button class="row" type="button" data-go="events"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>События</b></span><span class="rw-r" id="secEvents"></span></button>
-      <button class="row" type="button" data-go="accounts"><span class="rw-ic" aria-hidden="true"><i data-ic="wallet"></i></span><span class="rw-t"><b>Счета</b></span><span class="rw-r" id="secAccs"></span></button>
-    </div>
     </div>
   </section>
 
@@ -211,8 +203,8 @@
 
 <nav class="nav" aria-label="Разделы">
   <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-home-icon="home"></i></span><span class="nl">Главная</span></button>
-  <button class="nav-b" data-tab="stats"><span class="np"><i data-home-icon="chart"></i></span><span class="nl">Статистика</span></button>
   <button class="nav-b" data-tab="ops"><span class="np"><i data-home-icon="document"></i></span><span class="nl">Операции</span></button>
+  <button class="nav-b" data-tab="stats"><span class="np"><i data-home-icon="chart"></i></span><span class="nl">Аналитика</span></button>
   <button class="nav-b" data-tab="acc"><span class="np"><i data-home-icon="profile"></i></span><span class="nl">Профиль</span></button>
 </nav>
 <button class="nav-add" id="fab" aria-label="Добавить запись"><i data-home-icon="add"></i></button>
