@@ -311,14 +311,14 @@ function renderHomeCards(T, pi, soon) {
   const act = state.goals.filter(g => goalPct(g) < 100).sort((a, b) => String(a.deadline).localeCompare(String(b.deadline)))[0];
   if (act) {
     const per = G.perPeriodNow(act, T) || 0, r = range(per), unit = act.unit === 'week' ? 'в неделю' : 'в месяц';
-    $('#goalCard').innerHTML = `<div class="h-goal"><div class="h-goal-title">Копилки</div><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
+    $('#goalCard').innerHTML = `<div class="h-goal" role="button" tabindex="0" data-go="goals" aria-label="Открыть копилки"><div class="h-goal-title">Копилки</div><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
       ${per > 0 ? `<p>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</p>` : `<p>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</p>`}
       <button class="btn-bord" type="button" data-savenow="${esc(act.id)}">Отложить сейчас</button></div>`;
-  } else $('#goalCard').innerHTML = `<section class="h-empty-card h-goal-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Создайте цель и следите за прогрессом</small></span></div></section>`;
+  } else $('#goalCard').innerHTML = `<button class="h-empty-card h-goal-empty" type="button" data-go="goals"><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Создайте цель и следите за прогрессом</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
   if (pi) {
     const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
     $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
-  } else $('#payCard').innerHTML = `<section class="h-empty-card h-pay-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('repeat')}</span><span><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span></div></section>`;
+  } else $('#payCard').innerHTML = `<button class="h-empty-card h-pay-empty" type="button" data-go-pay><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('repeat')}</span><span><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
 function renderBalanceTrend(T) {
@@ -506,10 +506,10 @@ function dayTitle(s) {
 function txRow(t, useHomeIcon = false) {
   const ci = catInfo(t.type, t.cat), on = sel.on && sel.ids.has(t.id);
   return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}<span>Удалить</span></div>
-    <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить">
+    <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(t.type === 'income' ? '+' : '−')}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}. Нажми, чтобы посмотреть детали">
       ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" aria-hidden="true">${categoryIcon(ci)}</div>
-      <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}${t.orig ? `<div class="tx-n tx-orig">${t.orig.est ? '≈ ' : ''}${esc(fmt(t.orig.a))} ${esc(sym(t.orig.cur))}</div>` : ''}</div>
-      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${hide ? MASK : `${t.type === 'income' ? '+' : ''}${esc(fmt(t.amount))} ${esc(sym())}`}</div></div>
+      <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}</div>
+      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${hide ? MASK : `${t.type === 'income' ? '+' : '−'}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}`}</div></div>
     </div></div>`;
 }
 
@@ -577,15 +577,38 @@ function renderPeriodBar(P) {
 }
 let chartScrub = null;
 function renderStats() {
+  $$('#s-stats [data-stview]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.stview === (window.statsView || 'accounts'))));
+  const activeView = window.statsView || 'accounts', accountView = $('#statsAccountView'), alt = $('#statsAlt');
+  accountView.hidden = activeView !== 'accounts'; alt.hidden = activeView === 'accounts';
+  if (activeView !== 'accounts') {
+    if (activeView === 'goals') {
+      alt.innerHTML = `<div class="stats-alt-head"><h2>Копилки</h2><p>Прогресс накоплений по каждой цели</p></div>${state.goals.length ? `<div class="grp stats-glass-list">${state.goals.map(g => `<button class="row" type="button" data-goal="${esc(g.id)}"><span class="rw-ic"><i data-ic="goal"></i></span><span class="rw-t"><b>${esc(g.name)}</b><small>${esc(maskT(gm(g, g.saved)))} из ${esc(maskT(gm(g, g.target)))}</small><span class="goal-bar"><i style="width:${goalPct(g)}%"></i></span></span><span class="rw-r">${goalPct(g)}%</span></button>`).join('')}</div>` : `<div class="card stats-empty"><b>Пока нет копилок</b><span>Создай цель, чтобы следить за накоплениями.</span><button class="btn primary" type="button" data-go="goals">Открыть копилки</button></div>`}`;
+    } else if (activeView === 'large') {
+      const expenses = state.tx.filter(t => t.type === 'expense').slice().sort((a,b) => b.amount-a.amount), top = expenses[0], cats = {};
+      expenses.forEach(t => { cats[t.cat] = (cats[t.cat] || 0) + t.amount; }); const topCat = Object.entries(cats).sort((a,b) => b[1]-a[1])[0];
+      alt.innerHTML = `<div class="stats-alt-head"><h2>Крупные траты</h2><p>Самые большие расходы за всё время</p></div>${top ? `<div class="stat-insight"><span class="stat-insight-ico">${icon('spark')}</span><p>Крупнейшая трата — <em>${esc(top.cat)}</em><small>${topCat ? `Больше всего расходов также в категории ${esc(topCat[0])} — ${esc(maskT(money(topCat[1])))}.` : ''} Проверь, какие покупки можно перенести или сократить.</small></p></div><div class="grp stats-glass-list">${expenses.slice(0,8).map(t => txRow(t)).join('')}</div>` : `<div class="card stats-empty"><b>Пока нет расходов</b><span>После первых операций здесь появится разбор самых крупных трат.</span></div>`}`;
+    } else {
+      const upcoming = MD.events.upcoming(festList(), new Date()).map(u => ({ e: u.e, occ: u.occ, d: MD.events.daysTo(u.occ, new Date()) }));
+      alt.innerHTML = `<div class="stats-alt-head"><h2>События</h2><p>Праздники, даты и отложенные суммы</p></div>${upcoming.length ? `<div class="grp stats-glass-list">${upcoming.map(x => `<button class="row" type="button" data-go="events"><span class="rw-ic"><i data-ic="gift"></i></span><span class="rw-t"><b>${esc(MD.events.whatText(x.e))}</b><small>${x.d === 0 ? 'Сегодня' : x.d === 1 ? 'Завтра' : `Через ${dayWord(x.d)}`}</small></span><span class="rw-r">${x.e.total ? esc(maskT(money(x.e.total))) : ''}</span></button>`).join('')}</div>` : `<div class="card stats-empty"><b>Ближайших событий нет</b><span>Добавь праздник или важную дату, чтобы спланировать накопления.</span><button class="btn primary" type="button" data-go="events">Добавить событие</button></div>`}`;
+    }
+    paintIcons(alt); return;
+  }
   const P = periodInfo();
   renderPeriodBar(P);
+  const accountSelect = $('#statsAccFilter');
+  if (accountSelect) {
+    const selected = window.statsAccount || 'all';
+    accountSelect.innerHTML = `<option value="all">Все счета</option>${state.accounts.map(a => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('')}`;
+    accountSelect.value = selected;
+    if (accountSelect.value !== selected) { window.statsAccount = 'all'; accountSelect.value = 'all'; }
+  }
   $$('#s-stats [data-st]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.st === statType)));
-  const list = state.tx.filter(t => t.type === statType && inPer(t, P.f, P.t));
+  const list = state.tx.filter(t => t.type === statType && inPer(t, P.f, P.t) && ((window.statsAccount || 'all') === 'all' || t.acc === window.statsAccount));
   const total = sumOf(list, statType);
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = emptyBox('Здесь пока пусто', statType === 'expense' ? 'Нажми +, чтобы добавить трату, или выбери другой период. Фин покажет, куда уходят деньги.' : 'Нажми +, чтобы добавить доход, или выбери другой период. Фин покажет, откуда приходят деньги.', { attr: 'data-add', label: statType === 'expense' ? 'Добавить трату' : 'Добавить доход' });
+    card.innerHTML = emptyBox('Здесь пока пусто', statType === 'expense' ? 'Добавь первую трату — и здесь появится разбор расходов.' : 'Добавь первый доход — и здесь появится сводка поступлений.', { attr: 'data-add', label: statType === 'expense' ? 'Добавить трату' : 'Добавить доход' });
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
@@ -595,7 +618,7 @@ function renderStats() {
   const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
   if (statCat && by[statCat] == null) statCat = null;
   // Сравнение с прошлым таким же периодом, главная категория, среднее и самая крупная
-  const prev = sumOf(state.tx.filter(t => t.type === statType && inPer(t, P.pf, P.pt)), statType);
+  const prev = sumOf(state.tx.filter(t => t.type === statType && inPer(t, P.pf, P.pt) && ((window.statsAccount || 'all') === 'all' || t.acc === window.statsAccount)), statType);
   const big = list.slice().sort((a, b) => b.amount - a.amount)[0];
   {
     const top = esc(rows[0][0]), topSum = esc(maskT(money(rows[0][1]))), share = Math.round(rows[0][1] / total * 100);
@@ -633,12 +656,14 @@ function renderStats() {
   const bars = buckets.map((b, i) => {
     if (i > last || b.v <= 0) return '';
     const h = Math.max(2, (b.v / mx) * (H - 22)), y = H - 8 - h;
-    return `<rect x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(5, barW / 2).toFixed(1)}" fill="${i === nowI ? 'var(--accent)' : 'var(--muted)'}" opacity="${i === nowI ? 1 : .48}"/>`;
+    const x = xAt(i), w = barW, r = Math.min(5, w / 2, h / 2), bottom = H - 8;
+    const d = `M${(x+r).toFixed(1)} ${y.toFixed(1)} H${(x+w-r).toFixed(1)} Q${(x+w).toFixed(1)} ${y.toFixed(1)} ${(x+w).toFixed(1)} ${(y+r).toFixed(1)} V${bottom.toFixed(1)} H${x.toFixed(1)} V${(y+r).toFixed(1)} Q${x.toFixed(1)} ${y.toFixed(1)} ${(x+r).toFixed(1)} ${y.toFixed(1)} Z`;
+    return `<path d="${d}" fill="${i === nowI ? 'var(--accent)' : 'var(--muted)'}" opacity="${i === nowI ? 1 : .48}"/>`;
   }).join('');
   const step = nb <= 12 ? 1 : Math.ceil(nb / 6);
   const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${(i * slot + slot / 2).toFixed(1)}" y="${H + 16}" text-anchor="middle">${esc(b.l)}</text>` : '').join('');
   card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div>${hi.v > 0 ? `<div class="curve-pk"><small class="muted">Максимум</small><b>${esc(per.kind !== 'year' && P.days <= 62 ? dd(addD(P.from, peak)) : hi.l)}</b></div>` : ''}</div>
-    <div class="curve-box"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Столбчатая диаграмма ${word} ${P.word}">${grid}<path class="chart-track" d="M0 42 H118 V30 H149 V42 H300" fill="none" stroke-width="1"/><line class="chart-base" x1="0" x2="${W}" y1="${H - 8}" y2="${H - 8}" stroke-width="1"/>${bars}${labels}</svg></div>`;
+    <div class="curve-box"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Столбчатая диаграмма ${word} ${P.word}">${grid}<line class="chart-base" x1="0" x2="${W}" y1="${H - 8}" y2="${H - 8}" stroke-width="1"/>${bars}${labels}</svg></div>`;
   chartScrub = null;
   dayCard.hidden = true; dayCard.innerHTML = '';
 
@@ -739,6 +764,9 @@ $('#s-ops').addEventListener('click', e => {
 $('#periodBar').addEventListener('change', e => { if (e.target.id === 'perFrom') per.from = e.target.value; if (e.target.id === 'perTo') per.to = e.target.value; renderStats(); });
 $('#opsSearch').addEventListener('input', e => { opsQuery = e.target.value; renderOps(); });
 $('#s-stats').addEventListener('click', e => {
+  const sv = e.target.closest('[data-stview]');
+  if (sv) { window.statsView = sv.dataset.stview; renderStats(); buzz(6); return; }
+  const goal = e.target.closest('[data-goal]'); if (goal) { openGoal(goal.dataset.goal); return; }
   const pk = e.target.closest('[data-pk]');
   if (pk) { per.kind = pk.dataset.pk; if (per.kind === 'range' && !per.from) { per.to = today(); per.from = ymd(addD(new Date(), -29)); } statCat = null; renderStats(); return; }
   const ps = e.target.closest('[data-pshift]');
@@ -751,10 +779,9 @@ $('#s-stats').addEventListener('click', e => {
   const c = e.target.closest('[data-cat]');
   if (c) { statCat = statCat === c.dataset.cat ? null : c.dataset.cat; buzz(6); renderStats(); }
 });
+$('#statsAccFilter').addEventListener('change', e => { window.statsAccount = e.target.value; renderStats(); });
 document.addEventListener('click', e => { const hs = e.target.closest('[data-hshift]'); if (hs) shiftMonth(Number(hs.dataset.hshift)); });
 /* Имя в профиле: показывается в приветствии на главной */
-$('#nameIn').addEventListener('input', e => { state.name = e.target.value.replace(/\s+/g, ' ').slice(0, 30); save(); renderHome(); });
-$('#nameIn').addEventListener('blur', e => { state.name = state.name.trim(); e.target.value = state.name; save(); renderHome(); renderAccount(); });
 
 /* ---------- Слои (листы/диалоги) + кнопка «Назад» ---------- */
 const layers = [];
@@ -954,6 +981,15 @@ function openTx(id, opts = {}) {
   };
   openLayer(ly);
   if (opts.voice) setTimeout(startTxVoice, 220);
+}
+function openTxDetail(id) {
+  const t = state.tx.find(x => x.id === id); if (!t) return;
+  const amount = `${t.type === 'income' ? '+' : '−'}${fmt(t.orig ? t.orig.a : t.amount)} ${sym(t.orig ? t.orig.cur : state.currency)}`;
+  const converted = t.orig ? `${t.orig.est ? '≈ ' : ''}${t.type === 'income' ? '+' : '−'}${fmt(t.amount)} ${sym(state.currency)}` : '';
+  const date = parseYmd(t.date); $('#txDetailTitle').textContent = t.cat;
+  $('#txDetailBody').innerHTML = `<div class="tx-detail-total ${t.type === 'income' ? 'inc' : ''}">${esc(amount)}</div><div class="grp tx-detail-info"><div class="row"><span class="rw-t"><small>Категория</small><b>${esc(t.cat)}</b></span></div><div class="row"><span class="rw-t"><small>Дата</small><b>${esc(date ? `${date.getDate()} ${MONTHS_G[date.getMonth()]} ${date.getFullYear()}` : t.date)}</b></span></div>${converted ? `<div class="row"><span class="rw-t"><small>В пересчёте на ${esc(state.currency)}</small><b>${esc(converted)}</b></span></div>` : ''}${t.note ? `<div class="row"><span class="rw-t"><small>Комментарий</small><b>${esc(t.note)}</b></span></div>` : ''}</div><button class="btn primary wide" type="button" id="txDetailEdit">Редактировать</button>`;
+  $('#txDetailEdit').onclick = () => { closeLayer($('#lyTxDetail')); openTx(t.id); };
+  openLayer($('#lyTxDetail'));
 }
 $('#lyTx').addEventListener('click', e => {
   const t = e.target.closest('[data-type],[data-cat]');
@@ -1247,9 +1283,9 @@ document.addEventListener('click', e => {
   };
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', end);
-  const open = e => { const t = e.target.closest('.swipe .tx'); if (!t || swiped) return; if (sel.on) { toggleSel(t.dataset.tx); return; } openTx(t.dataset.tx); };
+  const open = e => { const t = e.target.closest('.swipe .tx'); if (!t || swiped) return; if (sel.on) { toggleSel(t.dataset.tx); return; } openTxDetail(t.dataset.tx); };
   document.addEventListener('click', open);
-  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.swipe .tx')) { e.preventDefault(); if (sel.on) toggleSel(e.target.dataset.tx); else openTx(e.target.dataset.tx); } });
+  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.swipe .tx')) { e.preventDefault(); if (sel.on) toggleSel(e.target.dataset.tx); else openTxDetail(e.target.dataset.tx); } });
 })();
 
 /* ---------- Цели ---------- */
@@ -2130,7 +2166,6 @@ function renderAccount() {
   $('#setFoot').textContent = on ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';
   const avatarName = userName() || (u && (u.email || u.emailLinked || u.phone || u.phoneLinked)) || 'Фин';
   $('#acctMascot').textContent = avatarName.trim().split(/[^\p{L}\p{N}]+/u).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toLocaleUpperCase('ru-RU');
-  if (document.activeElement !== $('#nameIn')) $('#nameIn').value = state.name || '';
   $('#btnSignOut').hidden = !on;
   $('#loginCard').hidden = !canLogin;
   if (on) {
@@ -2140,30 +2175,21 @@ function renderAccount() {
     $('#acctName').textContent = userName() || 'Ты без входа';
     $('#acctSub').textContent = 'Данные только на этом телефоне';
   }
-  const ph = on && u && u.phoneLinked, em = on && u && u.emailLinked, off = !cloud.enabled && !previewMe();
-  setPlate('#plPhone', ph ? u.phoneLinked : on ? 'Не привязан' : 'Появится после входа', ph ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', off);
-  setPlate('#plEmail', em ? u.emailLinked : on ? 'Не привязана' : 'Появится после входа', em ? okIc() : on ? '<span class="pl-btn">Привязать</span>' : '', off);
   { const el = $('#plAiS'); if (el) el.textContent = MD.ai.available() ? 'Подключён' : 'Понимает любые фото и вопросы'; }
-  setPlate('#plCurrency', `${state.currency} ${CURRENCIES[state.currency]}`, null, false);
+  setPlate('#plCurrency', `${state.currency}`, null, false);
   const rc = MD.notify.cfg();
   setPlate('#plRemind', rc.on ? `Каждый день в ${rc.times.join(', ')}` : 'Выключены', null, false);
   setPlate('#plQuick', rc.quick ? 'Кнопки на экране блокировки включены' : 'Записывай, не открывая Фин', null, false);
-  const up = MD.events.upcoming(festList(), new Date())[0];
-  const ng = state.nudge, onCats = MD.nudges.WATCH.filter(k => ng.cats[k] !== false).length;
+  const ng = state.nudge;
   $('#plNudge').setAttribute('aria-checked', String(ng.on)); $('#plNudge .sw-t').setAttribute('aria-checked', String(ng.on));
-  $('#plNudge small').textContent = ng.on ? NG.counter(ng) : NG.t('set.off');
-  setPlate('#plNudgeCats', ng.on ? (onCats === MD.nudges.WATCH.length ? 'Все категории' : `Выбрано ${onCats} из ${MD.nudges.WATCH.length}`) : NG.t('set.off'), null, !ng.on);
-  const plus = MD.sub.isPlus();
-  $('#acctPlus').hidden = !plus;
-  $('#plusTitle').textContent = plus ? 'Фин Навсегда включён' : 'Фин Навсегда';
-  $('#plusSub').textContent = plus ? 'Спасибо! Платить больше не нужно' : `Разовая покупка ${MD.sub.PRODUCT.price}, без подписки`;
+
+
 }
-$('#plPlus').addEventListener('click', () => MD.sub.open('generic'));
 $('#loginCard').addEventListener('click', askLogin);
 
 /* Одна шторка для всего в профиле: телефон, почта, стартовый баланс, валюта, копия данных */
 let panel = null;
-const PN_TITLE = { cats: 'Категории', fest: 'Праздники и подарки', nudge: 'Подсказки Фина', phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт и импорт', remind: 'Напоминания', quick: 'Виджет и экран блокировки', ai: 'Фин-ИИ' };
+const PN_TITLE = { profile: 'Профиль', cats: 'Категории', fest: 'Праздники и подарки', nudge: 'Подсказки Фина', phone: 'Телефон', email: 'Почта', balance: 'Стартовый баланс', currency: 'Валюта', data: 'Экспорт', remind: 'Напоминания', quick: 'Виджеты и экран блокировки', ai: 'Фин-ИИ' };
 const pnBtn = (act, label, cls = 'primary', dis = false) => `<button class="btn ${cls} wide" type="button" data-pn="${act}" ${dis ? 'disabled' : ''}><span class="spin" aria-hidden="true"></span><span>${esc(label)}</span></button>`;
 const onlyWay = () => ((me && me.providers) || []).length <= 1;
 const normPhone = v => { let t = String(v).replace(/[\s\-()]/g, ''); if (/^8\d{10}$/.test(t)) t = '+7' + t.slice(1); return /^\+\d{9,15}$/.test(t) ? t : null; };
@@ -2193,7 +2219,10 @@ function renderPanel(err) {
   const e = err ? `<div class="msg err" role="alert">${esc(err)}</div>` : '';
   let say = null, html = '';
   const cur = k => `<div class="pn-cur"><small>${k[0]}</small><b>${esc(k[1])}</b></div>`;
-  if (P.kind === 'phone') {
+  if (P.kind === 'profile') {
+    const u = me || previewMe() || {};
+    html = `<label class="field"><input id="profileNameIn" type="text" maxlength="30" value="${esc(state.name || '')}" placeholder=" " autocomplete="given-name"><span>Имя</span></label><div class="profile-contacts"><div class="row"><span class="rw-ic"><i data-ic="mail"></i></span><span class="rw-t"><b>Почта</b><small>${esc(u.emailLinked || u.email || 'Не привязана')}</small></span><button class="pl-btn" type="button" data-pn="profile-email">Изменить</button></div><div class="row"><span class="rw-ic"><i data-ic="phone"></i></span><span class="rw-t"><b>Телефон</b><small>${esc(u.phoneLinked || u.phone || 'Не привязан')}</small></span><button class="pl-btn" type="button" data-pn="profile-phone">Изменить</button></div></div>${pnBtn('profile-save','Сохранить')}`;
+  } else if (P.kind === 'phone') {
     if (P.step === 'main') {
       html = cur(['Привязан номер', me.phoneLinked]) + pnBtn('phone-change', 'Изменить номер', 'soft') + (P.confirm ? `<p class="note">Войти по номеру будет нельзя. Отвязать?</p>${pnBtn('phone-unlink-yes', 'Да, отвязать', 'danger')}${pnBtn('unlink-no', 'Оставить', 'ghost')}` : pnBtn('phone-unlink', 'Отвязать', 'danger', onlyWay())) + (onlyWay() ? '<div class="note ctr">Это единственный способ входа</div>' : '');
     } else if (P.step === 'new') {
@@ -2221,7 +2250,7 @@ function renderPanel(err) {
     html = fld('pnBal', 'Сумма', { mode: 'decimal', unit: sym(), value: String(startBal()).replace('.', ',') }) + e + pnBtn('bal-save', 'Сохранить');
   } else if (P.kind === 'currency') {
     const sel = P.cur || state.currency;
-    html = `<div class="chips" role="radiogroup" aria-label="Валюта">${Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-chcur="${c}" aria-checked="${c === sel}">${c} ${CURRENCIES[c]}</button>`).join('')}</div><div class="note">Меняется только знак валюты. Суммы не пересчитываются по курсу: 100 Br станут 100 $.</div>` + pnBtn('cur-apply', 'Применить', 'primary', sel === state.currency);
+    html = `<div class="chips" role="radiogroup" aria-label="Валюта">${Object.keys(CURRENCIES).map(c => `<button type="button" role="radio" class="chip" data-chcur="${c}" aria-checked="${c === sel}">${c}</button>`).join('')}</div><div class="note">Меняется только знак валюты. Суммы не пересчитываются по курсу: 100 Br станут 100 $.</div>` + pnBtn('cur-apply', 'Применить', 'primary', sel === state.currency);
   } else if (P.kind === 'fest') {
     const ups = MD.events.upcoming(festList(), new Date());
     say = ups.length ? null : ['hello', 'Добавь чей-то день рождения или праздник<small>Напомню заранее отложить деньги на подарок.</small>'];
@@ -2281,12 +2310,13 @@ function renderPanel(err) {
   $('#linkTitle').textContent = PN_TITLE[P.kind];
   $('#linkBody').innerHTML = (say ? MD.say(say[0], say[1], 76) : '') + html;
   paintIcons($('#linkBody'));
-  const f = $('#linkBody input:not([type=file]):not([hidden]):not([type=time])'); if (f && P.kind !== 'data') setTimeout(() => f.focus({ preventScroll: true }), 80);
+  const f = $('#linkBody input:not([type=file]):not([hidden]):not([type=time])'); if (f && !['data', 'profile'].includes(P.kind)) setTimeout(() => f.focus({ preventScroll: true }), 80);
 }
 async function refreshMe() { try { const u = await cloud.refreshUser(); if (u) me = Object.assign({}, me, u); } catch (_) {} renderAccount(); }
 $('#s-acc').addEventListener('click', e => {
   const b = e.target.closest('[data-plate]'); if (!b || (b.disabled && !(me === null && cloud.enabled))) return;
   const k = b.dataset.plate;
+  if (k === 'profile') { openPanel('profile'); return; }
   if (k === 'nudge-on') { state.nudge.on = !state.nudge.on; if (!state.nudge.on) state.nudge.active = null; save(); renderAccount(); renderNudge(); nudgeRefresh(true); buzz(8); return; }
   if (k === 'phone' || k === 'email') { if (!me) return askLogin(); }
   if (k === 'phone') me.phoneLinked ? openPanel('phone') : openPanel('phone', { step: 'new', mode: 'link' });
@@ -2304,6 +2334,8 @@ $('#linkBody').addEventListener('click', async ev => {
   if (chip) { panel.cur = chip.dataset.chcur; renderPanel(); return; }
   const b = ev.target.closest('[data-pn]'); if (!b || b.disabled || !panel) return;
   const a = b.dataset.pn, P = panel, V = id => ($(id) || {}).value || '';
+  if (a === 'profile-email' || a === 'profile-phone') { closeLayer($('#lyLink')); panel = null; if (!me) return askLogin(); const kind = a === 'profile-phone' ? 'phone' : 'email', linked = kind === 'phone' ? me.phoneLinked : me.emailLinked; setTimeout(() => linked ? openPanel(kind) : openPanel(kind, { step: 'new', mode: 'link' }), 50); return; }
+  if (a === 'profile-save') { state.name = V('#profileNameIn').replace(/\s+/g, ' ').trim().slice(0,30); save(); renderHome(); renderAccount(); pnDone('Профиль обновлён'); return; }
   if (a === 'ev-add' || a.startsWith('ev-edit:')) { const id = a.startsWith('ev-edit:') ? a.slice(8) : undefined; closeLayer($('#lyLink')); panel = null; setTimeout(() => openEvent(id), 60); return; }
   if (a === 'ev-ask') { state.fest.ask = !state.fest.ask; save(); renderPanel(); return; }
   if (a.startsWith('ng-cat:')) { const k = a.slice(7), ng = state.nudge; if (ng.cats[k] === false) delete ng.cats[k]; else ng.cats[k] = false; if (ng.active && ng.active.cat === k && ng.cats[k] === false) ng.active = null; save(); renderPanel(); renderAccount(); renderNudge(); nudgeRefresh(true); return; }

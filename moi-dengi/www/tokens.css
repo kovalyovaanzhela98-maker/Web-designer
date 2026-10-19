@@ -84,3 +84,37 @@
     --hero-shadow:none;
     color-scheme:dark;
 }
+
+/* Electric Indigo + Lime fintech palette */
+:root:not([data-theme="light"]){
+  --cyan:#00E5FF;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#C6FF3D;--brand-warm:#24213C;
+  --positive:#C6FF3D;--positive-t:#D4FF70;--negative:#FF7185;--negative-t:#FF8B9D;--warning:#FFCC66;--warning-t:#FFD685;--neutral:#9AA0B8;
+  --bg:#0B0B1A;--surface:#121222;--float:#19192B;--sheet:#10101F;--field:#19192B;--toast:#202035;
+  --text:#F4F4FA;--muted:#A2A4B8;--ph:#777A94;
+  --line:rgba(196,203,255,.13);--outline:1px solid rgba(196,203,255,.16);--card-b:1px solid rgba(196,203,255,.1);
+  --accent:#C6FF3D;--accent-d:#B1ED25;--accent-t:#D7FF85;--on-accent:#171729;--lime:#C6FF3D;--on-lime:#171729;
+  --btn:#C6FF3D;--on-btn:#171729;--cream:#F4F4FA;--accent-bg:rgba(61,44,255,.2);
+  --positive:#C6FF3D;--inc:var(--positive);--inc-t:#D7FF85;--inc-bg:rgba(198,255,61,.1);
+  --tone-mint:#202A24;--tone-lime:#25263A;--tone-peach:#34242C;--tone-sky:#1A2438;--tone-lilac:#26213E;--tone-sun:#302A1B;--on-tone:#F4F4FA;
+  --scrim:rgba(4,4,15,.62);--grad-hero:linear-gradient(135deg,#3022C8 0%,#17172C 100%);--grad-fab:linear-gradient(145deg,#D6FF72 0%,#B9F42F 100%);
+  color-scheme:dark;
+}
+:root[data-theme="dark"]{
+  --cyan:#00E5FF;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#C6FF3D;--brand-warm:#24213C;
+  --positive:#C6FF3D;--positive-t:#D4FF70;--negative:#FF7185;--negative-t:#FF8B9D;--warning:#FFCC66;--warning-t:#FFD685;--neutral:#9AA0B8;
+  --bg:#0B0B1A;--surface:#121222;--float:#19192B;--sheet:#10101F;--field:#19192B;--toast:#202035;
+  --text:#F4F4FA;--muted:#A2A4B8;--ph:#777A94;--line:rgba(196,203,255,.13);--outline:1px solid rgba(196,203,255,.16);--card-b:1px solid rgba(196,203,255,.1);
+  --accent:#C6FF3D;--accent-d:#B1ED25;--accent-t:#D7FF85;--on-accent:#171729;--lime:#C6FF3D;--on-lime:#171729;--btn:#C6FF3D;--on-btn:#171729;--cream:#F4F4FA;--accent-bg:rgba(61,44,255,.2);
+  --inc:#C6FF3D;--inc-t:#D7FF85;--inc-bg:rgba(198,255,61,.1);--tone-mint:#202A24;--tone-lime:#25263A;--tone-peach:#34242C;--tone-sky:#1A2438;--tone-lilac:#26213E;--tone-sun:#302A1B;--on-tone:#F4F4FA;
+  --scrim:rgba(4,4,15,.62);--grad-hero:linear-gradient(135deg,#3022C8 0%,#17172C 100%);--grad-fab:linear-gradient(145deg,#D6FF72 0%,#B9F42F 100%);color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --cyan:#00AFC4;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#B2E62E;--brand-warm:#F2F0FF;
+  --bg:#F7F7FC;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#F7F7FC;--field:#F0F0F7;--toast:#25243A;
+  --text:#141422;--muted:#6D6D80;--ph:#85859A;--line:rgba(35,34,76,.12);--outline:1px solid rgba(35,34,76,.12);--card-b:1px solid rgba(35,34,76,.08);
+  --accent:#A8D923;--accent-d:#97C51C;--accent-t:#426000;--on-accent:#151523;--lime:#A8D923;--on-lime:#151523;--btn:#B7E638;--on-btn:#171729;--accent-bg:#F0F8D9;
+  --positive:#78A900;--positive-t:#527500;--inc:var(--positive);--inc-t:var(--positive-t);--inc-bg:rgba(168,217,35,.14);--scrim:rgba(18,17,38,.4);--grad-hero:linear-gradient(135deg,#5144FF 0%,#3022C8 100%);--grad-fab:linear-gradient(145deg,#D6FF72 0%,#B9F42F 100%);color-scheme:light;
+}

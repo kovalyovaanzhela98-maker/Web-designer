@@ -43,7 +43,7 @@
       <div class="setup-trust"><i data-ic="lock" aria-hidden="true"></i><span>Номер карты и доступ к банку не нужны. Данные счёта сохраняются в приложении.</span></div>
     </div>
     <div id="homeMain">
-      <header class="h-top"><span class="h-greet" id="greetTitle">Привет</span><span class="h-acts"><button class="h-ib" type="button" data-go="chat" aria-label="Помощник"><i data-home-icon="message"></i></button><button class="h-ib" type="button" data-go="acc" aria-label="Профиль"><i data-home-icon="profile"></i></button></span></header>
+      <header class="h-top"><span class="h-greet" id="greetTitle">Главная</span><span class="h-acts"><button class="h-ai-chat" type="button" data-go="chat"><i data-home-icon="message"></i><span>Чат с ИИ</span></button></span></header>
       <div id="nudgeBox"></div>
       <section class="h-free" aria-labelledby="heroLabel">
         <div class="h-free-head"><small id="heroLabel">Свободные деньги</small><small class="h-period" id="homePeriod"></small></div>
@@ -79,13 +79,16 @@
   <!-- АНАЛИТИКА -->
   <section class="screen" id="s-stats" data-screen="stats" aria-label="Аналитика" hidden>
     <header class="hdr"><h1 class="title">Статистика</h1></header>
-    <div class="seg period-seg" role="radiogroup" aria-label="Период">
-      <button type="button" role="radio" class="seg-b" data-pk="week" aria-checked="false">Неделя</button>
-      <button type="button" role="radio" class="seg-b" data-pk="month" aria-checked="true">Месяц</button>
-      <button type="button" role="radio" class="seg-b" data-pk="year" aria-checked="false">Год</button>
-      <button type="button" role="radio" class="seg-b" data-pk="range" aria-checked="false">Свой</button>
+    <div class="stats-view-tabs" role="tablist" aria-label="Раздел статистики">
+      <button type="button" role="tab" data-stview="accounts" aria-selected="true">Счета</button>
+      <button type="button" role="tab" data-stview="goals" aria-selected="false">Копилки</button>
+      <button type="button" role="tab" data-stview="large" aria-selected="false">Крупные траты</button>
+      <button type="button" role="tab" data-stview="events" aria-selected="false">События</button>
     </div>
+    <div id="statsAlt" hidden></div>
+    <div id="statsAccountView">
     <div id="periodBar"></div>
+    <label class="stats-account-select"><span>Счёт</span><select id="statsAccFilter" aria-label="Счёт для статистики"></select></label>
     <div class="seg stats-seg" role="radiogroup" aria-label="Что показать">
       <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
       <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
@@ -101,6 +104,7 @@
       <button class="row" type="button" data-go-pay><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Обязательные платежи</b></span><span class="rw-r" id="secPays"></span></button>
       <button class="row" type="button" data-go="events"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>События</b></span><span class="rw-r" id="secEvents"></span></button>
       <button class="row" type="button" data-go="accounts"><span class="rw-ic" aria-hidden="true"><i data-ic="wallet"></i></span><span class="rw-t"><b>Счета</b></span><span class="rw-r" id="secAccs"></span></button>
+    </div>
     </div>
   </section>
 
@@ -158,11 +162,11 @@
   <!-- ПРОФИЛЬ -->
   <section class="screen" id="s-acc" data-screen="acc" aria-label="Профиль" hidden>
     <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Профиль</h1></header>
-    <div class="acct" id="acctBox">
+    <button class="acct" id="acctBox" type="button" data-plate="profile" aria-label="Изменить профиль">
       <div class="acct-m" id="acctMascot" aria-hidden="true"></div>
       <div class="acct-t"><b id="acctName">Профиль</b><span id="acctSub"></span></div>
-      <span class="badge-plus" id="acctPlus" hidden><i data-ic="check"></i>Навсегда</span>
-    </div>
+      <span class="acct-edit" aria-hidden="true"><i data-ic="right"></i></span>
+    </button>
     <button class="ban" id="loginCard" type="button" hidden aria-label="Не потеряй свои данные. Привяжи номер телефона, чтобы сохранить прогресс при смене устройства">
       <img class="ban-l" src="img/banner-light.jpg" alt="" width="1200" height="600" decoding="async">
       <img class="ban-d" src="img/banner-dark.jpg" alt="" width="1200" height="600" decoding="async">
@@ -179,20 +183,16 @@
       <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
-    <div class="grp-t">Настройки</div>
+    <div class="grp-t">Удобство</div>
     <div class="grp">
       <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджет и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджеты и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Подсказки о привычках</b></span><span class="sw-t" aria-checked="true"></span></button>
     </div>
 
-    <div class="grp">
-      <div class="name-row"><label class="field"><input id="nameIn" type="text" maxlength="30" placeholder=" " autocomplete="given-name"><span>Имя профиля</span></label></div>
-      <button class="row" type="button" data-plate="phone" id="plPhone"><span class="rw-ic" aria-hidden="true"><i data-ic="phone"></i></span><span class="rw-t"><b>Телефон</b><small></small></span><span class="rw-r"></span></button>
-      <button class="row" type="button" data-plate="email" id="plEmail"><span class="rw-ic" aria-hidden="true"><i data-ic="mail"></i></span><span class="rw-t"><b>Почта</b><small></small></span><span class="rw-r"></span></button>
-    </div>
-
+    <div class="grp-t theme-title">Тема</div>
     <div class="grp theme-grp">
-      <div class="theme-row"><span class="rw-t"><b>Тема</b><small id="themeNote"></small></span>
+      <div class="theme-row"><span class="rw-t"><small id="themeNote"></small></span>
         <div class="seg" id="themeSeg" role="radiogroup" aria-label="Тема оформления">
           <button type="button" role="radio" class="seg-b" data-theme-pick="auto" aria-checked="true">Авто</button>
           <button type="button" role="radio" class="seg-b" data-theme-pick="light" aria-checked="false">Светлая</button>
@@ -200,15 +200,8 @@
         </div></div>
     </div>
 
-    <div class="grp">
-      <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Подсказывать о привычках</b><small></small></span><span class="sw-t" aria-checked="true"></span></button>
-      <button class="row" type="button" id="plNudgeCats" data-plate="nudge"><span class="rw-ic" aria-hidden="true"><i data-ic="grid"></i></span><span class="rw-t"><b>По каким категориям</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-go="chat"><span class="rw-ic" aria-hidden="true"><i data-ic="chat"></i></span><span class="rw-t"><b>Спросить Фина</b><small>Сводка, чеки и выписки</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-    </div>
-
-    <div class="grp">
-      <button class="row" type="button" data-plate="data" id="plData"><span class="rw-ic" aria-hidden="true"><i data-ic="file"></i></span><span class="rw-t"><b>Экспорт и импорт</b><small>Копия данных файлом</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" id="plPlus"><span class="rw-ic" aria-hidden="true"><i data-ic="crown"></i></span><span class="rw-t"><b id="plusTitle">Фин Навсегда</b><small id="plusSub"></small></span><span class="rw-r" id="plusGo"><i data-ic="right"></i></span></button>
+    <div class="grp export-row">
+      <button class="row" type="button" data-plate="data" id="plData"><span class="rw-ic" aria-hidden="true"><i data-ic="file"></i></span><span class="rw-t"><b>Экспорт</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
     <button class="btn ghost wide out" id="btnSignOut" type="button">Выйти</button>
@@ -334,6 +327,16 @@
     <div class="sheet-head"><h2 id="quizTitle">Новая копилка</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <div class="quiz-bar" aria-hidden="true"><i id="quizBar"></i></div>
     <div id="quizBody"></div>
+  </div>
+</div>
+
+<!-- Просмотр операции: редактирование доступно отдельным действием -->
+<div class="layer" id="lyTxDetail" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet tx-detail-sheet" role="dialog" aria-modal="true" aria-labelledby="txDetailTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="txDetailTitle">Операция</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="txDetailBody"></div>
   </div>
 </div>
 
