@@ -2012,7 +2012,7 @@ body.kb .nav-add{display:none}
 /* Поиск: позиционируем контейнер иконки, а не только вложенный SVG */
 .search{position:relative}
 .search>i[data-ic]{position:absolute;left:14px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;color:var(--muted);pointer-events:none;z-index:1}
-.search>i[data-ic] svg{display:block;width:20px;height:20px;flex:0 0 20px}
+.search>i[data-ic] svg{position:static;transform:none;display:block;width:20px;height:20px;flex:0 0 20px}
 /* Главная: свободные деньги — полноценная кликабельная плашка */
 .h-free{cursor:pointer}
 #heroSum{cursor:pointer}
