@@ -2089,3 +2089,23 @@ body.kb .nav-add{display:none}
 #opsSel,.pill-btn,.btn.soft,.btn.ghost{background:color-mix(in srgb,var(--surface) 48%,transparent);border:1px solid color-mix(in srgb,var(--line) 78%,transparent);box-shadow:inset 0 1px rgba(255,255,255,.07);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
 #opsSel,.pill-btn{font-size:13px!important;font-weight:600}
 #homeMain>#evtCard:empty,#homeMain>#goalCard:empty,#homeMain>#payCard:empty{display:none}
+
+/* ============================================================
+   Сводка стилей: один акцент (индиго), читаемые тексты и без наложений
+   ============================================================ */
+/* красная плашка «Удалить» видна только при смахивании и только справа */
+.swipe-bg{left:auto!important;right:0;width:92px!important;inset-block:7px;opacity:0;pointer-events:none;transition:opacity .12s ease-out}
+.swipe.dragging .swipe-bg{opacity:1}
+/* ссылки и текстовые кнопки: акцентный текст, зона касания 44 */
+.link,#homeMain .link,#homeMain .h2-row .link{color:var(--accent-t)!important;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:flex-end;padding:0 4px;font-size:15px;font-weight:500}
+.icon-btn.sm,.sheet>.sheet-head .icon-btn{position:relative}
+.icon-btn.sm::after,.sheet>.sheet-head .icon-btn::after{content:"";position:absolute;inset:-6px}
+/* светлая тема: карточка «Свободные деньги» тёмная, значит и текст в ней светлый */
+:root[data-theme="light"] .h-hero,:root[data-theme="light"] #homeMain .h-free,:root[data-theme="light"] .hero-card{color:#F4F4FA}
+:root[data-theme="light"] #homeMain .h-free *,:root[data-theme="light"] .h-hero *{color:inherit}
+:root[data-theme="light"] #homeMain .h-free small,:root[data-theme="light"] #homeMain .h-free em{color:rgba(244,244,250,.72)}
+/* нижнее меню: активная вкладка видна в обеих темах */
+:root[data-theme="light"] .nav-b[aria-current=page],:root[data-theme="light"] .nav-b[aria-current=page] .nl{color:var(--accent-t)!important}
+:root[data-theme="light"] .nav-b[aria-current=page] .np{background:color-mix(in srgb,var(--accent) 12%,transparent)!important;box-shadow:none!important}
+:root[data-theme="light"] .nav-b[aria-current=page] .np img{filter:none!important}
+.monthbar .mb,.period-bar button.mb,.monthbar .mb svg,.period-bar .mb svg{color:var(--accent-t)!important}

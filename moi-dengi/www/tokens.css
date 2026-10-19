@@ -120,10 +120,12 @@
 }
 
 /* Indigo is the sole interface accent in both themes. */
-:root,:root[data-theme="dark"],:root[data-theme="light"]{
-  --accent:#3D2CFF;--accent-d:#3022D6;--accent-t:#756BFF;--btn:#3D2CFF;--on-btn:#FFFFFF;
+:root,:root:not([data-theme="light"]),:root[data-theme="dark"],:root[data-theme="light"]{
+  --accent:#3D2CFF;--accent-d:#3022D6;--accent-t:#9A93FF;--btn:#3D2CFF;--on-btn:#FFFFFF;
   --on-accent:#FFFFFF;--focus:#3D2CFF;--lime:#3D2CFF;--on-lime:#FFFFFF;
   --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#3D2CFF;
   --grad-hero:radial-gradient(ellipse at 84% 12%,rgba(61,44,255,.38),transparent 60%),linear-gradient(145deg,#17162D,#111120);
   --grad-fab:linear-gradient(145deg,#5144FF,#3022D6);
 }
+
+:root[data-theme="light"]{--accent-t:#3D2CFF}

@@ -399,10 +399,11 @@ const ACC_KINDS = { card: 'Карта', cash: 'Наличные', other: 'Дру
 const KIND_IC = { card: 'wallet', cash: 'cash', other: 'bank' };
 function renderSections() {
   const act = state.goals.filter(g => goalPct(g) < 100).length, rc = state.rec.list.length, ev = festList().length, ac = state.accounts.length;
-  $('#secGoals').innerHTML = `${act ? act : ''}${icon('right')}`;
-  $('#secPays').innerHTML = `${rc ? rc : ''}${icon('right')}`;
-  $('#secEvents').innerHTML = `${ev ? ev : ''}${icon('right')}`;
-  $('#secAccs').innerHTML = `${ac}${icon('right')}`;
+  const put = (id, html) => { const el = $(id); if (el) el.innerHTML = html; };
+  put('#secGoals', `${act ? act : ''}${icon('right')}`);
+  put('#secPays', `${rc ? rc : ''}${icon('right')}`);
+  put('#secEvents', `${ev ? ev : ''}${icon('right')}`);
+  put('#secAccs', `${ac}${icon('right')}`);
 }
 function renderEventsScreen() {
   const T = new Date(), ups = MD.events.upcoming(festList(), T);
@@ -1266,7 +1267,7 @@ document.addEventListener('click', e => {
     if (!sw) return;
     const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
     if (!sw.drag) {
-      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) { sw.drag = true; sw.el.style.transition = 'none'; }
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) { sw.drag = true; sw.el.style.transition = 'none'; sw.el.closest('.swipe').classList.add('dragging'); }
       else if (Math.abs(dy) > 10) { sw = null; return; }
     }
     if (sw.drag) { sw.dx = Math.min(0, Math.max(-170, dx)); sw.el.style.transform = `translateX(${sw.dx}px)`; }
@@ -1276,6 +1277,7 @@ document.addEventListener('click', e => {
     const s = sw; sw = null;
     if (!s.drag) return;
     s.el.style.transition = '';
+    setTimeout(() => s.el.closest('.swipe') && s.el.closest('.swipe').classList.remove('dragging'), 220);
     swiped = true; setTimeout(() => { swiped = false; }, 80);
     if (s.dx < -96) deleteTx(s.id);
     else s.el.style.transform = '';
