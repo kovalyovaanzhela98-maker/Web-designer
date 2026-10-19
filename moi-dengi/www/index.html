@@ -49,7 +49,9 @@
         <div class="h-free-head"><small id="heroLabel">Свободные деньги</small><small class="h-period" id="homePeriod"></small></div>
         <button class="hero-sum" id="heroSum" type="button" data-go="stats" aria-label="Открыть статистику"></button>
         <em id="heroAll"></em>
+        <div class="balance-trend" id="balanceTrend" aria-hidden="true"></div>
               </section>
+      <section class="home-briefing" id="homeBriefing" aria-labelledby="homeBriefingTitle"></section>
       <div id="evtCard"></div>
       <div id="goalCard"></div>
       <div id="payCard"></div>
@@ -166,13 +168,6 @@
       <img class="ban-d" src="img/banner-dark.jpg" alt="" width="1200" height="600" decoding="async">
     </button>
 
-    <div class="grp-t">Аккаунт</div>
-    <div class="grp">
-      <div class="name-row"><label class="field"><input id="nameIn" type="text" maxlength="30" placeholder=" " autocomplete="given-name"><span>Имя</span></label></div>
-      <button class="row" type="button" data-plate="phone" id="plPhone"><span class="rw-ic" aria-hidden="true"><i data-ic="phone"></i></span><span class="rw-t"><b>Телефон</b><small></small></span><span class="rw-r"></span></button>
-      <button class="row" type="button" data-plate="email" id="plEmail"><span class="rw-ic" aria-hidden="true"><i data-ic="mail"></i></span><span class="rw-t"><b>Почта</b><small></small></span><span class="rw-r"></span></button>
-    </div>
-
     <div class="grp-t">Помощник</div>
     <div class="grp">
       <button class="row" type="button" data-plate="ai" id="plAi"><span class="rw-ic" aria-hidden="true"><i data-ic="chat"></i></span><span class="rw-t"><b>Фин-ИИ</b><small id="plAiS">Понимает любые фото и вопросы</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
@@ -184,13 +179,18 @@
       <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
-    <div class="grp-t">Быстрая запись</div>
+    <div class="grp-t">Настройки</div>
     <div class="grp">
       <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджет и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
-    <div class="grp-t">Оформление</div>
+    <div class="grp">
+      <div class="name-row"><label class="field"><input id="nameIn" type="text" maxlength="30" placeholder=" " autocomplete="given-name"><span>Имя профиля</span></label></div>
+      <button class="row" type="button" data-plate="phone" id="plPhone"><span class="rw-ic" aria-hidden="true"><i data-ic="phone"></i></span><span class="rw-t"><b>Телефон</b><small></small></span><span class="rw-r"></span></button>
+      <button class="row" type="button" data-plate="email" id="plEmail"><span class="rw-ic" aria-hidden="true"><i data-ic="mail"></i></span><span class="rw-t"><b>Почта</b><small></small></span><span class="rw-r"></span></button>
+    </div>
+
     <div class="grp theme-grp">
       <div class="theme-row"><span class="rw-t"><b>Тема</b><small id="themeNote"></small></span>
         <div class="seg" id="themeSeg" role="radiogroup" aria-label="Тема оформления">
@@ -200,14 +200,12 @@
         </div></div>
     </div>
 
-    <div class="grp-t">Фин</div>
     <div class="grp">
       <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Подсказывать о привычках</b><small></small></span><span class="sw-t" aria-checked="true"></span></button>
       <button class="row" type="button" id="plNudgeCats" data-plate="nudge"><span class="rw-ic" aria-hidden="true"><i data-ic="grid"></i></span><span class="rw-t"><b>По каким категориям</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-go="chat"><span class="rw-ic" aria-hidden="true"><i data-ic="chat"></i></span><span class="rw-t"><b>Спросить Фина</b><small>Сводка, чеки и выписки</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
 
-    <div class="grp-t">Данные</div>
     <div class="grp">
       <button class="row" type="button" data-plate="data" id="plData"><span class="rw-ic" aria-hidden="true"><i data-ic="file"></i></span><span class="rw-t"><b>Экспорт и импорт</b><small>Копия данных файлом</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" id="plPlus"><span class="rw-ic" aria-hidden="true"><i data-ic="crown"></i></span><span class="rw-t"><b id="plusTitle">Фин Навсегда</b><small id="plusSub"></small></span><span class="rw-r" id="plusGo"><i data-ic="right"></i></span></button>
@@ -220,9 +218,11 @@
 
 <nav class="nav" aria-label="Разделы">
   <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-home-icon="home"></i></span><span class="nl">Главная</span></button>
-  <span class="nav-mid"><button class="nav-add" id="fab" aria-label="Добавить запись"><i data-home-icon="add"></i></button></span>
   <button class="nav-b" data-tab="stats"><span class="np"><i data-home-icon="chart"></i></span><span class="nl">Статистика</span></button>
+  <button class="nav-b" data-tab="ops"><span class="np"><i data-home-icon="document"></i></span><span class="nl">Операции</span></button>
+  <button class="nav-b" data-tab="acc"><span class="np"><i data-home-icon="profile"></i></span><span class="nl">Профиль</span></button>
 </nav>
+<button class="nav-add" id="fab" aria-label="Добавить запись"><i data-home-icon="add"></i></button>
 <aside class="first-tx-coach" id="firstTxCoach" role="status" aria-live="polite" hidden>
   <span class="first-tx-coach-ico" aria-hidden="true"><i data-home-icon="document"></i></span>
   <span><b>Отлично, счёт готов</b><small>Нажмите «+», чтобы записать первую трату</small></span>
@@ -269,7 +269,7 @@
         <div class="grp tx-grp">
           <div class="tt-row" id="txAccRow" hidden><span>Счёт</span><select id="txAcc" aria-label="Счёт"></select></div>
           <div class="tt-row tt-dates">
-            <div class="date-row">
+            <div class="date-row date-chips">
               <span id="dQuick" class="dq-wrap"></span>
               <button type="button" class="chip" id="dToday">Сегодня</button>
               <button type="button" class="chip" id="dYest">Вчера</button>
@@ -277,8 +277,8 @@
               <input id="txDate" class="pick-hidden" type="date" aria-label="Другая дата" tabindex="-1">
             </div>
           </div>
-          <button type="button" class="tt-row note-row" id="txNoteBtn"><i data-ic="pencil"></i><span>Добавить заметку</span></button>
         </div>
+        <button type="button" class="tt-row note-row" id="txNoteBtn"><i data-ic="pencil"></i><span>Добавить заметку</span></button>
         <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder="Заметка (необязательно)" autocomplete="off" aria-label="Заметка (необязательно)"><span id="txNoteL">Заметка (необязательно)</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
         <div class="msg err" id="txNoteErr" hidden></div>
         <div class="save-bar"><button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button></div>
@@ -434,9 +434,9 @@
     <div class="grab" aria-hidden="true"></div>
     <div class="sheet-head"><h2 id="addTitle">Добавить запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <div class="grp" id="addOpts">
-      <button class="row" type="button" data-addway="photo"><span class="rw-ic" aria-hidden="true"><i data-ic="camera"></i></span><span class="rw-t"><b>По фото чека</b><small>Сфотографируй чек</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-addway="text"><span class="rw-ic" aria-hidden="true"><i data-ic="sms"></i></span><span class="rw-t"><b>Текстом<span class="tag">быстро</span></b><small>Например: «кофе 250»</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
-      <button class="row" type="button" data-addway="manual"><span class="rw-ic" aria-hidden="true"><i data-ic="pencil"></i></span><span class="rw-t"><b>Вручную</b><small>Сумма, категория, счёт</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-addway="photo"><span class="rw-ic" aria-hidden="true"><i data-home-icon="document"></i></span><span class="rw-t"><b>По фото чека</b><small>Сфотографируй чек</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+      <button class="row" type="button" data-addway="text"><span class="rw-ic" aria-hidden="true"><i data-home-icon="message"></i></span><span class="rw-t"><b>Текстом<span class="tag">быстро</span></b><small>Например: «кофе 250»</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+      <button class="row" type="button" data-addway="manual"><span class="rw-ic" aria-hidden="true"><i data-home-icon="wallet"></i></span><span class="rw-t"><b>Вручную</b><small>Сумма, категория, счёт</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
     </div>
     <form id="addTextForm" hidden autocomplete="off"><label class="field"><input id="addTextIn" type="text" maxlength="200" placeholder=" " enterkeyhint="done"><span>Например: кофе 250</span></label><button class="btn primary wide" type="submit">Понять</button><button class="btn ghost wide" type="button" id="addTextBack">Назад</button></form>
     <input id="addPhoto" type="file" accept="image/*" capture="environment" hidden>

@@ -17,15 +17,17 @@ const WD = ['воскресенье', 'понедельник', 'вторник'
 const WD_S = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 
 const icon = MD.icon;
-const cIcon = ci => icon(ci[1]);
+const cIcon = ci => categoryIcon(ci);
 const HOME_CAT_ICONS = {
   'Продукты':'bag','Кафе':'cup','Транспорт':'location','Дом':'home','Здоровье':'heart','Одежда':'bag-alt',
   'Связь':'wifi','Подписки':'repeat','Подарки':'gift','Развлечения':'headphones','Кредиты':'card','Переводы':'swap',
   'Налоги':'document','Банк':'safe','Техника':'display','Другое':'category','Зарплата':'wallet','Подработка':'work','Возврат':'dollar'
 };
 const HOME_CAT_SLUGS = {c_groceries:'bag',c_cafe:'cup',c_transport:'location',c_home:'home',c_health:'heart',c_clothes:'bag-alt',c_mobile_internet:'wifi',c_subscriptions:'repeat',c_gifts:'gift',c_entertainment:'headphones',c_credit:'card',c_transfer:'swap',c_taxes:'document',c_insurance:'safe',c_shopping:'bag',c_salary:'wallet',c_freelance:'work',c_cashback:'dollar'};
+Object.assign(HOME_CAT_SLUGS,{c_bar:'cup',c_beauty:'heart',c_books:'document',c_charity:'heart',c_education:'document',c_fast_food:'bag',c_fuel:'location',c_games:'display',c_hobby:'display',c_hotel:'home',c_investments:'chart',c_kids:'heart',c_other:'category',c_pets:'heart',c_pharmacy:'heart',c_repair:'display',c_restaurant:'cup',c_savings:'wallet',c_sport:'heart',c_taxi:'location',c_travel:'location',c_utilities:'wifi'});
 const homeIcon = name => `<span class="pack-icon" aria-hidden="true"><img class="pack-icon-light" src="img/icons/pack/light/${name}.svg" alt=""><img class="pack-icon-dark" src="img/icons/pack/dark/${name}.svg" alt=""></span>`;
 const homeCategoryIcon = ci => homeIcon(HOME_CAT_ICONS[ci[0]] || HOME_CAT_SLUGS[ci[1]] || 'category');
+const categoryIcon = ci => ci[3] && ci[3].custom ? lineIc(ci) : homeCategoryIcon(ci);
 /* Цвет значка категории: свой цвет человека побеждает общий зелёный */
 const cs = ci => { const t = MD.toneOf(ci[2]), im = ci[3] && ci[3].custom ? '!important' : ''; return `--c:${t.solid}${im};--cbg:${t.bg};--ctx:${t.text};--ctd:${t.textDark}`; };
 function paintIcons(root = document) { $$('i[data-ic]', root).forEach(i => { i.innerHTML = icon(i.dataset.ic); }); $$('i[data-home-icon]', root).forEach(i => { i.innerHTML = homeIcon(i.dataset.homeIcon); }); }
@@ -312,13 +314,39 @@ function renderHomeCards(T, pi, soon) {
     $('#goalCard').innerHTML = `<div class="h-goal"><div class="h-goal-title">Копилки</div><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
       ${per > 0 ? `<p>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</p>` : `<p>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</p>`}
       <button class="btn-bord" type="button" data-savenow="${esc(act.id)}">Отложить сейчас</button></div>`;
-  } else $('#goalCard').innerHTML = `<section class="h-empty-card h-goal-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Откладывайте на важное</small></span></div><button type="button" class="h-empty-action" data-newgoal>Создать копилку<span aria-hidden="true">${icon('right')}</span></button></section>`;
+  } else $('#goalCard').innerHTML = `<section class="h-empty-card h-goal-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Создайте цель и следите за прогрессом</small></span></div></section>`;
   if (pi) {
     const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
     $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
-  } else $('#payCard').innerHTML = `<section class="h-empty-card h-pay-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('repeat')}</span><span><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span></div><button type="button" class="h-empty-action" data-go-pay>Настроить платежи<span aria-hidden="true">${icon('right')}</span></button></section>`;
+  } else $('#payCard').innerHTML = `<section class="h-empty-card h-pay-empty"><div class="h-empty-head"><span class="h-empty-ico">${homeIcon('repeat')}</span><span><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span></div></section>`;
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
+function renderBalanceTrend(T) {
+  const currentBalance = state.accounts.reduce((s, a) => s + (Number(a.balance) || 0), 0), points = [];
+  for (let i = 6; i >= 0; i--) {
+    const day = ymd(addD(T, -i));
+    const futureMovement = state.tx.reduce((s, t) => t.date > day ? s + (t.type === 'income' ? t.amount : -t.amount) : s, 0);
+    const value = currentBalance - futureMovement;
+    points.push(value);
+  }
+  const lo = Math.min(...points), hi = Math.max(...points), span = hi - lo || 1;
+  const d = points.map((v, i) => `${i ? 'L' : 'M'} ${(i * 296 / 6).toFixed(1)} ${(34 - (v - lo) / span * 26).toFixed(1)}`).join(' ');
+  $('#balanceTrend').innerHTML = `<svg viewBox="0 0 296 40" preserveAspectRatio="none" focusable="false"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="296" cy="${(34 - (points[6] - lo) / span * 26).toFixed(1)}" r="2.4" fill="currentColor"/></svg>`;
+}
+function renderHomeBriefing(T) {
+  const start = mondayOf(T), elapsed = Math.min(6, Math.max(0, daysBetween(start, T))), previous = addD(start, -7);
+  const spent = (from, through) => round2(state.tx.filter(t => t.type === 'expense' && t.date >= ymd(from) && t.date <= ymd(through)).reduce((s, t) => s + t.amount, 0));
+  const current = round2(state.tx.filter(t => t.type === 'expense' && t.date >= ymd(start) && t.date <= today()).reduce((s, t) => s + t.amount, 0));
+  const prior = spent(previous, addD(previous, elapsed));
+  let copy = 'Запиши несколько операций — и я сравню расходы этой недели с прошлой.';
+  if (prior > 0) {
+    const pct = Math.round(Math.abs(current - prior) / prior * 100);
+    copy = current <= prior
+      ? `На этой неделе ты потратил на ${pct}% меньше, чем на прошлой. Продолжай в том же духе.`
+      : `На этой неделе расходы выросли на ${pct}% по сравнению с прошлой. Проверь категории, если хочешь найти причину.`;
+  } else if (current > 0) copy = 'На этой неделе уже появились первые расходы. Продолжай записывать операции — и сравнение станет точнее.';
+  $('#homeBriefing').innerHTML = `<div class="briefing-mark" aria-hidden="true">${homeIcon('chart')}</div><div><h2 id="homeBriefingTitle">Сводка от Фина</h2><p>${esc(copy)}</p></div>`;
+}
 function renderHome() {
   const T = new Date(), params = new URLSearchParams(location.search), forceDashboard = params.get('home') === '1' && params.get('welcome') !== '1', w = !hasData() && !forceDashboard;
   $('#welcome').hidden = !w; $('#homeMain').hidden = w;
@@ -331,6 +359,8 @@ function renderHome() {
   $('#heroAll').textContent = hide ? `На счетах: ${MASK}` : `На счетах: ${money(totalBalance())}`;
   const monthList = monthTx(now0.getFullYear(), now0.getMonth());
   $('#homePeriod').textContent = MONTHS[now0.getMonth()];
+  renderBalanceTrend(T);
+  renderHomeBriefing(T);
   if (MD.notify.supported()) { const list = monthTx(now0.getFullYear(), now0.getMonth()); MD.notify.pushSummary({ balance: hide ? '••••' : money(totalBalance()), flow: hide ? '' : `+${fmt(sumOf(list, 'income'))}  −${fmt(sumOf(list, 'expense'))}`, month: MONTHS[now0.getMonth()].toLowerCase() }); }
   renderHomeCards(T, pi, soon);
   const recent = state.tx.slice().sort(cmpTx).slice(0, 5);
@@ -477,9 +507,9 @@ function txRow(t, useHomeIcon = false) {
   const ci = catInfo(t.type, t.cat), on = sel.on && sel.ids.has(t.id);
   return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}<span>Удалить</span></div>
     <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(signed(t.amount, t.type))}. Нажми, чтобы изменить">
-      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" aria-hidden="true">${useHomeIcon ? homeCategoryIcon(ci) : lineIc(ci)}</div>
+      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" aria-hidden="true">${categoryIcon(ci)}</div>
       <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}${t.orig ? `<div class="tx-n tx-orig">${t.orig.est ? '≈ ' : ''}${esc(fmt(t.orig.a))} ${esc(sym(t.orig.cur))}</div>` : ''}</div>
-      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${hide ? MASK : esc(signed(t.amount, t.type))}</div></div>
+      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${hide ? MASK : `${t.type === 'income' ? '+' : ''}${esc(fmt(t.amount))} ${esc(sym())}`}</div></div>
     </div></div>`;
 }
 
@@ -593,39 +623,34 @@ function renderStats() {
     shown.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
   }
   // Bar chart shows actual spend per day/week/month, so one transaction reads as a real value rather than a broken line.
-  const nb = buckets.length, W = 300, H = 150;
+  const nb = buckets.length, W = 300, H = 100;
   const nowI = buckets.findIndex(b => b.now), last = nowI >= 0 ? nowI : nb - 1;
-  const mx = Math.max(1, ...buckets.slice(0, last + 1).map(b => b.v)), col = 'var(--accent)';
-  const slot = W / nb, barW = Math.max(2, Math.min(18, slot * .58));
+  const mx = Math.max(1, ...buckets.slice(0, last + 1).map(b => b.v));
+  const slot = W / nb, barW = Math.max(3, Math.min(18, slot * .68));
   const xAt = i => i * slot + (slot - barW) / 2, yAt = v => H - 8 - (v / mx) * (H - 22);
   const peak = buckets.reduce((m, b, i) => (i <= last && b.v > buckets[m].v ? i : m), 0), hi = buckets[peak];
-  const grid = [0.25, 0.5, 0.75].map(f => { const y = yAt(f * mx); return `<line class="grid" x1="0" x2="${W}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke-width="1"/>`; }).join('');
+  const grid = '';
   const bars = buckets.map((b, i) => {
     if (i > last || b.v <= 0) return '';
     const h = Math.max(2, (b.v / mx) * (H - 22)), y = H - 8 - h;
-    return `<rect x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(5, barW / 2).toFixed(1)}" fill="${col}" opacity="${i === nowI ? 1 : .62}"/>`;
+    return `<rect x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(5, barW / 2).toFixed(1)}" fill="${i === nowI ? 'var(--accent)' : 'var(--muted)'}" opacity="${i === nowI ? 1 : .48}"/>`;
   }).join('');
   const step = nb <= 12 ? 1 : Math.ceil(nb / 6);
   const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${(i * slot + slot / 2).toFixed(1)}" y="${H + 16}" text-anchor="middle">${esc(b.l)}</text>` : '').join('');
   card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div>${hi.v > 0 ? `<div class="curve-pk"><small class="muted">Максимум</small><b>${esc(per.kind !== 'year' && P.days <= 62 ? dd(addD(P.from, peak)) : hi.l)}</b></div>` : ''}</div>
-    <div class="curve-box"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Столбчатая диаграмма ${word} ${P.word}">${grid}${bars}${labels}</svg></div>`;
+    <div class="curve-box"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Столбчатая диаграмма ${word} ${P.word}">${grid}<path class="chart-track" d="M0 42 H118 V30 H149 V42 H300" fill="none" stroke-width="1"/><line class="chart-base" x1="0" x2="${W}" y1="${H - 8}" y2="${H - 8}" stroke-width="1"/>${bars}${labels}</svg></div>`;
   chartScrub = null;
   dayCard.hidden = true; dayCard.innerHTML = '';
 
-  const hashN = n => { let h = 0; for (const ch of n) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
-  const cloud = `<div class="cloud" aria-hidden="false">${rows.slice(0, 8).map(([name, sum]) => {
-    const h = hashN(name), rot = (h % 25) - 12, dy = (h >> 3) % 9 - 4, ci = catInfo(statType, name);
-    return `<button type="button" class="ctag" data-cat="${esc(name)}" style="--rot:${rot}deg;--dy:${dy}px;${cs(ci)}">${esc(name)}<b>${Math.round(sum / total * 100)}%</b></button>`;
-  }).join('')}</div>`;
-  catList.innerHTML = `${cloud}<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
+  catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
     const ci = catInfo(statType, name), pc = sum / total * 100;
-    return `<li class="${statCat === name ? 'on' : ''}" data-cat="${esc(name)}" role="button" tabindex="0" aria-pressed="${statCat === name}" style="${cs(ci)}"><div class="cat-top"><span class="cat-ico ci" aria-hidden="true">${cIcon(ci)}</span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span>${pill(sum, statType, ci)}</div><div class="bar"><i style="width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
+    return `<li class="${statCat === name ? 'on' : ''}" data-cat="${esc(name)}" role="button" tabindex="0" aria-pressed="${statCat === name}" style="${cs(ci)}"><div class="cat-top"><span class="cat-ico ci" aria-hidden="true">${categoryIcon(ci)}</span><span class="nm">${esc(name)}</span><span class="pc">${pc < 1 ? '<1' : Math.round(pc)}%</span>${pill(sum, statType, ci)}</div><div class="bar"><i style="width:${Math.max(pc, 2).toFixed(1)}%"></i></div></li>`;
   }).join('')}</ul>`;
 }
 
 /* ---------- Вкладки ---------- */
 let tabPushed = false, payFrom = 'acc', base = 'home';
-const MAIN_TABS = ['home', 'stats'];
+const MAIN_TABS = ['home', 'stats', 'ops'];
 function showTab(name, fromPop) {
   if (MAIN_TABS.includes(name)) base = name;
   if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
@@ -826,12 +851,12 @@ function renderTxForm() {
   const editing = !!tx.editId || tx.draftIdx != null, open = !editing || tx.catOpen || !tx.cat;
   $('#txCats').hidden = !open;
   $('#txCats').innerHTML = CATS[tx.type].map(c =>
-    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="${cs(c)}" aria-hidden="true">${lineIc(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</span></button>`).join('');
+    `<button type="button" role="radio" class="cat-tile" data-cat="${esc(c[0])}" aria-checked="${c[0] === tx.cat}"><span class="ci" style="${cs(c)}" aria-hidden="true">${categoryIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</span></button>`).join('');
   $('#txAccRow').hidden = state.accounts.length < 2;
   $('#txAcc').innerHTML = state.accounts.map(a => `<option value="${esc(a.id)}"${a.id === tx.acc ? ' selected' : ''}>${esc(a.name)}</option>`).join('');
   const cc = $('#txCatCur'), ci = tx.cat ? catInfo(tx.type, tx.cat) : null;
   cc.hidden = open;
-  if (ci) cc.innerHTML = `<span class="ci" aria-hidden="true">${lineIc(ci)}</span><b>${esc(tx.cat)}</b><span class="ch">Изменить</span>`;
+  if (ci) cc.innerHTML = `<span class="ci" aria-hidden="true">${categoryIcon(ci)}</span><b>${esc(tx.cat)}</b><span class="ch">Изменить</span>`;
   const other = tx.cat === OTHER, showNote = other || tx.noteOpen || !!$('#txNote').value;
   $('#txNoteF').hidden = !showNote; $('#txNoteBtn').hidden = showNote;
   $('#txNoteL').textContent = other ? 'Что именно? (обязательно)' : 'Заметка (необязательно)';
@@ -1259,7 +1284,7 @@ const goalRows = (g, full) => {
 function renderGoals() {
   const el = $('#goalsBody'), list = state.goals;
   if (!list.length) {
-    el.innerHTML = `<div class="goal-empty"><span class="emp-m" aria-hidden="true">${MD.mascot('think', 140)}</span><h2>Пока пусто</h2><p>Нажми «Новая копилка»: Фин спросит, на что копим, посчитает, сколько откладывать в месяц, и скажет, легко это или тяжеловато.</p><button class="btn primary" type="button" data-newgoal>Новая копилка</button></div>`;
+    el.innerHTML = `<div class="goal-empty-state"><span class="quiet-empty-ico" aria-hidden="true">${homeIcon('safe')}</span><h2>Пока пусто</h2><p>Нажмите «Новая» вверху, чтобы создать цель и следить за накоплениями.</p></div>`;
     return;
   }
   const byCur = {}; list.forEach(g => { const c = g.cur || state.currency; byCur[c] = round2((byCur[c] || 0) + g.saved); });
@@ -1968,7 +1993,7 @@ function payRowHtml(r, mk) {
 function renderPay() {
   const el = $('#payBody'), list = state.rec.list, T = new Date(), mk = R.mkOfDate(T);
   if (!list.length) {
-    el.innerHTML = emptyBox('Пока пусто', 'Добавь первый платёж: аренду, подписку или кредит. Фин напомнит и поможет записать, но сам ничего не спишет.', { attr: 'data-newpay', label: 'Добавить платёж' });
+    el.innerHTML = `<div class="pay-empty-state"><span class="quiet-empty-ico" aria-hidden="true">${homeIcon('document')}</span><b>Пока пусто</b><p>Нажмите «+» вверху, чтобы добавить аренду, подписку или кредит. Мы напомним об оплате, но сами ничего не спишем.</p></div>`;
     return;
   }
   const rows = R.monthRows(list, mk, T), sm = R.summary(list, mk, T), later = list.filter(p => p.start > mk);
@@ -2103,13 +2128,14 @@ function renderAcc() { renderAccount(); renderTheme(); }
 function renderAccount() {
   const u = me || previewMe(), on = loggedIn() || !!previewMe(), canLogin = cloud.enabled && !me;
   $('#setFoot').textContent = on ? 'Данные хранятся на телефоне и в твоём облаке. Видны только тебе.' : 'Данные хранятся только на этом телефоне.';
-  $('#acctMascot').innerHTML = MD.mascot('happy', 48);
+  const avatarName = userName() || (u && (u.email || u.emailLinked || u.phone || u.phoneLinked)) || 'Фин';
+  $('#acctMascot').textContent = avatarName.trim().split(/[^\p{L}\p{N}]+/u).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toLocaleUpperCase('ru-RU');
   if (document.activeElement !== $('#nameIn')) $('#nameIn').value = state.name || '';
   $('#btnSignOut').hidden = !on;
   $('#loginCard').hidden = !canLogin;
   if (on) {
-    const nm = userName(); $('#acctName').textContent = nm || (u && (u.email || u.phone)) || 'Мой профиль';
-    $('#acctSub').textContent = nm && u && (u.phone || u.email) ? (u.phone || u.email) : 'Данные в облаке';
+    const nm = userName(); $('#acctName').textContent = nm || (u && (u.emailLinked || u.email || u.phoneLinked || u.phone)) || 'Мой профиль';
+    $('#acctSub').textContent = u && (u.emailLinked || u.email || u.phoneLinked || u.phone) ? (u.emailLinked || u.email || u.phoneLinked || u.phone) : 'Данные в облаке';
   } else {
     $('#acctName').textContent = userName() || 'Ты без входа';
     $('#acctSub').textContent = 'Данные только на этом телефоне';

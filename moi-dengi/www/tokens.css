@@ -54,8 +54,8 @@
   :root:not([data-theme="light"]){
     --brand-primary:#94A78C;--brand-primary-2:#819779;--brand-accent:#AFC0A7;--brand-warm:#28302D;
     --positive:#42D6A0;--positive-t:#6AE2B4;--negative:#F47783;--negative-t:#FF8B95;--warning:#EAB86E;--warning-t:#F4C984;--neutral:#91A3B2;
-    --bg:#0A1420;--surface:#111F2C;--float:#1A2A38;--sheet:#0C1723;--field:#192936;--toast:#1C2D3C;
-    --text:#F1F4F1;--muted:#9AA8AE;--ph:#788A91;
+    --bg:#07111D;--surface:#111E2B;--float:#192735;--sheet:#0A1622;--field:#172633;--toast:#1C2D3C;
+    --text:#EDF2F4;--muted:#99A7B0;--ph:#788A91;
     --line:rgba(143,166,174,.16);--outline:1px solid rgba(143,166,174,.2);--card-b:1px solid rgba(143,166,174,.1);
     --accent:var(--brand-primary);--accent-d:#819779;--accent-t:#AFC0A7;--on-accent:#0A1420;--lime:#AFC0A7;--on-lime:#0A1420;
     --btn:#94A78C;--on-btn:#0C1723;--cream:#F1F4F1;--accent-bg:#1C2E30;
@@ -71,8 +71,8 @@
 :root[data-theme="dark"]{
     --brand-primary:#94A78C;--brand-primary-2:#819779;--brand-accent:#AFC0A7;--brand-warm:#28302D;
     --positive:#42D6A0;--positive-t:#6AE2B4;--negative:#F47783;--negative-t:#FF8B95;--warning:#EAB86E;--warning-t:#F4C984;--neutral:#91A3B2;
-    --bg:#0A1420;--surface:#111F2C;--float:#1A2A38;--sheet:#0C1723;--field:#192936;--toast:#1C2D3C;
-    --text:#F1F4F1;--muted:#9AA8AE;--ph:#788A91;
+    --bg:#07111D;--surface:#111E2B;--float:#192735;--sheet:#0A1622;--field:#172633;--toast:#1C2D3C;
+    --text:#EDF2F4;--muted:#99A7B0;--ph:#788A91;
     --line:rgba(143,166,174,.16);--outline:1px solid rgba(143,166,174,.2);--card-b:1px solid rgba(143,166,174,.1);
     --accent:var(--brand-primary);--accent-d:#819779;--accent-t:#AFC0A7;--on-accent:#0A1420;--lime:#AFC0A7;--on-lime:#0A1420;
     --btn:#94A78C;--on-btn:#0C1723;--cream:#F1F4F1;--accent-bg:#1C2E30;
