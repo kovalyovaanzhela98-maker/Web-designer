@@ -28,11 +28,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check that GitHub Pages is enabled
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Pages включается один раз владельцем: Settings → Pages → Source: GitHub Actions.
+          # Пока он не включён, шаг деплоя падает; тогда пропускаем его и оставляем подсказку.
+          if gh api "repos/${{ github.repository }}/pages" --jq '.build_type' 2>/dev/null | grep -q workflow; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pages выключены::Включи Settings → Pages → Source: GitHub Actions, и превью заработает. Готовое приложение собирается в «Сборка APK»."
+          fi
+
       - name: Upload web app
+        if: steps.pages.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: moi-dengi/www
 
       - name: Deploy preview
+        if: steps.pages.outputs.enabled == 'true'
         id: deployment
         uses: actions/deploy-pages@v4

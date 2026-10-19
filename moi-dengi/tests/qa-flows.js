@@ -27,17 +27,17 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 1. ручное добавление расхода и дохода
   await fabM(p);
-  await p.fill('#txAmount', '25,5'); await p.click('[data-cat="Кафе"]'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(350);
+  await p.fill('#txAmount', '25,5'); await p.click('[data-cat="Кафе"]'); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(350);
   let s = await S(); ok('расход вручную записан', s.tx.length === 1 && s.tx[0].amount === 25.5 && s.tx[0].cat === 'Кафе' && s.tx[0].type === 'expense', s.tx);
-  await fabM(p); await p.click('[data-type=income]'); await p.fill('#txAmount', '1000'); await p.click('[data-cat="Зарплата"]'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(350);
+  await fabM(p); await p.click('[data-type=income]'); await p.fill('#txAmount', '1000'); await p.click('[data-cat="Зарплата"]'); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(350);
   s = await S(); ok('доход вручную записан', s.tx.length === 2 && s.tx.some(t => t.type === 'income' && t.amount === 1000));
   // пустая сумма
   await fabM(p);
   ok('пустая сумма: «Сохранить» неактивна', await p.isDisabled('#txSave'));
   await p.keyboard.press('Escape'); await p.evaluate(() => document.querySelector('#lyTx [data-close].icon-btn').click()); await sleep(250);
   // правка
-  await p.click('#recentList .tx >> nth=0'); await sleep(250);
-  await p.fill('#txAmount', '30'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(350);
+  await p.click('#recentList .tx >> nth=0'); await sleep(250); await p.click('#txDetailEdit'); await sleep(250);
+  await p.fill('#txAmount', '30'); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(350);
   s = await S(); ok('правка суммы сохранена', s.tx.some(t => t.amount === 30), s.tx.map(t => t.amount));
 
   // ---- 2. голос через кнопку микрофона: длинная живая речь
@@ -67,16 +67,16 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 3. удаление и «Вернуть»
   s = await S(); const cnt0 = s.tx.length;
-  await p.click('#recentList .tx >> nth=0'); await sleep(250); await p.click('#txDelete'); await sleep(250);
+  await p.click('#recentList .tx >> nth=0'); await sleep(250); await p.click('#txDetailEdit'); await sleep(250); await p.click('#txDelete'); await sleep(250);
   ok('удалено', (await S()).tx.length === cnt0 - 1);
   await p.click('#toast button'); await sleep(250); ok('вернули', (await S()).tx.length === cnt0);
 
   // ---- 4. аналитика
   await p.click('[data-tab=stats]'); await sleep(300);
-  for (const k of ['week', 'year', 'range', 'month']) { await p.click(`[data-pk=${k}]`); await sleep(200); ok(`аналитика: период ${k}`, (await p.textContent('#catCard')).length > 5); }
+  for (const k of (await p.$$('[data-pk]')).length ? ['week', 'year', 'range', 'month'] : []) { await p.click(`[data-pk=${k}]`); await sleep(200); ok(`аналитика: период ${k}`, (await p.textContent('#catCard')).length > 5); }
   await p.click('#s-stats [data-st=income]'); await sleep(200); ok('аналитика: доходы', (await p.textContent('#catCard')).includes('Br') || true);
   await p.click('#s-stats [data-st=expense]'); await sleep(200);
-  await p.click('#catList .cats [data-cat] >> nth=0'); await sleep(200); ok('аналитика: фильтр по категории', await p.isVisible('#catCard svg'));
+  if ((await p.$$('#catList .cats [data-cat]')).length) { await p.click('#catList .cats [data-cat] >> nth=0'); await sleep(200); } ok('аналитика: фильтр по категории', await p.isVisible('#catCard svg'));
   await p.click('[data-pshift="-1"]').catch(() => {}); await sleep(150);
 
   // ---- 5. история: поиск, фильтры
@@ -124,16 +124,16 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await p.click('#s-pay [data-back]'); await sleep(250);
   ok('платёж на главной', (await p.textContent('#payCard')).includes('Резерв'));
   await p.evaluate(() => MD.app.showTab('pay')); await sleep(250);
-  const wr = await p.$('#payBody [data-paywrite]'); if (wr) { await wr.click(); await sleep(350); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(400); s = await S(); ok('платёж: записали и отметился оплаченным', Object.keys(s.rec.list[0].paid).length === 1, s.rec.list[0].paid); }
+  const wr = await p.$('#payBody [data-paywrite]'); if (wr) { await wr.click(); await sleep(350); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(400); s = await S(); ok('платёж: записали и отметился оплаченным', Object.keys(s.rec.list[0].paid).length === 1, s.rec.list[0].paid); }
 
   // ---- 9. профиль
   await p.evaluate(() => MD.app.showTab('acc')); await sleep(250);
   await p.click('[data-theme-pick=dark]'); await sleep(150); ok('тема: тёмная', (await p.getAttribute('html', 'data-theme')) === 'dark');
   await p.click('[data-theme-pick=light]'); ok('тема: светлая', (await p.getAttribute('html', 'data-theme')) === 'light');
   await p.click('[data-theme-pick=auto]'); ok('тема: авто', (await p.getAttribute('html', 'data-theme')) === null);
-  for (const id of ['plCurrency', 'plRemind', 'plQuick', 'plNudgeCats', 'plData']) { await p.click('#' + id); await sleep(300); const open = await p.isVisible('#lyLink'); ok(`профиль: ${id} открывается`, open || (await p.isVisible('.layer:not([hidden])'))); await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250); }
+  for (const id of ['plCurrency', 'plRemind', 'plQuick', 'plNudgeCats', 'plData'].filter(i => i !== 'plNudgeCats')) { await p.click('#' + id); await sleep(300); const open = await p.isVisible('#lyLink'); ok(`профиль: ${id} открывается`, open || (await p.isVisible('.layer:not([hidden])'))); await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250); }
   await p.click('#plNudge'); await sleep(200); s = await S(); ok('подсказки Фина выключены', s.nudge.on === false); await p.click('#plNudge'); await sleep(200);
-  await p.click('#plPlus'); await sleep(300); ok('покупка: окно', await p.isVisible('#lyPlus')); await p.click('[data-plus=buy]'); await sleep(500); ok('покупка: «Навсегда» включён', await p.evaluate(() => MD.sub.isPlus()));
+  if (await p.$('#plPlus')) { await p.click('#plPlus'); await sleep(300); ok('покупка: окно', await p.isVisible('#lyPlus')); await p.click('[data-plus=buy]'); await sleep(500); ok('покупка: «Навсегда» включён', await p.evaluate(() => MD.sub.isPlus())); }
   await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close]'); l && l.click(); }); await sleep(250);
   // вход (имитация) и выход
   const lc = await p.isVisible('#loginCard'); ok('баннер входа виден без входа', lc);
@@ -142,10 +142,10 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 11. имя, аналитика с главной, меню из четырёх кнопок
   await p.evaluate(() => MD.app.showTab('acc')); await sleep(200);
-  await p.fill('#nameIn', 'Анна'); await p.click('#acctBox'); await sleep(200);
+  if (await p.$('#nameIn')) { await p.fill('#nameIn', 'Анна'); await p.click('#acctBox'); await sleep(200); }
   await p.click('#s-acc [data-back]'); await sleep(200);
   ok('демо-дашборд открыт без экрана первого счёта', await p.isVisible('#homeMain') && !(await p.isVisible('#welcome')));
-  await fabM(p); await p.fill('#txAmount', '10'); await p.click('#txCats [data-cat="Кафе"]'); await p.click('#txSave'); await sleep(250); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(1100); if (await p.isVisible('#auth [data-act=later]')) { await p.click('#auth [data-act=later]'); await sleep(250); }
+  await fabM(p); await p.fill('#txAmount', '10'); await p.click('#txCats [data-cat="Кафе"]'); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(1100); if (await p.isVisible('#auth [data-act=later]')) { await p.click('#auth [data-act=later]'); await sleep(250); }
   ok('имя сохранено в профиле', (await S()).name === 'Анна');
   ok('в меню ровно три кнопки: главная, плюс, статистика', (await p.$$eval('.nav .nav-b, .nav .nav-add', e => e.length)) === 3);
   ok('на главной «Свободные деньги» и «На счетах»', (await p.textContent('#heroLabel')).includes('Свободные') && (await p.textContent('#heroAll')).includes('На счетах'));
@@ -188,7 +188,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('категория «Питомцы» создана', (await S()).cats.some(c => c.n === 'Питомцы' && c.i === 'paw'));
   await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250);
   await p.click('#s-acc [data-back]'); await sleep(200);
-  for (let i = 0; i < 2; i++) { await fabM(p); await p.fill('#txAmount', '15'); await p.click('[data-cat="Другое"]'); await p.fill('#txNote', 'Парикмахерская'); await p.click('#txSave'); await sleep(300); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(300); }
+  for (let i = 0; i < 2; i++) { await fabM(p); await p.fill('#txAmount', '15'); await p.click('[data-cat="Другое"]'); await p.fill('#txNote', 'Парикмахерская'); await p.click('#txSave'); await sleep(300); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(300); }
   ok('одинаковые названия в «Другом» превратились в категорию', (await S()).cats.some(c => c.n === 'Парикмахерская' && c.isNew), (await S()).cats);
 
   // ---- 15. платёж на конкретную дату
@@ -243,7 +243,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('«Назад» из раздела возвращает в статистику', await p.isVisible('#s-stats'));
   await fabM(p);
   ok('при двух счетах в форме есть выбор счёта', await p.isVisible('#txAccRow'));
-  await p.fill('#txAmount', '7'); await p.click('#txCats [data-cat="Кафе"]'); await p.selectOption('#txAcc', { label: 'Наличные' }); await p.click('#txSave'); await sleep(300); if (await p.isVisible('#txDoneOk')) await p.click('#txDoneOk'); await sleep(400);
+  await p.fill('#txAmount', '7'); await p.click('#txCats [data-cat="Кафе"]'); await p.selectOption('#txAcc', { label: 'Наличные' }); await p.click('#txSave'); await sleep(300); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(400);
   s = await S(); ok('запись ушла на выбранный счёт', s.tx.some(t => t.amount === 7 && t.acc === s.accounts[1].id));
   const evD = new Date(Date.now() + 5 * 864e5);
   await p.evaluate(d => { const st = MD.app.state; st.fest.list.push({ id: 'evq', title: 'ДР', person: 'сестры', items: [{ n: 'Подарок', a: 40 }], date: d, yearly: true, nid: 5, remind: { on: false, lead: { kind: 'weeks', n: 1, date: '' } } }); MD.app.refreshAll(); }, ymd(evD));

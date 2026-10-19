@@ -71,7 +71,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('«Всё верно?»: две строки', (await page.$$eval('#draftList .dr', e => e.length)) === 2);
   await page.click('#draftList [data-edit="1"]'); await sleep(350);
   ok('правка строки: открыто одно окно (не поверх другого)', (await openLayers()) === 1 && await vis('#lyTx'));
-  await page.fill('#txAmount', '7'); await page.click('#txSave'); await sleep(250); if (await page.isVisible('#txDoneOk')) await page.click('#txDoneOk'); await sleep(350);
+  await page.fill('#txAmount', '7'); await page.click('#txSave'); await sleep(250); await page.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(350);
   ok('после правки вернулись в «Всё верно?»', await vis('#lyDraft') && (await page.textContent('#draftList')).includes('7,00'));
   await page.click('#draftOk'); await sleep(300);
   ok('сохранено: тост «Записано: 2»', (await page.textContent('#toast')).includes('Записано: 2'));
@@ -81,7 +81,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 4. удаление с возвратом ≥ 5 секунд
   await sleep(4200);
-  await page.click('#recentList .tx >> nth=0'); await sleep(250);
+  await page.click('#recentList .tx >> nth=0'); await sleep(250); await page.click('#txDetailEdit'); await sleep(250);
   await page.click('#txDelete'); await sleep(250);
   ok('удалено: тост «Отмена»', (await page.textContent('#toast')).includes('Отмена'));
   ok('удаление: окно закрыто, диалогов нет', (await openLayers()) === 0);
@@ -89,7 +89,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('«Отмена» живёт больше 5 секунд', await vis('#toast'));
   await sleep(1600);
   ok('и пропадает', !(await vis('#toast')));
-  await page.click('#recentList .tx >> nth=0');   // восстановим сценарий: удалим и вернём
+  await page.click('#recentList .tx >> nth=0'); await sleep(250); await page.click('#txDetailEdit'); await sleep(250);   // восстановим сценарий: удалим и вернём
   await sleep(200); await page.click('#txDelete'); await sleep(200);
   const before = await page.$$eval('#recentList .tx', e => e.length);
   await page.click('#toast button'); await sleep(250);
@@ -98,7 +98,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   // ---- 5. обязательные платежи: три тапа
   await page.evaluate(() => MD.app.showTab('acc')); await sleep(150);
   await page.evaluate(() => MD.app.showTab('pay')); await sleep(200);
-  ok('экран платежей пуст с призывом', (await page.textContent('#payBody')).includes('Пока пусто') && await vis('#payBody [data-newpay]'));
+  ok('экран платежей пуст с призывом', (await page.textContent('#payBody')).includes('Пока пусто') && await vis('#s-pay [data-newpay]'));
   await page.click('[data-newpay] >> nth=0');            // тап 1
   await sleep(200);
   await page.click('[data-pp="Аренда"]');                // тап 2
@@ -118,7 +118,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await page.click('#s-pay [data-back]'); await sleep(100);
   await fabM(page);
   await page.fill('#txAmount', '500'); await page.click('[data-cat="Дом"]');
-  await page.click('#dToday'); await page.click('#txSave'); await sleep(250); if (await page.isVisible('#txDoneOk')) await page.click('#txDoneOk'); await sleep(300);
+  await page.click('#dToday'); await page.click('#txSave'); await sleep(250); await page.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(300);
   const t = await page.textContent('#toast');
   ok('Фин предлагает отметить оплату аренды', /Это оплата «Аренда»\?/.test(t) && t.includes('Отметить'), t);
   await page.click('#toast button'); await sleep(250);
