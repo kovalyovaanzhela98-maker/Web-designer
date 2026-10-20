@@ -62,7 +62,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   // вход через Google с данными гостя: ничего не теряем
   await page.evaluate(() => MD.app.showTab('acc')); await page.click('#loginCard'); await sleep(150);
   await page.click('#auth [data-act=google]'); await sleep(900);
-  await page.click('#s-acc [data-back]'); await sleep(200);
+  await page.click('[data-tab=home]'); await sleep(200);
   ok('после входа данные гостя на месте', (await page.textContent('#recentList')).includes('Транспорт'));
 
   // ---- 3. быстрая запись: «Всё верно?»
@@ -81,7 +81,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 4. удаление с возвратом ≥ 5 секунд
   await sleep(4200);
-  await page.click('#recentList .tx >> nth=0'); await sleep(250); await page.click('#txDetailEdit'); await sleep(250);
+  await page.click('#recentList [data-tx] >> nth=0'); await sleep(250); await page.click('#txDetailEdit'); await sleep(250);
   await page.click('#txDelete'); await sleep(250);
   ok('удалено: тост «Отмена»', (await page.textContent('#toast')).includes('Отмена'));
   ok('удаление: окно закрыто, диалогов нет', (await openLayers()) === 0);
@@ -89,11 +89,11 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('«Отмена» живёт больше 5 секунд', await vis('#toast'));
   await sleep(1600);
   ok('и пропадает', !(await vis('#toast')));
-  await page.click('#recentList .tx >> nth=0'); await sleep(250); await page.click('#txDetailEdit'); await sleep(250);   // восстановим сценарий: удалим и вернём
+  await page.click('#recentList [data-tx] >> nth=0'); await sleep(250); await page.click('#txDetailEdit'); await sleep(250);   // восстановим сценарий: удалим и вернём
   await sleep(200); await page.click('#txDelete'); await sleep(200);
-  const before = await page.$$eval('#recentList .tx', e => e.length);
+  const before = await page.$$eval('#recentList [data-tx]', e => e.length);
   await page.click('#toast button'); await sleep(250);
-  ok('«Отмена» возвращает запись', (await page.$$eval('#recentList .tx', e => e.length)) === before + 1);
+  ok('«Отмена» возвращает запись', (await page.$$eval('#recentList [data-tx]', e => e.length)) === before + 1);
 
   // ---- 5. обязательные платежи: три тапа
   await page.evaluate(() => MD.app.showTab('acc')); await sleep(150);

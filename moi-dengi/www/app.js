@@ -274,7 +274,7 @@ function render() {
 }
 
 function renderMonthBars() {
-  const html = `<div class="monthbar"><button class="mb" data-mshift="-1" aria-label="Предыдущий месяц">${icon('left')}</button><button class="mlabel" data-mnow aria-label="Показан ${MONTHS[ym.m]} ${ym.y}. Нажми, чтобы вернуться к текущему месяцу">${MONTHS[ym.m]} ${ym.y}</button><button class="mb" data-mshift="1" aria-label="Следующий месяц">${icon('right')}</button></div>`;
+  const html = `<div class="period monthbar"><button class="mb" data-mshift="-1" aria-label="Предыдущий месяц">${icon('left')}</button><b class="mlabel" data-mnow role="button" tabindex="0" aria-label="Показан ${MONTHS[ym.m]} ${ym.y}. Нажми, чтобы вернуться к текущему месяцу">${MONTHS[ym.m]} ${ym.y}</b><button class="mb" data-mshift="1" aria-label="Следующий месяц">${icon('right')}</button></div>`;
   $$('.monthbar-slot').forEach(s => { s.innerHTML = html; });
 }
 
@@ -506,11 +506,13 @@ function dayTitle(s) {
 
 function txRow(t, useHomeIcon = false) {
   const ci = catInfo(t.type, t.cat), on = sel.on && sel.ids.has(t.id);
-  return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="swipe-bg" aria-hidden="true">${icon('trash')}<span>Удалить</span></div>
-    <div class="tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(t.type === 'income' ? '+' : '−')}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}. Нажми, чтобы посмотреть детали">
-      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<div class="tx-ic" aria-hidden="true">${categoryIcon(ci)}</div>
-      <div class="tx-body"><div class="tx-t">${esc(t.cat === 'Другое' && t.note ? t.note : t.cat)}</div>${t.cat === 'Другое' && t.note ? '<div class="tx-n">Другое</div>' : t.note ? `<div class="tx-n">${esc(t.note)}</div>` : ''}</div>
-      <div class="tx-r"><div class="tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${hide ? MASK : `${t.type === 'income' ? '+' : '−'}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}`}</div></div>
+  const amt = hide ? MASK : `${t.type === 'income' ? '+' : '−'}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}`;
+  const title = t.cat === 'Другое' && t.note ? t.note : t.cat, sub = t.cat === 'Другое' && t.note ? 'Другое' : t.note || '';
+  return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="plate" aria-hidden="true">Удалить</div>
+    <div class="row tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(t.type === 'income' ? '+' : '−')}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}, ${esc(dayShort(t.date))}">
+      ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<span class="rico" aria-hidden="true">${categoryIcon(ci)}</span>
+      <span class="txt"><span class="t1">${esc(title)}</span>${sub ? `<span class="t2" style="display:block">${esc(sub)}</span>` : ''}</span>
+      <span class="amt tx-a ${t.type === 'income' ? 'inc' : 'exp'}">${amt}</span>
     </div></div>`;
 }
 
@@ -574,7 +576,7 @@ function renderPeriodBar(P) {
     el.innerHTML = `<div class="range-row"><label class="field t"><input id="perFrom" type="date" value="${P.f}"><span>С</span></label><label class="field t"><input id="perTo" type="date" value="${P.t}"><span>По</span></label></div>`;
     return;
   }
-  el.innerHTML = `<div class="period-bar"><button class="mb" data-pshift="-1" aria-label="Назад">${icon('left')}</button><button class="pl" data-pnow aria-label="${esc(P.label)}. Нажми, чтобы вернуться к текущему периоду">${esc(P.label)}</button><button class="mb" data-pshift="1" aria-label="Вперёд">${icon('right')}</button></div>`;
+  el.innerHTML = `<div class="period period-bar"><button class="mb" data-pshift="-1" aria-label="Назад">${icon('left')}</button><b class="pl" data-pnow role="button" tabindex="0" aria-label="${esc(P.label)}. Нажми, чтобы вернуться к текущему периоду">${esc(P.label)}</b><button class="mb" data-pshift="1" aria-label="Вперёд">${icon('right')}</button></div>`;
 }
 let chartScrub = null;
 function renderStats() {
@@ -677,7 +679,7 @@ function renderStats() {
 
 /* ---------- Вкладки ---------- */
 let tabPushed = false, payFrom = 'acc', base = 'home';
-const MAIN_TABS = ['home', 'ops', 'stats'];
+const MAIN_TABS = ['home', 'stats', 'accounts', 'acc'];
 function showTab(name, fromPop) {
   if (MAIN_TABS.includes(name)) base = name;
   if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
@@ -685,7 +687,7 @@ function showTab(name, fromPop) {
   document.body.classList.toggle('nav-hidden', !MAIN_TABS.includes(name));
   $$('.screen').forEach(s => { s.hidden = s.dataset.screen !== name; });
   const navName = MAIN_TABS.includes(name) ? name : base;
-  $$('.nav-b').forEach(b => { const on = b.dataset.tab === navName; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); const i = $('i[data-ic]', b); if (i) i.innerHTML = icon(i.dataset.ic); });
+  $$('.nav-item').forEach(b => { const on = b.dataset.tab === navName; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
   if (!fromPop) {
     if (name !== 'home' && !tabPushed) { history.pushState({ tab: 1 }, ''); tabPushed = true; }
     else if (name === 'home' && tabPushed) { ignorePops++; history.back(); tabPushed = false; }
@@ -738,7 +740,7 @@ function shiftMonth(d) { if (tab === 'stats') { shiftPeriod(d); return; } const 
   document.addEventListener('pointermove', e => { if (down) upd(e); });
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
-$$('.nav-b').forEach(b => b.addEventListener('click', () => { buzz(8); showTab(b.dataset.tab); }));
+$$('.nav-item').forEach(b => b.addEventListener('click', () => { buzz(8); showTab(b.dataset.tab); }));
 document.addEventListener('click', e => {
   if (e.target.closest('[data-back]')) { showTab(base); return; }
   if (e.target.closest('.h-free') && !e.target.closest('[data-go]')) { showTab('stats'); return; }

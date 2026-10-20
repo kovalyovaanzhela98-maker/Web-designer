@@ -10,6 +10,9 @@
 <script>document.documentElement.setAttribute("data-theme","dark");try{localStorage.removeItem("fin_theme")}catch(e){}</script>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="buttons.css">
+<link rel="stylesheet" href="skin.css">
+<link rel="stylesheet" href="nav.css">
 </head>
 <body>
 <div class="splash" id="splash" role="status" aria-label="Загрузка приложения">
@@ -116,7 +119,7 @@
       <div class="chat-quick" id="chatQuick"></div>
       <form class="chat-bar" id="chatForm" autocomplete="off">
         <button type="button" class="cb-btn" id="chatAttach" aria-label="Прикрепить чек или выписку"><i data-ic="clip"></i></button>
-        <textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси Фина" aria-label="Сообщение помощнику"></textarea>
+        <div class="cfield"><textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси Фина" aria-label="Сообщение помощнику"></textarea></div>
         <button type="button" class="cb-mic" id="chatMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
         <button type="submit" class="cb-send" id="chatSend" aria-label="Отправить" hidden><i data-ic="send"></i></button>
       </form>
@@ -195,13 +198,13 @@
   </section>
 </div>
 
-<nav class="nav" aria-label="Разделы">
-  <button class="nav-b" data-tab="home" aria-current="page"><span class="np"><i data-home-icon="home"></i></span><span class="nl">Главная</span></button>
-  <button class="nav-b" data-tab="ops"><span class="np"><i data-home-icon="document"></i></span><span class="nl">Операции</span></button>
-  <button class="nav-b" data-tab="stats"><span class="np"><i data-home-icon="chart"></i></span><span class="nl">Аналитика</span></button>
-  <button class="nav-b" data-tab="acc"><span class="np"><i data-home-icon="profile"></i></span><span class="nl">Профиль</span></button>
+<nav class="bottom-nav" aria-label="Разделы">
+  <button class="nav-item active" type="button" data-tab="home" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></button>
+  <button class="nav-item" type="button" data-tab="stats" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V12M10 19V5M15 19V9M20 19V3"/></svg><span>Анализ</span></button>
+  <button class="add-button" id="fab" type="button" aria-label="Добавить запись" aria-pressed="false"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="add-label">Добавить</span></button>
+  <button class="nav-item" type="button" data-tab="accounts" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 15h3"/></svg><span>Счета</span></button>
+  <button class="nav-item" type="button" data-tab="acc" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2z"/></svg><span>Профиль</span></button>
 </nav>
-<button class="nav-add" id="fab" aria-label="Добавить запись"><i data-home-icon="add"></i></button>
 <aside class="first-tx-coach" id="firstTxCoach" role="status" aria-live="polite" hidden>
   <span class="first-tx-coach-ico" aria-hidden="true"><i data-home-icon="document"></i></span>
   <span><b>Отлично, счёт готов</b><small>Нажмите «+», чтобы записать первую трату</small></span>
@@ -516,6 +519,7 @@
 <script src="capacitor.js"></script>
 <script src="cloud-config.js"></script>
 <script src="js/icons.js"></script>
+<script src="js/skin.js"></script>
 <script src="js/mascot.js"></script>
 <script src="js/categories.js"></script>
 <script src="js/parser.js"></script>

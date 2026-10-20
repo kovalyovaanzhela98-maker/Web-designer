@@ -1,0 +1,39 @@
+/* Раскладка приложения вокруг кнопок из buttons.css (сами значения кнопок не менялись) */
+.row .txt{flex:1;min-width:0}
+.hdr--main{padding:0 6px;height:auto;min-height:52px}
+.hdr .ttl{flex:1;text-align:center}
+.hdr--main .ttl{font-size:28px;font-weight:700;flex:none;text-align:left}
+#s-accounts .hdr .back,#s-acc .hdr .back{display:none}
+.hdr:has(.back):not(:has(.act)) .ttl{margin-right:76px}
+.screen>.hdr{margin-bottom:8px}
+.list+.list,.grp-t+.list{margin-top:0}
+.grp-t{margin:20px 16px 8px}
+.row .chev svg,.row .val svg{width:18px;height:18px}
+.tt-dates .date-row{display:grid}
+#s-accounts .hdr .ttl,#s-acc .hdr .ttl{text-align:left;flex:none;font-size:28px;font-weight:700;margin:0}
+.bottom-nav{z-index:30}
+.cfield textarea{flex:1;width:100%;background:transparent;border:0;outline:0;color:var(--b-c-text);font:inherit;resize:none;padding:10px 0;max-height:120px}
+.swipe .row.tx{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.swipe .row .t1,.swipe .row .t2{display:block}
+.row .tx-a.inc{color:var(--positive)}
+.sel-box{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--b-muted);flex:none;display:grid;place-items:center;color:#fff}
+.swipe.picked .sel-box{background:#3D2CFF;border-color:#3D2CFF}
+.sel-box svg{width:14px;height:14px}
+
+.date-row .pick-hidden{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.stats-view-tabs button{font-size:13px;padding:0 4px}
+.swipe .plate{opacity:0;transition:opacity .12s ease-out}
+.swipe.dragging .plate{opacity:1}
+.day,.recent{background:none;border:0;box-shadow:none;padding:0}
+.day-h{padding:12px 4px 6px}
+#accountsBody{display:flex;flex-direction:column;gap:12px}
+#s-accounts .hdr,#s-acc .hdr{margin-bottom:12px}
+#goalsBody,#payBody,#eventsBody{display:flex;flex-direction:column;gap:12px}
+.chat-quick{display:flex;gap:8px;overflow-x:auto}
+.chat-quick .chip{flex:none}
+.tour-btns .btn{min-height:44px}
+.btn.wide{width:100%}
+.sheet-head{position:relative;display:flex;justify-content:center;align-items:center;min-height:44px}
+.sheet-head .close{position:absolute;right:-6px;top:50%;transform:translateY(-50%)}
+.sheet-head h2,.sheet-head .sheet-title{margin:0}
+.g-h span,.goal-pct{color:var(--accent-t)!important}

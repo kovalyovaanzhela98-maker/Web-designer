@@ -1,0 +1,176 @@
+/* Кнопки приложения: файл fintech-buttons.css без изменений значений. Правки только в именах: переменные с префиксом --b-, поле ввода чата .cfield. */
+/* ==========================================================================
+   Fintech Buttons — Glass + Neumorphism (dark)
+   Все кнопки, кроме нижнего меню (01).  Фон приложения: ~#10132A
+   --------------------------------------------------------------------------
+   Классы:
+   .btn.btn--primary | --secondary | --outline | --fab | --danger | --text
+   .btn--block (на всю ширину)          состояния: :hover :active :disabled
+   .hdr .back/.act   шапка              .close > i   закрытие шторки
+   .seg(.seg--sm) > button[aria-pressed]   табы-переключатели
+   .chips(.cgrid) > .chip[aria-pressed]    чипы
+   .list > .row (.rico .tx .t1 .t2 .val .chev)   строки-кнопки
+   .sw[role=switch][aria-checked]        тумблер
+   .period > button | b | button         навигация по времени
+   .composer > .rnd(.rnd--accent) + .field   строка ввода чата
+   .swipe > .plate + .row                плашка «Удалить» при жесте
+   ========================================================================== */
+
+:root{
+  /* цвета */
+  --b-c-blue:#2878FF; --b-c-violet:#5945F5; --b-c-cyan:#39C5F6;
+  --b-accent:#4C6FFF; --b-accent-soft:rgba(76,111,255,.16); --b-accent-text:#8FA4FF;
+  --b-c-text:#F4F6FF; --b-c-text-dim:#B9C0DA; --b-muted:#8A93B5;
+  --b-danger:#FF6B7A; --b-danger-fill:#E5384D;
+  --b-bg-app:#10132A;
+  /* форма */
+  --b-r-btn:20px; --b-h-btn:52px; --b-px-btn:24px; --b-fs-btn:16px; --b-fw-btn:600;
+  --b-hit:44px; --b-size-fab:56px;
+  /* стекло */
+  --b-glass-bg:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035));
+  --b-glass-bd:rgba(255,255,255,.14); --b-blur:blur(18px) saturate(150%);
+  --b-line:rgba(160,180,255,.12); --b-surface:rgba(255,255,255,.04);
+  /* неоморфизм */
+  --b-nm-dark:rgba(2,4,14,.70); --b-nm-light:rgba(95,110,185,.16);
+  --b-nm-raise:linear-gradient(145deg,#1b2043,#12162d);
+  --b-nm-well:linear-gradient(145deg,#0e1126,#13172f);
+  --b-out-s:6px 6px 14px var(--b-nm-dark), -5px -5px 12px var(--b-nm-light);
+  --b-in-s:inset 4px 4px 9px var(--b-nm-dark), inset -3px -3px 8px var(--b-nm-light);
+  --b-rim:inset 1px 1px 0 rgba(255,255,255,.07);
+  /* движение */
+  --b-t:200ms ease; --b-scale-press:.98;
+}
+
+/* ---------- Base ---------- */
+.btn{
+  position:relative; display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  min-height:var(--b-h-btn); padding:0 var(--b-px-btn); border-radius:var(--b-r-btn);
+  font:var(--b-fw-btn) var(--b-fs-btn)/1 Inter,system-ui,-apple-system,sans-serif; letter-spacing:.005em;
+  color:var(--b-c-text); border:1px solid transparent; cursor:pointer; user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform var(--b-t),filter var(--b-t),background var(--b-t),border-color var(--b-t),box-shadow var(--b-t);
+}
+.btn:focus-visible,.chip:focus-visible,.seg button:focus-visible,.sw:focus-visible,.rnd:focus-visible,.close:focus-visible{outline:2px solid var(--b-c-cyan);outline-offset:3px}
+.btn:active,.btn.is-pressed{transform:scale(var(--b-scale-press))}
+.btn svg{width:20px;height:20px;flex:none}
+.btn--block{display:flex;width:100%}
+
+/* ---------- Primary: глянцевое стекло, один на экран ---------- */
+.btn--primary{
+  border-color:rgba(255,255,255,.30);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.06) 48%,rgba(255,255,255,0) 50%),
+    linear-gradient(120deg,#2E80FF 0%,#4A63F8 50%,#6A4BF7 100%);
+  box-shadow:0 14px 28px -10px rgba(50,110,255,.60),-5px -5px 12px rgba(110,130,255,.10),6px 6px 14px rgba(2,4,14,.55),
+    inset 0 1px 0 rgba(255,255,255,.55),inset 0 -10px 18px rgba(40,20,150,.30);
+}
+.btn--primary:hover,.btn--primary.is-hover{filter:brightness(1.08)}
+.btn--primary:active,.btn--primary.is-pressed{filter:brightness(.92);
+  box-shadow:inset 5px 5px 12px rgba(10,10,80,.55),inset -3px -3px 8px rgba(140,160,255,.25),0 4px 10px -6px rgba(50,110,255,.5)}
+
+/* ---------- Secondary: неоморфная выпуклая ---------- */
+.btn--secondary{
+  border-color:rgba(255,255,255,.05); background:var(--b-nm-raise);
+  box-shadow:var(--b-out-s),var(--b-rim);
+}
+.btn--secondary:hover,.btn--secondary.is-hover{filter:brightness(1.12)}
+.btn--secondary:active,.btn--secondary.is-pressed{filter:none;background:linear-gradient(145deg,#0f1226,#161a35);box-shadow:var(--b-in-s)}
+
+/* ---------- Outline: стеклянный контур ---------- */
+.btn--outline{background:var(--b-glass-bg);border-color:rgba(160,180,255,.35);color:var(--b-accent-text);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.btn--outline:hover,.btn--outline.is-hover{border-color:rgba(170,188,255,.6);color:#B7C4FF}
+.btn--outline:active,.btn--outline.is-pressed{background:rgba(130,150,255,.14);border-color:rgba(170,188,255,.75)}
+
+/* ---------- FAB «+» (одна на приложение, 56px) ---------- */
+.btn--fab{
+  width:var(--b-size-fab);height:var(--b-size-fab);min-height:0;padding:0;border-radius:50%;
+  border-color:rgba(255,255,255,.32);
+  background:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,.04) 50%,rgba(255,255,255,0) 52%),linear-gradient(135deg,#2E80FF,#6A4BF7);
+  box-shadow:0 12px 24px -8px rgba(60,100,255,.65),7px 7px 14px rgba(2,4,14,.55),-4px -4px 10px rgba(110,130,255,.14),
+    inset 0 1px 0 rgba(255,255,255,.6),inset 0 -8px 14px rgba(40,20,150,.3);
+}
+.btn--fab svg{width:24px;height:24px}
+.btn--fab:hover,.btn--fab.is-hover{filter:brightness(1.1)}
+.btn--fab:active,.btn--fab.is-pressed{filter:brightness(.92);box-shadow:inset 4px 4px 10px rgba(10,10,80,.55),inset -3px -3px 7px rgba(140,160,255,.25)}
+
+/* ---------- Деструктивные и текстовые ---------- */
+.btn--danger{background:transparent;color:var(--b-danger);min-height:var(--b-hit);padding:0 16px}
+.btn--danger:hover,.btn--danger.is-hover{background:rgba(255,107,122,.08)}
+.btn--text{background:transparent;color:var(--b-accent-text);min-height:var(--b-hit);padding:0 14px;font-size:15px;border-radius:12px}
+.btn--text:hover{background:rgba(143,164,255,.08)}
+.btn--text.is-muted{color:var(--b-muted)}
+
+/* ---------- Disabled ---------- */
+.btn:disabled,.btn.is-disabled{cursor:not-allowed;box-shadow:none!important;filter:saturate(.25) brightness(.7);transform:none;pointer-events:none;color:rgba(244,246,255,.55)}
+.btn--outline:disabled,.btn--outline.is-disabled,.btn--secondary:disabled,.btn--secondary.is-disabled{filter:none;color:rgba(244,246,255,.35);border-color:rgba(160,180,255,.09)}
+
+/* ---------- Шапка экрана ---------- */
+.hdr{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 6px}
+.hdr .back,.hdr .act{display:inline-flex;align-items:center;gap:6px;min-height:var(--b-hit);padding:0 12px;color:var(--b-accent-text);font:600 16px Inter,system-ui,sans-serif;background:none;border:0;border-radius:12px;cursor:pointer}
+.hdr .back{gap:2px;padding:0 10px}.hdr .act:hover,.hdr .back:hover{background:rgba(143,164,255,.08)}
+.hdr svg{width:20px;height:20px}
+.hdr .ttl{font:600 17px Inter,system-ui,sans-serif;color:var(--b-c-text)}
+
+/* ---------- Закрыть (шторка): зона 44px, кружок 32px ---------- */
+.close{position:relative;width:var(--b-hit);height:var(--b-hit);display:inline-grid;place-items:center;background:none;border:0;padding:0;cursor:pointer}
+.close i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#C9D0EA;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.07));border:1px solid rgba(255,255,255,.14);
+  box-shadow:3px 3px 8px rgba(2,4,14,.55),-2px -2px 6px rgba(110,125,200,.12),inset 0 1px 0 rgba(255,255,255,.3);backdrop-filter:blur(8px)}
+.close svg{width:16px;height:16px}
+
+/* ---------- Табы-переключатели (вдавленная плашка + стеклянный сегмент) ---------- */
+.seg{display:flex;gap:2px;padding:3px;border-radius:16px;background:var(--b-nm-well);box-shadow:var(--b-in-s);width:100%}
+.seg button{flex:1;position:relative;min-height:44px;border:0;border-radius:13px;background:transparent;color:var(--b-c-text-dim);font:600 14px Inter,system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:background var(--b-t),color var(--b-t),box-shadow var(--b-t)}
+.seg button[aria-pressed="true"]{color:#fff;border:1px solid rgba(255,255,255,.10);
+  background:linear-gradient(145deg,rgba(255,255,255,.24),rgba(255,255,255,.08));
+  box-shadow:3px 3px 8px rgba(2,4,14,.6),-2px -2px 6px rgba(110,125,200,.14),inset 0 1px 0 rgba(255,255,255,.32)}
+.seg--sm{padding:2px;border-radius:12px}                               /* компактный: валюта */
+.seg--sm button{min-height:30px;font-size:12.5px;border-radius:10px}
+.seg--sm button::after{content:"";position:absolute;inset:-7px 0}      /* зона нажатия 44px */
+
+/* ---------- Чипы ---------- */
+.chips{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px}
+.chips.cgrid{grid-auto-flow:row;grid-auto-columns:unset;grid-template-columns:repeat(var(--b-n,3),1fr)}
+.chip{min-height:40px;padding:0 10px;border-radius:12px;border:1px solid rgba(255,255,255,.05);background:var(--b-nm-raise);box-shadow:var(--b-out-s),var(--b-rim);
+  color:var(--b-c-text-dim);font:600 13.5px Inter,system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:background var(--b-t),color var(--b-t),box-shadow var(--b-t)}
+.chip[aria-pressed="true"]{color:#fff;border-color:rgba(255,255,255,.28);
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%),linear-gradient(135deg,#3C78FF,#5A4DF5);
+  box-shadow:0 8px 16px -8px rgba(60,110,255,.7),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -6px 10px rgba(40,20,150,.25)}
+
+/* ---------- Строки-кнопки ---------- */
+.list{border-radius:20px;background:var(--b-glass-bg);backdrop-filter:var(--b-blur);-webkit-backdrop-filter:var(--b-blur);border:1px solid var(--b-glass-bd);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);overflow:hidden}
+.row{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 16px;width:100%;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.07);color:var(--b-c-text);text-align:left;font-family:Inter,system-ui,sans-serif;cursor:pointer;transition:background var(--b-t)}
+.row:last-child{border-bottom:0}.row:hover{background:rgba(255,255,255,.03)}.row.compact{min-height:56px}
+.row .rico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;color:var(--b-accent-text);
+  background:linear-gradient(145deg,#1d2245,#12162f);box-shadow:4px 4px 9px var(--b-nm-dark),-3px -3px 7px var(--b-nm-light),inset 1px 1px 0 rgba(255,255,255,.08)}
+.row .rico svg{width:20px;height:20px}
+.row .tx{flex:1;min-width:0}.row .t1{font-weight:600;font-size:15px}.row .t2{font-size:13px;color:var(--b-muted);margin-top:3px}
+.row .val{color:var(--b-c-text-dim);font-size:14px}.row .amt{font-weight:600;font-size:15px}
+.row .chev{width:18px;height:18px;color:#5E6788;flex:none}   /* только если ведёт на новый экран */
+
+/* ---------- Тумблер ---------- */
+.sw{position:relative;width:52px;height:32px;border-radius:16px;border:0;padding:0;flex:none;cursor:pointer;background:var(--b-nm-well);box-shadow:var(--b-in-s);transition:background var(--b-t)}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,#f4f6ff,#b9c2e6);box-shadow:3px 3px 6px rgba(2,4,14,.6),-1px -1px 3px rgba(255,255,255,.2);transition:transform var(--b-t)}
+.sw[aria-checked="true"]{background:linear-gradient(135deg,#2E6BFF,#5A45F0);box-shadow:inset 3px 3px 8px rgba(10,10,80,.55),inset -2px -2px 6px rgba(140,160,255,.3)}
+.sw[aria-checked="true"]::after{transform:translateX(20px)}
+
+/* ---------- Навигация по времени ---------- */
+.period{display:grid;grid-template-columns:var(--b-hit) 1fr var(--b-hit);align-items:center}
+.period button{width:var(--b-hit);height:var(--b-hit);display:grid;place-items:center;border:0;border-radius:12px;color:var(--b-accent-text);cursor:pointer;background:var(--b-nm-raise);box-shadow:var(--b-out-s),var(--b-rim)}
+.period button:active{box-shadow:var(--b-in-s)}.period button:disabled{color:#454c68;box-shadow:none;background:transparent}
+.period b{text-align:center;font:600 16px Inter,system-ui,sans-serif}.period svg{width:22px;height:22px}
+
+/* ---------- Строка ввода в чате ---------- */
+.composer{display:flex;align-items:center;gap:8px}
+.rnd{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;cursor:pointer;color:var(--b-c-text-dim);border:1px solid rgba(255,255,255,.05);background:var(--b-nm-raise);box-shadow:var(--b-out-s),var(--b-rim)}
+.rnd:active{box-shadow:var(--b-in-s)}.rnd svg{width:20px;height:20px}
+.rnd--accent{color:#fff;border-color:rgba(255,255,255,.3);background:linear-gradient(180deg,rgba(255,255,255,.36),rgba(255,255,255,0) 52%),linear-gradient(135deg,#2E80FF,#6A4BF7);box-shadow:0 8px 16px -6px rgba(60,100,255,.65),inset 0 1px 0 rgba(255,255,255,.55)}
+.cfield{flex:1;min-height:44px;border-radius:22px;display:flex;align-items:center;padding:0 16px;color:#6F78A0;font-size:15px;background:var(--b-nm-well);box-shadow:var(--b-in-s)}
+
+/* ---------- Смахивание в списке (красная плашка только при жесте) ---------- */
+.swipe{position:relative;overflow:hidden;border-radius:20px}
+.swipe .plate{position:absolute;right:0;top:0;bottom:0;width:96px;background:var(--b-danger-fill);color:#fff;display:grid;place-items:center;font:600 15px Inter,system-ui,sans-serif}
+.swipe .row{position:relative;background:#181c3a;border-radius:20px 0 0 20px;margin-right:0;width:100%;transition:width var(--b-t)}
+.swipe.is-open .row{width:calc(100% - 96px);margin-right:96px}   /* включайте класс .is-open по жесту */
+
+@media (prefers-reduced-motion:reduce){.btn,.chip,.seg button,.sw,.sw::after,.row{transition:none}}

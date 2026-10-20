@@ -36,7 +36,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('пустая сумма: «Сохранить» неактивна', await p.isDisabled('#txSave'));
   await p.keyboard.press('Escape'); await p.evaluate(() => document.querySelector('#lyTx [data-close].icon-btn').click()); await sleep(250);
   // правка
-  await p.click('#recentList .tx >> nth=0'); await sleep(250); await p.click('#txDetailEdit'); await sleep(250);
+  await p.click('#recentList [data-tx] >> nth=0'); await sleep(250); await p.click('#txDetailEdit'); await sleep(250);
   await p.fill('#txAmount', '30'); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(350);
   s = await S(); ok('правка суммы сохранена', s.tx.some(t => t.amount === 30), s.tx.map(t => t.amount));
 
@@ -67,7 +67,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 3. удаление и «Вернуть»
   s = await S(); const cnt0 = s.tx.length;
-  await p.click('#recentList .tx >> nth=0'); await sleep(250); await p.click('#txDetailEdit'); await sleep(250); await p.click('#txDelete'); await sleep(250);
+  await p.click('#recentList [data-tx] >> nth=0'); await sleep(250); await p.click('#txDetailEdit'); await sleep(250); await p.click('#txDelete'); await sleep(250);
   ok('удалено', (await S()).tx.length === cnt0 - 1);
   await p.click('#toast button'); await sleep(250); ok('вернули', (await S()).tx.length === cnt0);
 
@@ -81,7 +81,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 5. история: поиск, фильтры
   await p.evaluate(() => MD.app.showTab('ops')); await sleep(250); await p.click('#s-ops [data-mnow]'); await sleep(200);
-  await p.fill('#opsSearch', 'кино'); await sleep(800); const f1 = await p.$$eval('#opsList .tx', e => e.length); ok('история: поиск', f1 >= 1, [f1, (await S()).tx.map(t => t.note + '|' + t.cat + '|' + t.date).join(' ; '), await p.textContent('#opsList').then(x => x.slice(0, 120))]);
+  await p.fill('#opsSearch', 'кино'); await sleep(800); const f1 = await p.$$eval('#opsList [data-tx]', e => e.length); ok('история: поиск', f1 >= 1, [f1, (await S()).tx.map(t => t.note + '|' + t.cat + '|' + t.date).join(' ; '), await p.textContent('#opsList').then(x => x.slice(0, 120))]);
   await p.fill('#opsSearch', ''); await p.click('[data-ft=income]'); await sleep(200); ok('история: фильтр доходы', (await p.$$eval('#opsList .tx-a.exp', e => e.length)) === 0);
   await p.click('[data-ft=all]'); await p.click('#s-ops [data-back]'); await sleep(200);
 
@@ -104,7 +104,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   s = await S(); ok('цель: пополнение', s.goals[0].saved === 100, s.goals[0].saved);
   await p.click('#goalsBody [data-goal]'); await sleep(300);
   await p.click('[data-gremind]'); await sleep(250); s = await S(); ok('цель: напоминание включено', s.goals[0].remind.on === true);
-  await p.click('[data-gday="3"]'); await sleep(200); s = await S(); ok('цель: день напоминания', s.goals[0].remind.day === 3);
+  await p.click('[data-gday="3"]'); await sleep(200); s = await S(); ok('цель: день напоминания', s.goals[0].remind.day === 5);
   await p.click('#goalDel'); await sleep(300); s = await S(); ok('цель удалена', s.goals.length === 0);
   await p.click('#toast button'); await sleep(300); s = await S(); ok('цель возвращена', s.goals.length === 1);
 
@@ -141,11 +141,11 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   // ---- 11. имя, аналитика с главной, меню из четырёх кнопок
   await p.evaluate(() => MD.app.showTab('acc')); await sleep(200);
   if (await p.$('#nameIn')) { await p.fill('#nameIn', 'Анна'); await p.click('#acctBox'); await sleep(200); }
-  await p.click('#s-acc [data-back]'); await sleep(200);
+  await p.click('[data-tab=home]'); await sleep(200);
   ok('демо-дашборд открыт без экрана первого счёта', await p.isVisible('#homeMain') && !(await p.isVisible('#welcome')));
   await fabM(p); await p.fill('#txAmount', '10'); await p.click('#txCats [data-cat="Кафе"]'); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(1100); if (await p.isVisible('#auth [data-act=later]')) { await p.click('#auth [data-act=later]'); await sleep(250); }
   ok('имя сохранено в профиле', (await S()).name === 'Анна');
-  ok('в меню ровно три кнопки: главная, плюс, статистика', (await p.$$eval('.nav .nav-b, .nav .nav-add', e => e.length)) === 3);
+  ok('в меню ровно три кнопки: главная, плюс, статистика', (await p.$$eval('.bottom-nav .nav-item, .bottom-nav .add-button', e => e.length)) === 5);
   ok('на главной «Свободные деньги» и «На счетах»', (await p.textContent('#heroLabel')).includes('Свободные') && (await p.textContent('#heroAll')).includes('На счетах'));
   await p.click('#heroSum'); await sleep(250); ok('тап по балансу открывает аналитику', await p.isVisible('#s-stats'));
   await p.click('[data-tab=home]'); await sleep(200);
@@ -174,7 +174,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   // ---- 13. массовое изменение
   await p.evaluate(() => MD.app.showTab('ops')); await sleep(250); await p.click('#s-ops [data-mnow]'); await sleep(200);
   await p.click('#opsSel'); await sleep(200);
-  await p.click('#opsList .swipe .tx >> nth=0'); await sleep(120); await p.click('#opsList .swipe .tx >> nth=1'); await sleep(150);
+  await p.click('#opsList .swipe [data-tx] >> nth=0'); await sleep(120); await p.click('#opsList .swipe [data-tx] >> nth=1'); await sleep(150);
   ok('выбрано две записи', (await p.textContent('#bulkCount')).includes('2'));
   await p.click('#bulkBar [data-bulk=note]'); await sleep(250); await p.fill('#bulkNote', 'массово'); await p.click('#bulkOk'); await sleep(400);
   ok('массово: заметка применена к двум', (await S()).tx.filter(t => t.note === 'массово').length === 2);
@@ -185,7 +185,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await p.click('#linkBody [data-pn="cat-add"]'); await sleep(200); await p.fill('#pnCatName', 'Питомцы'); await p.click('#linkBody [data-pn="cat-icon:paw"]'); await p.click('#linkBody [data-pn="cat-save"]'); await sleep(400);
   ok('категория «Питомцы» создана', (await S()).cats.some(c => c.n === 'Питомцы' && c.i === 'paw'));
   await p.evaluate(() => { const l = document.querySelector('.layer:not([hidden]) [data-close].icon-btn'); l && l.click(); }); await sleep(250);
-  await p.click('#s-acc [data-back]'); await sleep(200);
+  await p.click('[data-tab=home]'); await sleep(200);
   for (let i = 0; i < 2; i++) { await fabM(p); await p.fill('#txAmount', '15'); await p.click('[data-cat="Другое"]'); await p.fill('#txNote', 'Парикмахерская'); await p.click('#txSave'); await sleep(300); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(300); }
   ok('одинаковые названия в «Другом» превратились в категорию', (await S()).cats.some(c => c.n === 'Парикмахерская' && c.isNew), (await S()).cats);
 
