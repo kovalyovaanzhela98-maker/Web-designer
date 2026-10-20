@@ -52,3 +52,18 @@
 #opsList{display:flex;flex-direction:column;gap:12px}
 .day .swipe+.swipe,.recent .swipe+.swipe{margin-top:8px}
 .day-h{padding:4px 4px 8px!important}
+
+/* Иконки категорий: цветные плитки; подложки у контейнеров не нужны */
+.ctile{display:block;width:100%;height:100%;object-fit:contain;border-radius:28%;pointer-events:none;filter:none!important;opacity:1!important}
+.rico:has(>.ctile),.tx-ic:has(>.ctile),.ci:has(>.ctile),.cat-ico:has(>.ctile),.rw-ic:has(>.ctile),.pk-tile{background:none!important;box-shadow:none!important;border:0!important;padding:0!important}
+.cat-tile .ci:has(>.ctile){width:52px;height:52px;border-radius:28%}
+.cat-tile[aria-checked=true] .ci:has(>.ctile){box-shadow:0 0 0 2px #8FA4FF,0 0 14px rgba(110,130,255,.45)!important}
+.cat-tile .ci .tick{display:none!important}
+.row .rico:has(>.ctile){width:44px;height:44px}
+.pk-tile{display:grid;width:44px;height:44px}
+.pick-grid .pk{padding:0;background:none;border:0;border-radius:14px}
+.pick-grid .pk[aria-checked=true]{box-shadow:0 0 0 2px #8FA4FF;border-radius:14px}
+.cat-top .cat-ico:has(>.ctile){width:40px;height:40px;background:none}
+.tx-ic:has(>.ctile){flex:0 0 40px;width:40px;height:40px}
+.late-act,.ev-gift,.ev-a{color:var(--b-accent-text)!important}
+.pay-row .pr-b small{font-size:13px}

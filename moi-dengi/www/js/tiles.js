@@ -1,0 +1,11 @@
+/* Иконки категорий: цветные плитки (img/cat/<имя>.png). Значок категории хранится как имя плитки. */
+(function (root) {
+  'use strict';
+  const TILES = ['chat','phone','mail','doc','upload','settings','person','people','education','briefcase','chart','swap','download','headphones','camera','tv','music','book','leaf','paw','gamepad','laptop','mobile','pizza','bag','shirt','scissors','train','plane','restaurant','cafe','burger','gym','run','bike','car','bus','star','bookmark','heart','medical','pill','receipt','file','calendar','clock','bell','piggy','diamond','gift','discount','tag','bank','wallet','card','coins','cart','basket','home','building'];
+  /* Встроенные категории: по названию, потом по системному значку */
+  const BY_NAME = { 'Продукты': 'basket', 'Кафе': 'cafe', 'Транспорт': 'bus', 'Дом': 'home', 'Здоровье': 'medical', 'Одежда': 'shirt', 'Связь': 'phone', 'Подписки': 'calendar', 'Подарки': 'gift', 'Развлечения': 'tv', 'Кредиты': 'card', 'Переводы': 'swap', 'Налоги': 'receipt', 'Банк': 'bank', 'Техника': 'laptop', 'Другое': 'tag', 'Зарплата': 'wallet', 'Подработка': 'briefcase', 'Подарок': 'gift', 'Возврат': 'coins' };
+  const BY_SLUG = { c_groceries: 'basket', c_cafe: 'cafe', c_restaurant: 'restaurant', c_bar: 'cafe', c_fast_food: 'burger', c_clothes: 'shirt', c_beauty: 'scissors', c_health: 'medical', c_pharmacy: 'pill', c_home: 'home', c_repair: 'settings', c_fuel: 'car', c_mobile_internet: 'phone', c_entertainment: 'tv', c_games: 'gamepad', c_gifts: 'gift', c_hobby: 'music', c_books: 'book', c_education: 'education', c_kids: 'people', c_pets: 'paw', c_insurance: 'bank', c_credit: 'card', c_transport: 'bus', c_taxi: 'car', c_travel: 'plane', c_hotel: 'building', c_utilities: 'file', c_subscriptions: 'calendar', c_transfer: 'swap', c_taxes: 'receipt', c_shopping: 'cart', c_charity: 'heart', c_investments: 'chart', c_savings: 'piggy', c_sport: 'gym', c_salary: 'wallet', c_freelance: 'briefcase', c_cashback: 'coins', c_other: 'tag' };
+  root.MD = root.MD || {};
+  root.MD.TILES = TILES; root.MD.TILE_BY_NAME = BY_NAME; root.MD.TILE_BY_SLUG = BY_SLUG;
+  root.MD.tile = n => `<img class="ctile" src="img/cat/${n}.png" alt="" decoding="async">`;
+})(typeof window !== 'undefined' ? window : globalThis);

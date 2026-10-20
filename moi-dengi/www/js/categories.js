@@ -16,7 +16,7 @@ const DEFAULTS = {
 };
 /* Рабочий список: значения по умолчанию плюс правки человека. Тот же объект, что видит приложение: меняется на месте. */
 const CATS = { expense: [], income: [] };
-const ICONS = (root.MD && root.MD.CAT_SLUGS || []).concat(['cart', 'cup', 'pizza', 'bus', 'car', 'plane', 'sofa', 'key', 'heart', 'aid', 'shirt', 'bag', 'phone', 'laptop', 'repeat', 'gift', 'ticket', 'game', 'music', 'book', 'school', 'baby', 'paw', 'gym', 'scissors', 'wrench', 'drop', 'bank', 'receipt', 'tax', 'wallet', 'coins', 'cash', 'case', 'swap', 'grid']);
+const ICONS = (root.MD && root.MD.TILES || []).slice();
 /* Десять тонов: пользователь выбирает один из них, а не произвольный цвет. [тон, solid, фон, текст, текст в тёмной теме] */
 const TONES = {
   peach: ['#FF9466', '#FFF0EA', '#99593D', '#FF9466'], coral: ['#F25C6E', '#FDE8EB', '#B24451', '#F47887'], butter: ['#F5B82E', '#FEF5E2', '#8B691A', '#F5B82E'],
