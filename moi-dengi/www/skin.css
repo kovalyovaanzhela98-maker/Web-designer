@@ -37,3 +37,18 @@
 .sheet-head .close{position:absolute;right:-6px;top:50%;transform:translateY(-50%)}
 .sheet-head h2,.sheet-head .sheet-title{margin:0}
 .g-h span,.goal-pct{color:var(--accent-t)!important}
+
+/* ритм отступов: между блоками 12–16, внутри строк 8–12 */
+#lyTx .tx-rest{display:flex;flex-direction:column;gap:14px}
+#lyTx .tx-rest>*{margin-top:0!important;margin-bottom:0!important}
+#lyTx .tt-dates .date-row.chips{display:grid!important;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;width:100%}
+#lyTx .tt-dates{padding:12px 16px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.empty .btn{margin-top:12px;width:auto;min-width:200px}
+.empty b{margin:0}
+.sheet .btn+.btn,.sheet form>.btn,.sheet .save-bar .btn{margin-top:12px}
+.sheet .save-bar .btn{margin-top:0}
+#opsList .day,#recentList .recent,#opsList .day:first-child{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 8px!important}
+#opsList{display:flex;flex-direction:column;gap:12px}
+.day .swipe+.swipe,.recent .swipe+.swipe{margin-top:8px}
+.day-h{padding:4px 4px 8px!important}
