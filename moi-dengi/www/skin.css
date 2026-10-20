@@ -139,3 +139,8 @@
 #s-ops #homeBriefing,#s-ops #nudgeBox:not(:empty){margin-top:16px}
 #s-ops>*+*{margin-top:12px}
 #s-ops>.hdr+*{margin-top:8px}
+#s-stats #catList .cats .bar i,#s-stats #catList .cats li.on .bar i{background:var(--grad-plus)!important}
+#s-stats #catList .cat-top .cat-ico:has(>.ctile){background:none!important;border:0!important;box-shadow:none!important;width:36px!important;height:36px!important;flex:0 0 36px!important;padding:0!important;border-radius:10px}
+#s-stats #catList .cats li{padding:14px!important}
+#s-stats #catList .cats li{border:0!important;border-top:0!important;box-shadow:none!important}
+#s-stats #catList .cats li+li::before{content:"";position:absolute;top:0;left:62px;right:14px;border-top:1px solid rgba(255,255,255,.07)}
