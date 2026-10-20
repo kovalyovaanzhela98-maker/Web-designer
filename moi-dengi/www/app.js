@@ -315,8 +315,7 @@ function renderHomeCards(T, pi, soon) {
   if (act) {
     const per = G.perPeriodNow(act, T) || 0, r = range(per), unit = act.unit === 'week' ? 'в неделю' : 'в месяц';
     $('#goalCard').innerHTML = `<div class="h-goal" role="button" tabindex="0" data-go="goals" aria-label="Открыть копилки"><div class="h-goal-title">Копилки</div><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
-      ${per > 0 ? `<p>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</p>` : `<p>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</p>`}
-      <button class="btn-bord" type="button" data-savenow="${esc(act.id)}">Отложить сейчас</button></div>`;
+      ${per > 0 ? `<p>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</p>` : `<p>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</p>`}</div>`;
   } else $('#goalCard').innerHTML = `<button class="h-empty-card h-goal-empty" type="button" data-go="goals"><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Создайте цель и следите за прогрессом</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
   if (pi) {
     const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
@@ -325,16 +324,24 @@ function renderHomeCards(T, pi, soon) {
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
 function renderBalanceTrend(T) {
-  const currentBalance = state.accounts.reduce((s, a) => s + (Number(a.balance) || 0), 0), points = [];
-  for (let i = 6; i >= 0; i--) {
+  /* Плавная линия баланса за 28 дней и тонкие вертикальные полоски под ней */
+  const currentBalance = state.accounts.reduce((s, a) => s + (Number(a.balance) || 0), 0), N = 28, points = [];
+  for (let i = N - 1; i >= 0; i--) {
     const day = ymd(addD(T, -i));
-    const futureMovement = state.tx.reduce((s, t) => t.date > day ? s + (t.type === 'income' ? t.amount : -t.amount) : s, 0);
-    const value = currentBalance - futureMovement;
-    points.push(value);
+    const after = state.tx.reduce((sum, t) => t.date > day ? sum + (t.type === 'income' ? t.amount : -t.amount) : sum, 0);
+    points.push(currentBalance - after);
   }
-  const lo = Math.min(...points), hi = Math.max(...points), span = hi - lo || 1;
-  const d = points.map((v, i) => `${i ? 'L' : 'M'} ${(i * 296 / 6).toFixed(1)} ${(34 - (v - lo) / span * 26).toFixed(1)}`).join(' ');
-  $('#balanceTrend').innerHTML = `<svg viewBox="0 0 296 40" preserveAspectRatio="none" focusable="false"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="296" cy="${(34 - (points[6] - lo) / span * 26).toFixed(1)}" r="2.4" fill="currentColor"/></svg>`;
+  for (let pass = 0; pass < 3; pass++) for (let i = 1; i < N - 1; i++) points[i] = (points[i - 1] + points[i] * 2 + points[i + 1]) / 4;
+  const W = 320, H = 84, top = 10, base = H - 4, lo = Math.min(...points), hi = Math.max(...points), span = hi - lo || 1;
+  const xs = points.map((_, i) => i * W / (N - 1)), ys = points.map(v => base - 8 - (v - lo) / span * (base - top - 8));
+  let d = `M ${xs[0].toFixed(1)} ${ys[0].toFixed(1)}`;
+  for (let i = 1; i < N; i++) { const cx = (xs[i - 1] + xs[i]) / 2; d += ` C ${cx.toFixed(1)} ${ys[i - 1].toFixed(1)} ${cx.toFixed(1)} ${ys[i].toFixed(1)} ${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`; }
+  const stripes = xs.map((x, i) => `<rect x="${(x - 1.1).toFixed(1)}" y="${ys[i].toFixed(1)}" width="2.2" height="${(base - ys[i]).toFixed(1)}" rx="1.1" fill="url(#balBar)"/>`).join('');
+  $('#balanceTrend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" focusable="false"><defs>
+    <linearGradient id="balBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C8CFF" stop-opacity=".38"/><stop offset="1" stop-color="#3D2CFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="balLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4C6FFF"/><stop offset="1" stop-color="#9FB0FF"/></linearGradient></defs>
+    ${stripes}<path d="${d}" fill="none" stroke="url(#balLine)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${xs[N - 1].toFixed(1)}" cy="${ys[N - 1].toFixed(1)}" r="4" fill="#fff"/></svg>`;
 }
 function renderHomeBriefing(T) {
   const start = mondayOf(T), elapsed = Math.min(6, Math.max(0, daysBetween(start, T))), previous = addD(start, -7);
@@ -363,7 +370,6 @@ function renderHome() {
   const monthList = monthTx(now0.getFullYear(), now0.getMonth());
   $('#homePeriod').textContent = MONTHS[now0.getMonth()];
   renderBalanceTrend(T);
-  renderHomeBriefing(T);
   if (MD.notify.supported()) { const list = monthTx(now0.getFullYear(), now0.getMonth()); MD.notify.pushSummary({ balance: hide ? '••••' : money(totalBalance()), flow: hide ? '' : `+${fmt(sumOf(list, 'income'))}  −${fmt(sumOf(list, 'expense'))}`, month: MONTHS[now0.getMonth()].toLowerCase() }); }
   renderHomeCards(T, pi, soon);
   const recent = state.tx.slice().sort(cmpTx).slice(0, 5);
@@ -520,6 +526,7 @@ function txRow(t, useHomeIcon = false) {
 }
 
 function renderOps() {
+  renderHomeBriefing(new Date());
   const fa = filterAcc && accById(filterAcc);
   $('#opsFilterChip').innerHTML = '';
   $$('#s-ops [data-ft]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.ft === opsType)));
@@ -2523,4 +2530,6 @@ if (cloud.enabled) cloud.onAuth(u => (u ? onSignedIn(u) : onSignedOut()));
 MD.notify.init(quickAdd);
 afterDataChange();
 if (history.state && (history.state.layer || history.state.tab)) history.replaceState(null, '');
+$('#balInfo').addEventListener('click', () => { const n = $('#balNote'), open = n.hidden; n.hidden = !open; $('#balInfo').setAttribute('aria-expanded', String(open)); });
 })();
+
