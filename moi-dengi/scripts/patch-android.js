@@ -8,6 +8,14 @@ const gs = path.join(root, 'android-config/google-services.json');
 if (fs.existsSync(gs)) { fs.copyFileSync(gs, path.join(root, 'android/app/google-services.json')); console.log('google-services.json скопирован'); }
 const ks = path.join(root, 'android-config/debug.keystore');
 if (fs.existsSync(ks)) { const d = path.join(os.homedir(), '.android'); fs.mkdirSync(d, { recursive: true }); fs.copyFileSync(ks, path.join(d, 'debug.keystore')); console.log('Ключ подписи установлен (SHA-1 постоянный)'); }
+/* Подпись явно прописана в app/build.gradle: иначе каждая сборка получала новый случайный ключ, и новая версия не ставилась поверх старой */
+if (fs.existsSync(ks)) {
+  const gp = path.join(root, 'android/app/build.gradle'); let g = fs.readFileSync(gp, 'utf8');
+  if (!/fin-constant-signing/.test(g)) {
+    g += `\n// fin-constant-signing\nandroid.signingConfigs.debug.storeFile = file('../../android-config/debug.keystore')\nandroid.signingConfigs.debug.storePassword = 'android'\nandroid.signingConfigs.debug.keyAlias = 'androiddebugkey'\nandroid.signingConfigs.debug.keyPassword = 'android'\n`;
+    fs.writeFileSync(gp, g); console.log('build.gradle: постоянный ключ подписи прописан');
+  }
+}
 
 /* ---------- Быстрая запись: виджет, плитка шторки, закреплённое уведомление ---------- */
 const pkgDir = path.join(root, 'android/app/src/main/java/by/moidengi/app');
