@@ -72,10 +72,8 @@
   </section>
 
   <!-- ОПЕРАЦИИ -->
-  <section class="screen" id="s-ops" data-screen="ops" aria-label="История" hidden>
-    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">История</h1><button class="pill-btn" id="opsSel" type="button"><i data-ic="check"></i><span>Выбрать</span></button></header>
-    <section class="home-briefing" id="homeBriefing" aria-labelledby="homeBriefingTitle"></section>
-    <div id="nudgeBox"></div>
+  <section class="screen" id="s-ops" data-screen="ops" aria-label="Операции" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Операции</h1><button class="pill-btn" id="opsSel" type="button"><i data-ic="check"></i><span>Выбрать</span></button></header>
     <div class="monthbar-slot"></div>
     <div class="search"><i data-ic="search"></i><input id="opsSearch" type="search" placeholder="Поиск по заметке или категории" aria-label="Поиск по записям" autocomplete="off"></div>
     <div class="seg ops-seg" role="radiogroup" aria-label="Тип записей">
@@ -84,18 +82,14 @@
       <button type="button" role="radio" class="seg-b" data-ft="income" aria-checked="false">Доходы</button>
     </div>
     <div id="opsFilterChip"></div>
+    <section class="home-briefing" id="homeBriefing" aria-labelledby="homeBriefingTitle"></section>
+    <div id="nudgeBox"></div>
     <div id="opsList"></div>
   </section>
 
   <!-- АНАЛИТИКА -->
   <section class="screen" id="s-stats" data-screen="stats" aria-label="Аналитика" hidden>
     <header class="hdr"><h1 class="title">Аналитика</h1></header>
-    <div class="stats-view-tabs" role="tablist" aria-label="Раздел статистики">
-      <button type="button" role="tab" data-stview="accounts" aria-selected="true">Счета</button>
-      <button type="button" role="tab" data-stview="goals" aria-selected="false">Копилки</button>
-      <button type="button" role="tab" data-stview="large" aria-selected="false">Крупные траты</button>
-      <button type="button" role="tab" data-stview="events" aria-selected="false">События</button>
-    </div>
     <div id="statsAlt" hidden></div>
     <div id="statsAccountView">
     <div id="periodBar"></div>
@@ -182,6 +176,7 @@
 
     <div class="grp-t">Деньги</div>
     <div class="grp">
+      <button class="row" type="button" data-go="accounts" id="plAccounts"><span class="rw-ic" aria-hidden="true"><i data-ic="wallet"></i></span><span class="rw-t"><b>Счета</b><small>Карты и наличные</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="cats" id="plCats"><span class="rw-ic" aria-hidden="true"><i data-ic="grid"></i></span><span class="rw-t"><b>Категории</b><small>Названия, значки и цвета</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
       <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
     </div>
@@ -207,7 +202,7 @@
   <button class="nav-item active" type="button" data-tab="home" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></button>
   <button class="nav-item" type="button" data-tab="stats" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V12M10 19V5M15 19V9M20 19V3"/></svg><span>Анализ</span></button>
   <button class="add-button" id="fab" type="button" aria-label="Добавить запись" aria-pressed="false"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="add-label">Добавить</span></button>
-  <button class="nav-item" type="button" data-tab="accounts" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 15h3"/></svg><span>Счета</span></button>
+  <button class="nav-item" type="button" data-tab="ops" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>Операции</span></button>
   <button class="nav-item" type="button" data-tab="acc" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2z"/></svg><span>Профиль</span></button>
 </nav>
 <aside class="first-tx-coach" id="firstTxCoach" role="status" aria-live="polite" hidden>

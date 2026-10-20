@@ -3,14 +3,14 @@
 .hdr--main{padding:0 6px;height:auto;min-height:52px}
 .hdr .ttl{flex:1;text-align:center}
 .hdr--main .ttl{font-size:28px;font-weight:700;flex:none;text-align:left}
-#s-accounts .hdr .back,#s-acc .hdr .back{display:none}
+#s-acc .hdr .back,#s-ops .hdr .back{display:none}
 .hdr:has(.back):not(:has(.act)) .ttl{margin-right:76px}
 .screen>.hdr{margin-bottom:8px}
 .list+.list,.grp-t+.list{margin-top:0}
 .grp-t{margin:20px 16px 8px}
 .row .chev svg,.row .val svg{width:18px;height:18px}
 .tt-dates .date-row{display:grid}
-#s-accounts .hdr .ttl,#s-acc .hdr .ttl{text-align:left;flex:none;font-size:28px;font-weight:700;margin:0}
+#s-acc .hdr .ttl,#s-ops .hdr .ttl{text-align:left;flex:none;font-size:28px;font-weight:700;margin:0}
 .bottom-nav{z-index:30}
 .cfield textarea{flex:1;width:100%;background:transparent;border:0;outline:0;color:var(--b-c-text);font:inherit;resize:none;padding:10px 0;max-height:120px}
 .swipe .row.tx{touch-action:pan-y;user-select:none;-webkit-user-select:none}
@@ -96,7 +96,7 @@
 /* заголовки тоньше */
 #homeMain .h2-row .h2{font-size:20px!important;font-weight:600!important}
 .h-pay .rw-t b,.h-empty-card b{font-weight:500!important}
-.hdr--main .ttl,#s-accounts .hdr .ttl,#s-acc .hdr .ttl{font-weight:600!important}
+.hdr--main .ttl,#s-acc .hdr .ttl,#s-ops .hdr .ttl{font-weight:600!important}
 .row .t1{font-weight:500}
 .home-briefing h2{font-weight:600}
 /* строки: иконка меньше, отступы одинаковые со всех сторон */
@@ -109,3 +109,33 @@
 .h-goal-title{text-transform:none!important;letter-spacing:0!important}
 .day-h,#recentList .day-h{padding:16px 4px 8px!important}
 #recentList .day-h:first-child{padding-top:4px!important}
+
+/* ============ Один акцент: градиент кнопки «+» ============ */
+:root{--grad-plus:linear-gradient(145deg,#3477ee 4%,#3159df 54%,#5947c9 100%)}
+.h-goal .goal-bar i,#catList .bar i,#catList li.on .bar i,.pcard .bar i,.goal-bar i{background:var(--grad-plus)!important}
+.h-goal .g-h span,.goal-pct,.g-h span{background:var(--grad-plus);-webkit-background-clip:text;background-clip:text;color:transparent!important;-webkit-text-fill-color:transparent}
+#catList .bar{height:6px;border-radius:3px;background:rgba(160,180,255,.14)}
+/* график статистики как на главной */
+.curve-box.flow{margin-top:8px}
+.flow-svg{height:100px}.flow-svg svg{display:block;width:100%;height:100%}
+.flow-labels{position:relative;height:20px;margin-top:6px;font-size:12px;color:var(--b-muted)}
+.flow-labels span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.flow-labels span:first-child{transform:none}.flow-labels span:last-child{transform:translateX(-100%)}
+#catCard{overflow:hidden}
+/* блок «По категориям»: ширина, иконки, отступы */
+#catList .cats{width:100%;overflow:hidden}
+#catList .cats li{padding:14px!important;min-height:0}
+#catList .cats li+li::before{left:62px;right:14px}
+#catList .cat-top{display:flex;align-items:center;gap:12px;font-size:16px}
+#catList .cat-top .nm{flex:1;min-width:0;font-weight:500}
+#catList .cat-top .pc{flex:none;font-size:14px}
+#catList .cat-top .pill,#catList .cat-top .pill.cat{flex:none;font-size:16px;padding:0}
+#catList .bar{margin:10px 0 0 48px!important;width:auto}
+/* стрелки и подпись периода по центру */
+.period{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;min-height:44px}
+.period b{display:flex;align-items:center;justify-content:center;min-height:44px;line-height:1;font-size:16px;font-weight:600}
+.period button{display:grid;place-items:center;padding:0}
+.period button svg{display:block;margin:0}
+#s-ops #homeBriefing,#s-ops #nudgeBox:not(:empty){margin-top:16px}
+#s-ops>*+*{margin-top:12px}
+#s-ops>.hdr+*{margin-top:8px}

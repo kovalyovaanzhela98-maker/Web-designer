@@ -323,25 +323,31 @@ function renderHomeCards(T, pi, soon) {
   } else $('#payCard').innerHTML = `<button class="h-empty-card h-pay-empty" type="button" data-go-pay><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('repeat')}</span><span><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
+/* Общий график: плавная линия и тонкие вертикальные полоски под ней (главная и статистика) */
+function flowChart(vals, uid, W = 320, H = 84) {
+  const n = vals.length;
+  if (n < 2) return `<svg viewBox="0 0 ${W} ${H}" focusable="false"></svg>`;
+  const pts = vals.slice();
+  for (let pass = 0; pass < 2; pass++) for (let i = 1; i < n - 1; i++) pts[i] = (pts[i - 1] + pts[i] * 2 + pts[i + 1]) / 4;
+  const top = 10, base = H - 4, lo = Math.min(...pts), hi = Math.max(...pts), span = hi - lo || 1;
+  const xs = pts.map((_, i) => i * W / (n - 1)), ys = pts.map(v => base - 8 - (v - lo) / span * (base - top - 8));
+  let d = `M ${xs[0].toFixed(1)} ${ys[0].toFixed(1)}`;
+  for (let i = 1; i < n; i++) { const cx = (xs[i - 1] + xs[i]) / 2; d += ` C ${cx.toFixed(1)} ${ys[i - 1].toFixed(1)} ${cx.toFixed(1)} ${ys[i].toFixed(1)} ${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`; }
+  const sw = n > 40 ? 1.6 : 2.2, stripes = xs.map((x, i) => `<rect x="${(x - sw / 2).toFixed(1)}" y="${ys[i].toFixed(1)}" width="${sw}" height="${(base - ys[i]).toFixed(1)}" rx="${sw / 2}" fill="url(#${uid}b)"/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" focusable="false"><defs>
+    <linearGradient id="${uid}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C8CFF" stop-opacity=".38"/><stop offset="1" stop-color="#3D2CFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${uid}l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3477EE"/><stop offset=".55" stop-color="#3159DF"/><stop offset="1" stop-color="#8E7BFF"/></linearGradient></defs>
+    ${stripes}<path d="${d}" fill="none" stroke="url(#${uid}l)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${xs[n - 1].toFixed(1)}" cy="${ys[n - 1].toFixed(1)}" r="4" fill="#fff"/></svg>`;
+}
 function renderBalanceTrend(T) {
-  /* Плавная линия баланса за 28 дней и тонкие вертикальные полоски под ней */
   const currentBalance = state.accounts.reduce((s, a) => s + (Number(a.balance) || 0), 0), N = 28, points = [];
   for (let i = N - 1; i >= 0; i--) {
     const day = ymd(addD(T, -i));
     const after = state.tx.reduce((sum, t) => t.date > day ? sum + (t.type === 'income' ? t.amount : -t.amount) : sum, 0);
     points.push(currentBalance - after);
   }
-  for (let pass = 0; pass < 3; pass++) for (let i = 1; i < N - 1; i++) points[i] = (points[i - 1] + points[i] * 2 + points[i + 1]) / 4;
-  const W = 320, H = 84, top = 10, base = H - 4, lo = Math.min(...points), hi = Math.max(...points), span = hi - lo || 1;
-  const xs = points.map((_, i) => i * W / (N - 1)), ys = points.map(v => base - 8 - (v - lo) / span * (base - top - 8));
-  let d = `M ${xs[0].toFixed(1)} ${ys[0].toFixed(1)}`;
-  for (let i = 1; i < N; i++) { const cx = (xs[i - 1] + xs[i]) / 2; d += ` C ${cx.toFixed(1)} ${ys[i - 1].toFixed(1)} ${cx.toFixed(1)} ${ys[i].toFixed(1)} ${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`; }
-  const stripes = xs.map((x, i) => `<rect x="${(x - 1.1).toFixed(1)}" y="${ys[i].toFixed(1)}" width="2.2" height="${(base - ys[i]).toFixed(1)}" rx="1.1" fill="url(#balBar)"/>`).join('');
-  $('#balanceTrend').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" focusable="false"><defs>
-    <linearGradient id="balBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C8CFF" stop-opacity=".38"/><stop offset="1" stop-color="#3D2CFF" stop-opacity="0"/></linearGradient>
-    <linearGradient id="balLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4C6FFF"/><stop offset="1" stop-color="#9FB0FF"/></linearGradient></defs>
-    ${stripes}<path d="${d}" fill="none" stroke="url(#balLine)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-    <circle cx="${xs[N - 1].toFixed(1)}" cy="${ys[N - 1].toFixed(1)}" r="4" fill="#fff"/></svg>`;
+  $('#balanceTrend').innerHTML = flowChart(points, 'bal');
 }
 function renderHomeBriefing(T) {
   const start = mondayOf(T), elapsed = Math.min(6, Math.max(0, daysBetween(start, T))), previous = addD(start, -7);
@@ -652,32 +658,18 @@ function renderStats() {
   if (per.kind === 'year') {
     buckets = Array.from({ length: 12 }, (_, i) => ({ l: MONTHS[i].slice(0, 3), v: 0, now: per.year === now0.getFullYear() && i === now0.getMonth() }));
     shown.forEach(t => { buckets[Number(t.date.slice(5, 7)) - 1].v += t.amount; });
-  } else if (P.days > 62 || (per.kind === 'month' && P.days > 14)) {
+  } else if (P.days > 62) {
     const n = Math.ceil(P.days / 7); buckets = Array.from({ length: n }, (_, i) => { const d = addD(P.from, i * 7); return { l: per.kind === 'month' ? String(d.getDate()) : dd(d), v: 0, now: false }; });
     shown.forEach(t => { buckets[Math.min(n - 1, Math.floor(daysBetween(P.from, parseYmd(t.date)) / 7))].v += t.amount; });
   } else {
     buckets = Array.from({ length: P.days }, (_, i) => { const d = addD(P.from, i); return { l: per.kind === 'week' ? WD_S[d.getDay()] : String(d.getDate()), v: 0, now: ymd(d) === today() }; });
     shown.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
   }
-  // Bar chart shows actual spend per day/week/month, so one transaction reads as a real value rather than a broken line.
-  const nb = buckets.length, W = 300, H = 100;
-  const nowI = buckets.findIndex(b => b.now), last = nowI >= 0 ? nowI : nb - 1;
-  const mx = Math.max(1, ...buckets.slice(0, last + 1).map(b => b.v));
-  const slot = W / nb, barW = Math.max(3, Math.min(18, slot * .68));
-  const xAt = i => i * slot + (slot - barW) / 2, yAt = v => H - 8 - (v / mx) * (H - 22);
-  const peak = buckets.reduce((m, b, i) => (i <= last && b.v > buckets[m].v ? i : m), 0), hi = buckets[peak];
-  const grid = '';
-  const bars = buckets.map((b, i) => {
-    if (i > last || b.v <= 0) return '';
-    const h = Math.max(2, (b.v / mx) * (H - 22)), y = H - 8 - h;
-    const x = xAt(i), w = barW, r = Math.min(5, w / 2, h / 2), bottom = H - 8;
-    const d = `M${(x+r).toFixed(1)} ${y.toFixed(1)} H${(x+w-r).toFixed(1)} Q${(x+w).toFixed(1)} ${y.toFixed(1)} ${(x+w).toFixed(1)} ${(y+r).toFixed(1)} V${bottom.toFixed(1)} H${x.toFixed(1)} V${(y+r).toFixed(1)} Q${x.toFixed(1)} ${y.toFixed(1)} ${(x+r).toFixed(1)} ${y.toFixed(1)} Z`;
-    return `<path d="${d}" fill="${i === nowI ? 'var(--accent)' : 'var(--muted)'}" opacity="${i === nowI ? 1 : .48}"/>`;
-  }).join('');
+  const nb = buckets.length, nowI = buckets.findIndex(b => b.now), last = nowI >= 0 ? nowI : nb - 1;
   const step = nb <= 12 ? 1 : Math.ceil(nb / 6);
-  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<text x="${(i * slot + slot / 2).toFixed(1)}" y="${H + 16}" text-anchor="middle">${esc(b.l)}</text>` : '').join('');
+  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<span style="left:${(nb > 1 ? i / (nb - 1) * 100 : 50).toFixed(1)}%">${esc(b.l)}</span>` : '').join('');
   card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div></div>
-    <div class="curve-box"><svg class="days" viewBox="0 0 ${W} ${H + 22}" role="img" aria-label="Столбчатая диаграмма ${word} ${P.word}">${grid}<line class="chart-base" x1="0" x2="${W}" y1="${H - 8}" y2="${H - 8}" stroke-width="1"/>${bars}${labels}</svg></div>`;
+    <div class="curve-box flow" role="img" aria-label="График ${word} ${P.word}"><div class="flow-svg">${flowChart(buckets.slice(0, last + 1).map(b => b.v), 'st', 320, 100)}</div><div class="flow-labels">${labels}</div></div>`;
   chartScrub = null;
   dayCard.hidden = true; dayCard.innerHTML = '';
 
@@ -689,7 +681,7 @@ function renderStats() {
 
 /* ---------- Вкладки ---------- */
 let tabPushed = false, payFrom = 'acc', base = 'home';
-const MAIN_TABS = ['home', 'stats', 'accounts', 'acc'];
+const MAIN_TABS = ['home', 'stats', 'ops', 'acc'];
 function showTab(name, fromPop) {
   if (MAIN_TABS.includes(name)) base = name;
   if (name !== 'ops' && sel.on) { sel.on = false; sel.ids.clear(); $('#opsSel span').textContent = 'Выбрать'; }
