@@ -1,0 +1,72 @@
+/* Система дизайна «Фина» (утверждена). Подключается последней и перекрывает старые значения.
+   Менять только по согласованию с владельцем. */
+:root{
+  --d-bg:#0B0B1A; --d-card:#121222; --d-row:#181C3A; --d-text:#F4F6FF; --d-text2:#B9C0DA; --d-muted:#8A93B5;
+  --d-accent:linear-gradient(145deg,#3477EE 4%,#3159DF 54%,#5947C9 100%); --d-accent-text:#8FA4FF;
+  --d-income:#C6FF3D; --d-danger:#FF6B7A; --d-danger-fill:#E5384D; --d-warn:#FFCC66; --d-line:rgba(196,203,255,.12);
+  --d-s4:4px; --d-s8:8px; --d-s12:12px; --d-s16:16px; --d-s20:20px; --d-s24:24px; --d-s32:32px;
+  --d-r28:28px; --d-r24:24px; --d-r20:20px; --d-r16:16px; --d-r12:12px; --d-r10:10px;
+  --grad-plus:var(--d-accent);
+}
+html,body{background:var(--d-bg)}
+/* Экран: поля 20, между блоками 16 */
+#app{padding-left:var(--d-s20);padding-right:var(--d-s20)}
+.screen{gap:0;padding-bottom:calc(124px + env(safe-area-inset-bottom,0px))}
+.screen>*+*{margin-top:var(--d-s16)}
+.screen>.hdr+*{margin-top:var(--d-s12)}
+.screen>.hdr{margin-bottom:0}
+/* Карточки и списки: 20, внутри 16, без теней */
+.card,.grp,.list,.panel,.h-goal,.h-pay,.h-empty-card,.home-briefing,.pay-sum,.nudge,.ins>div{border-radius:var(--d-r20);box-shadow:none;background:var(--d-card);border:1px solid var(--d-line)}
+.card,.h-goal,.h-pay,.h-empty-card,.home-briefing,.pay-sum,.nudge{padding:var(--d-s16)}
+.bal{border-radius:var(--d-r24);padding:var(--d-s20) var(--d-s20) 0}
+/* Строки: 20, внутри 14, иконка 36, зазор 12 */
+.row,.swipe .row{padding:14px;gap:var(--d-s12);border-radius:var(--d-r20);min-height:64px}
+.swipe{border-radius:var(--d-r20)}
+.swipe+.swipe,.day .swipe+.swipe,.recent .swipe+.swipe{margin-top:var(--d-s8)}
+.list .row{border-radius:0}
+.list .row:first-child{border-radius:var(--d-r20) var(--d-r20) 0 0}.list .row:last-child{border-radius:0 0 var(--d-r20) var(--d-r20)}.list .row:only-child{border-radius:var(--d-r20)}
+.rico,.tx-ic,.cat-ico,.row .ic{width:36px;height:36px;flex:0 0 36px;border-radius:var(--d-r10)}
+.ctile{border-radius:var(--d-r10)}
+.cat-tile .ci{width:44px;height:44px;border-radius:var(--d-r12)}
+/* Заголовки и текст: 400 / 500 / 600 */
+.hdr .ttl,.hdr--main .ttl,.h-greet{font-size:28px;font-weight:600}
+.h2,#homeMain .h2-row .h2{font-size:20px;font-weight:600}
+.row .t1,.tx-t,.rw-t b,.pc-n{font-size:16px;font-weight:500}
+.t2,.rw-t small,.tx-n,.pc-s,.day-h,.grp-t{font-size:13px;font-weight:400;color:var(--d-muted)}
+.bal .bal-sum{font-size:44px;font-weight:600}
+b,strong,h1,h2,h3{font-weight:600}
+.tx-a,.amt{font-weight:500;color:var(--d-text)}
+.tx-a.inc,.amt.inc,.pos{color:var(--d-income)}
+/* Блоки и заголовки разделов */
+.grp-t{margin:var(--d-s24) 0 var(--d-s8)}
+.block{display:flex;flex-direction:column;gap:var(--d-s8)}
+/* Один акцент */
+.bar i,.goal-bar i,.h-goal .goal-bar i{background:var(--d-accent)!important}
+.bar,.goal-bar{height:6px;border-radius:3px}
+.g-h span,.goal-pct,.pc{background:none}
+/* Шторки */
+.sheet{border-radius:var(--d-r28) var(--d-r28) 0 0;padding-left:var(--d-s20);padding-right:var(--d-s20)}
+/* Поля и табы */
+.seg,.field input,.search input{border-radius:var(--d-r16)}
+.chip{border-radius:var(--d-r12)}
+/* Меню: радиус 28, 16 снизу и по бокам (nav.css) */
+.bottom-nav{border-radius:var(--d-r28)}
+.toast{border-radius:var(--d-r16)}
+
+/* Исключения из общих правил карточек */
+#catList{background:none;border:0;padding:0}
+#catList .cats{background:var(--d-card);border:1px solid var(--d-line);border-radius:var(--d-r20)}
+#catList h3{margin:0 0 var(--d-s8);font-size:13px;font-weight:400;color:var(--d-muted)}
+/* Чат: шапка в один ряд, быстрые вопросы в прокрутке */
+.chat-hdr{display:flex!important;align-items:center;gap:var(--d-s12);min-height:52px}
+.chat-hdr .back{flex:none}
+.chat-hdr .chat-who{flex:1;min-width:0;display:flex;align-items:center;gap:var(--d-s12)}
+.chat-hdr .chat-who .title,.chat-hdr .chat-who h1{font-size:20px;font-weight:600;margin:0;text-align:left;flex:none}
+.chat-hdr .chat-who small{display:block;font-size:13px;color:var(--d-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-hdr .chat-av{width:36px;height:36px;flex:0 0 36px}
+.chat-hdr .rnd{flex:none}
+.chat-quick{display:flex;gap:var(--d-s8);overflow-x:auto;scrollbar-width:none;margin:0 calc(-1*var(--d-s20));padding:0 var(--d-s20)}
+.chat-dock{left:var(--d-s20);right:var(--d-s20);bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.sheet>.sheet-head .close,.sheet .close{right:0}
+.chat-hdr #chatClear,.chat-hdr .rnd,.chat-hdr .icon-btn{position:static;transform:none;margin:0;flex:none}
+.chat-hdr .chat-who>div{min-width:0}
