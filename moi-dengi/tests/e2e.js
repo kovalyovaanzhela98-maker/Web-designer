@@ -25,12 +25,12 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 1. знакомство
   await page.goto('http://localhost:5199/?mock=1');
-  await sleep(400);
+  await sleep(2600);
   ok('знакомство: «Пропустить» видно на 1 экране', await vis('[data-skip]'));
   for (let i = 0; i < 2; i++) { ok(`знакомство ${i + 1}: «Далее» и «Пропустить» видны`, (await vis('[data-next]')) && (await vis('[data-skip]'))); await page.click('[data-next]'); await sleep(150); }
-  ok('знакомство 3: «Далее» и «Пропустить» видны', (await vis('[data-next]')) && (await vis('[data-skip]')));
-  ok('знакомство: ровно 3 экрана', (await page.$$eval('.intro-t', e => e.length)) === 3);
-  await page.click('[data-skip]'); await sleep(900);
+  ok('знакомство 3: «Начать» видна, «Пропустить» уже не нужна', (await vis('[data-next]')) && !(await vis('[data-skip]')));
+  ok('знакомство: ровно 3 экрана', (await page.$$eval('.ob-t', e => e.length)) === 3);
+  await page.click('[data-next]'); await sleep(900);
   ok('после знакомства: вход не требуется, виден первый запуск', await vis('#s-home') && !(await vis('#auth')));
   ok('первый запуск: предложено добавить счёт', await vis('#welcome') && await vis('#welcome [data-wl=acc]') && !(await vis('#homeMain')));
   await page.click('#welcome [data-wl=acc]'); await sleep(200);
