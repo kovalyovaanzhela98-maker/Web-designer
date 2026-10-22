@@ -279,7 +279,6 @@
         const first = !app.state.tx.length;
         const n = app.addTx(m.items); m.done = 'saved'; save(); render(true);
         const ids = app.state.tx.slice(-n).map(t => t.id), one = m.items.length === 1 ? m.items[0] : null;
-        bot(one ? `Записал: <em>${esc([one.note && one.note !== one.cat ? one.note : '', (one.type === 'income' ? '+' : '−') + M(one.amount), one.cat].filter(Boolean).join(', '))}</em>` : `Записал ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'операцию' : 'операции'}: <em>${n}</em>`);
         push({ k: 'action', kind: 'undoadd', label: 'Отменить', id: ids.join(',') });
         quick = ['Сводка за месяц', 'Куда уходят деньги']; render();
         if (first || n >= 5) app.confetti();

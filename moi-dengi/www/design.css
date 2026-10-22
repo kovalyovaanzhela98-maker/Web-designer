@@ -273,3 +273,14 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-chat .cc-bar{height:6px;border-radius:3px}
 #s-chat .cc-bar i{background:var(--d-accent)!important;border-radius:3px}
 #s-chat .cc-act:empty{display:none}
+
+/* Чат: цвета текста по палитре, шапка без прыжка, мягкая граница ленты, одиночная кнопка */
+#s-chat{padding-top:0!important}
+#s-chat .chat-hdr{padding-top:calc(var(--d-s16) + env(safe-area-inset-top,0px))!important}
+#s-chat .chat-hdr::after{content:"";position:absolute;left:0;right:0;top:100%;height:var(--d-s16);background:linear-gradient(var(--d-bg),rgba(11,11,26,0));pointer-events:none}
+#s-chat .bm small,#s-chat .cc-s,#s-chat .cc small{color:var(--d-muted)}
+#s-chat .bm,#s-chat .cc-row,#s-chat .cc-row span,#s-chat .cc-row b:not(.e):not(.i){color:var(--d-text)}
+#s-chat .cc-row b.i{color:var(--d-income)}
+#s-chat .cc-bar{background:var(--d-line)}
+#s-chat .cc-act .btn:only-child{flex:0 0 auto;padding-left:var(--d-s24);padding-right:var(--d-s24)}
+#chatInput::placeholder{color:var(--d-muted);opacity:1}
