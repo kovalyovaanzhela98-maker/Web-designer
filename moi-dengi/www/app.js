@@ -1691,7 +1691,7 @@ function renderDraft() {
     return `<div class="draft-row"><button class="dr" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}, ${esc(signed(d.amount, d.type))}"><div class="tx-ic" aria-hidden="true">${cIcon(ci)}</div>
       <div class="dr-b"><div class="dr-t">${esc(d.cat)}</div>${d.note ? `<div class="tx-n">${esc(d.note)}</div>` : ''}<div class="dr-s">${esc(dayTitle(d.date))}</div></div>
       <div class="tx-a ${d.type === 'income' ? 'inc' : 'exp'}">${esc(signed(d.amount, d.type))}</div></button>
-      <span class="dr-acts"><button class="dr-ed" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}">${icon('pencil')}</button><button class="dr-x" type="button" data-drop="${i}" aria-label="Убрать строку: ${esc(d.cat)}">${icon('close')}</button></span></div>`;
+      <span class="dr-acts"><button class="dr-ed" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}">${homeIcon('next')}</button><button class="dr-x" type="button" data-drop="${i}" aria-label="Убрать строку: ${esc(d.cat)}">${icon('close')}</button></span></div>`;
   }).join('');
   $('#draftOk').disabled = !draft.length;
   $('#draftOk').textContent = draft.length > 1 ? `Добавить ${draft.length} ${pluralN(draft.length, 'запись', 'записи', 'записей')}` : 'Добавить запись';
@@ -2305,7 +2305,7 @@ function renderPanel(err) {
         pnBtn('cat-save', 'Сохранить') + (E.custom ? pnBtn('cat-del', 'Удалить категорию', 'danger') : E.changed ? pnBtn('cat-reset', 'Вернуть как было', 'ghost') : '') + pnBtn('cat-back', 'Назад', 'ghost');
     } else {
       html = `<div class="seg" role="radiogroup" aria-label="Тип">${[['expense', 'Расходы'], ['income', 'Доходы']].map(x => `<button type="button" role="radio" class="seg-b" data-pn="cat-t:${x[0]}" aria-checked="${t === x[0]}">${x[1]}</button>`).join('')}</div>
-        <div class="grp flat">${list.filter(c => c[0] !== OTHER).map((c, i) => `<button class="row" type="button" data-pn="cat-edit:${i}"><span class="rw-ic ci" style="${cs(c)}" aria-hidden="true">${cIcon(c)}</span><span class="rw-t"><b>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</b></span><span class="rw-r"><i data-ic="pencil"></i></span></button>`).join('')}</div>` + pnBtn('cat-add', 'Новая категория', 'soft');
+        <div class="grp flat">${list.filter(c => c[0] !== OTHER).map((c, i) => `<button class="row" type="button" data-pn="cat-edit:${i}"><span class="rw-ic ci" style="${cs(c)}" aria-hidden="true">${cIcon(c)}</span><span class="rw-t"><b>${esc(c[0])}${c[3] && c[3].isNew ? '<em class="newb">new</em>' : ''}</b></span><span class="rw-r">${homeIcon('next')}</span></button>`).join('')}</div>` + pnBtn('cat-add', 'Новая категория', 'soft');
     }
   } else if (P.kind === 'data' && P.done) {
     say = ['happy', 'Файл сохранён'];
