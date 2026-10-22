@@ -301,3 +301,30 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 .chat-bar .cb-mic svg,.chat-bar .cb-send svg{width:24px;height:24px}
 #chatAttach .pack-icon img{display:none!important}
 #chatAttach .pack-icon{background:currentColor;-webkit-mask:url(img/icons/pack/dark/document.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/document.svg) center/contain no-repeat;color:var(--d-text2)}
+
+/* ===== Анализ: приведён к системе (по отчётам агентов) ===== */
+#s-stats{--muted:#8A93B5;--text:#F4F6FF}
+#s-stats>header+*{margin-top:var(--d-s12)!important}
+#s-stats #catCard,#s-stats .stat-insight,#s-stats .ins>div,#s-stats #catList .cats{border-radius:var(--d-r20)!important;border:1px solid var(--d-line)!important;background:var(--d-card)!important}
+#s-stats #catCard{padding:var(--d-s16)!important}
+#s-stats .stat-insight{padding:var(--d-s16);align-items:center}
+#s-stats .stat-insight p{font:400 15px/1.4 var(--font-text,inherit);color:var(--d-text)}
+#s-stats .stat-insight em{color:var(--d-accent-text)}
+#s-stats .stat-insight-ico{background:none!important;width:24px;height:24px;color:inherit}
+#s-stats .stat-insight-ico .pack-icon{width:24px;height:24px}
+#s-stats .ins>div{padding:var(--d-s16)}
+#s-stats .ins{gap:var(--d-s8)}
+#s-stats #catList{padding:0!important;border:0!important;background:none!important;border-radius:0!important;overflow:visible}
+#s-stats #catList h3{margin:0 0 var(--d-s8)!important;padding:0;color:var(--d-muted);font:400 14px/1.3 var(--font-text,inherit)}
+#s-stats #catList .cats{padding:0 var(--d-s16)!important;margin:0;overflow:hidden}
+#s-stats #catList .cat-ico,#s-stats #catList .cat-ico.ci{width:36px;height:36px;flex:0 0 36px;background:none!important;border-radius:0!important;box-shadow:none!important}
+#s-stats #catList .cat-ico .pack-icon{width:24px;height:24px}
+#s-stats #catList .cat-ico img{filter:none!important;opacity:1!important;width:100%;height:100%}
+#s-stats #catList .bar{height:6px;border-radius:3px;margin:var(--d-s8) 0 0 48px;background:var(--d-line)}
+#s-stats #catList .bar i{background:var(--d-accent)!important;border-radius:3px}
+#s-stats #catCard .flow-svg path[stroke]{stroke:url(#stl)!important}
+#s-stats #catCard .curve-sum{color:var(--d-text)!important}
+#s-stats .scrub-tip{position:absolute;top:calc(-1*var(--d-s8));transform:translateX(-50%);background:var(--d-row);border:1px solid var(--d-line);border-radius:var(--d-r12);padding:var(--d-s4) var(--d-s8);font:500 13px/1.3 inherit;color:var(--d-text);pointer-events:none;white-space:nowrap;z-index:2}
+#s-stats .scrub-tip[hidden]{display:none!important}
+.period-bar button.mb,.monthbar .mb{background:none!important;box-shadow:none!important;border-radius:var(--d-r12)!important;color:var(--d-accent-text)!important}
+#s-ops .ops-seg,#s-stats .stats-seg{border-radius:var(--d-r16)!important;padding:var(--d-s4)!important}

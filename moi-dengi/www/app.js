@@ -328,18 +328,18 @@ function renderHomeCards(T, pi, soon) {
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
 /* Общий график: плавная линия и тонкие вертикальные полоски под ней (главная и статистика) */
-function flowChart(vals, uid, W = 320, H = 84, light = false) {
+function flowChart(vals, uid, W = 320, H = 84, light = false, raw = false) {
   const n = vals.length;
   if (n < 2) return `<svg viewBox="0 0 ${W} ${H}" focusable="false"></svg>`;
   const pts = vals.slice();
-  for (let pass = 0; pass < 2; pass++) for (let i = 1; i < n - 1; i++) pts[i] = (pts[i - 1] + pts[i] * 2 + pts[i + 1]) / 4;
+  if (!raw) for (let pass = 0; pass < 2; pass++) for (let i = 1; i < n - 1; i++) pts[i] = (pts[i - 1] + pts[i] * 2 + pts[i + 1]) / 4;
   const top = 10, base = H - 4, lo = Math.min(...pts), hi = Math.max(...pts), span = hi - lo || 1;
   const xs = pts.map((_, i) => i * W / (n - 1)), ys = pts.map(v => base - 8 - (v - lo) / span * (base - top - 8));
   let d = `M ${xs[0].toFixed(1)} ${ys[0].toFixed(1)}`;
   for (let i = 1; i < n; i++) { const cx = (xs[i - 1] + xs[i]) / 2; d += ` C ${cx.toFixed(1)} ${ys[i - 1].toFixed(1)} ${cx.toFixed(1)} ${ys[i].toFixed(1)} ${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`; }
   const sw = n > 40 ? 1.6 : 2.2, stripes = xs.map((x, i) => `<rect x="${(x - sw / 2).toFixed(1)}" y="${ys[i].toFixed(1)}" width="${sw}" height="${(base - ys[i]).toFixed(1)}" rx="${sw / 2}" fill="url(#${uid}b)"/>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" focusable="false"><defs>
-    <linearGradient id="${uid}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${light ? '#F4F6FF' : '#7C8CFF'}" stop-opacity="${light ? .34 : .38}"/><stop offset="1" stop-color="${light ? '#F4F6FF' : '#3D2CFF'}" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${uid}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${light ? '#F4F6FF' : '#8FA4FF'}" stop-opacity="${light ? .34 : .38}"/><stop offset="1" stop-color="${light ? '#F4F6FF' : '#3159DF'}" stop-opacity="0"/></linearGradient>
     <linearGradient id="${uid}l" x1="0" y1="0" x2="1" y2="0">${light ? '<stop offset="0" stop-color="#F4F6FF" stop-opacity=".7"/><stop offset="1" stop-color="#F4F6FF"/>' : '<stop offset="0" stop-color="#3477EE"/><stop offset=".55" stop-color="#3159DF"/><stop offset="1" stop-color="#8E7BFF"/>'}</linearGradient></defs>
     ${stripes}<path d="${d}" fill="none" stroke="url(#${uid}l)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
     <circle cx="${xs[n - 1].toFixed(1)}" cy="${ys[n - 1].toFixed(1)}" r="4" fill="#fff"/></svg>`;
@@ -606,7 +606,7 @@ function renderPeriodBar(P) {
     el.innerHTML = `<div class="range-row"><label class="field t"><input id="perFrom" type="date" value="${P.f}"><span>С</span></label><label class="field t"><input id="perTo" type="date" value="${P.t}"><span>По</span></label></div>`;
     return;
   }
-  el.innerHTML = `<div class="period period-bar"><button class="mb" data-pshift="-1" aria-label="Назад">${icon('left')}</button><b class="pl" data-pnow role="button" tabindex="0" aria-label="${esc(P.label)}. Нажми, чтобы вернуться к текущему периоду">${esc(P.label)}</b><button class="mb" data-pshift="1" aria-label="Вперёд">${icon('right')}</button></div>`;
+  el.innerHTML = `<div class="period period-bar"><button class="mb" data-pshift="-1" aria-label="Предыдущий период">${icon('left')}</button><b class="pl" data-pnow role="button" tabindex="0" aria-label="${esc(P.label)}. Нажми, чтобы вернуться к текущему периоду">${esc(P.label)}</b><button class="mb" data-pshift="1" aria-label="Следующий период">${icon('right')}</button></div>`;
 }
 let chartScrub = null;
 function renderStats() {
@@ -642,7 +642,7 @@ function renderStats() {
   const word = statType === 'expense' ? 'расходов' : 'доходов';
   const card = $('#catCard'), insEl = $('#insights'), dayCard = $('#dayCard'), catList = $('#catList');
   if (!list.length) {
-    card.innerHTML = `<div class="stats-empty-state"><b>Здесь пока пусто</b><span>Нажми +, чтобы добавить трату, или выбери другой период</span></div>`;
+    card.innerHTML = `<div class="stats-empty-state"><b>Нет ${statType === 'expense' ? 'расходов' : 'доходов'} ${P.word}</b><span>Нажми +, чтобы добавить ${statType === 'expense' ? 'расход' : 'доход'}</span></div>`;
     insEl.innerHTML = ''; dayCard.hidden = true; catList.hidden = true; $('#statSay').innerHTML = '';
     return;
   }
@@ -656,15 +656,15 @@ function renderStats() {
   const big = list.slice().sort((a, b) => b.amount - a.amount)[0];
   {
     const top = esc(rows[0][0]), topSum = esc(maskT(money(rows[0][1]))), share = Math.round(rows[0][1] / total * 100);
-    const main = statType === 'income' ? `Главный источник: <em>${top}</em>, ${share}% (${topSum}).` : `Больше всего ушло на <em>${top}</em>: ${share}% (${topSum}).`;
+    const main = statType === 'income' ? `Главный источник: <em>${top}</em>` : `Больше всего ушло на <em>${top}</em>`;
     let head;
     if (prev > 0) {
       const pct = Math.round((total - prev) / prev * 100), good = statType === 'expense' ? pct <= 0 : pct >= 0;
       head = pct === 0 ? `Столько же, сколько ${P.prevPhrase}` : `${statType === 'expense' ? 'Расходы' : 'Доходы'} на <em>${Math.abs(pct)}%</em> ${pct < 0 ? 'меньше' : 'больше'}, чем ${P.prevPhrase}`;
     } else { head = `${cap(statType === 'expense' ? 'расходов' : 'доходов')} ${P.word}: <em>${esc(maskT(money(total)))}</em>`; }
-    $('#statSay').innerHTML = `<div class="stat-insight"><span class="stat-insight-ico" aria-hidden="true">${icon('spark')}</span><p>${head}<small>${main}</small></p></div>`;
+    $('#statSay').innerHTML = `<div class="stat-insight"><span class="stat-insight-ico" aria-hidden="true">${homeIcon('chart')}</span><p>${prev > 0 ? head : main}</p></div>`;
   }
-  insEl.innerHTML = `<div class="ins"><div><small>В среднем за день</small><b>${esc(maskT(money(round2(total / P.elapsed))))}</b></div><div><small>${statType === 'expense' ? 'Самая крупная трата' : 'Самый крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
+  insEl.innerHTML = `<div class="ins"><div><small>Среднее за день</small><b>${esc(maskT(money(round2(total / P.elapsed))))}</b></div><div><small>${statType === 'expense' ? 'Крупная трата' : 'Крупный доход'}</small><b>${esc(maskT(money(big.amount)))}</b></div></div>`;
 
   const shown = statCat ? list.filter(t => t.cat === statCat) : list, shownSum = sumOf(shown, statType);
   // Кривая: по дням (до двух месяцев), по неделям (длинный период) или по месяцам (год)
@@ -679,12 +679,12 @@ function renderStats() {
     buckets = Array.from({ length: P.days }, (_, i) => { const d = addD(P.from, i); return { l: per.kind === 'week' ? WD_S[d.getDay()] : String(d.getDate()), v: 0, now: ymd(d) === today() }; });
     shown.forEach(t => { const i = daysBetween(P.from, parseYmd(t.date)); if (buckets[i]) buckets[i].v += t.amount; });
   }
-  const nb = buckets.length, nowI = buckets.findIndex(b => b.now), last = nowI >= 0 ? nowI : nb - 1;
+  const nowI = buckets.findIndex(b => b.now), last = nowI >= 0 ? nowI : buckets.length - 1, vis = buckets.slice(0, last + 1), nb = vis.length, daily = per.kind !== 'year' && P.days <= 62;
   const step = nb <= 12 ? 1 : Math.ceil(nb / 6);
-  const labels = buckets.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<span style="left:${(nb > 1 ? i / (nb - 1) * 100 : 50).toFixed(1)}%">${esc(b.l)}</span>` : '').join('');
-  card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : cap(word) + ' ' + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div></div>
-    <div class="curve-box flow" role="img" aria-label="График ${word} ${P.word}"><div class="flow-svg">${flowChart(buckets.slice(0, last + 1).map(b => b.v), 'st', 320, 100)}</div><div class="flow-labels">${labels}</div></div>`;
-  chartScrub = null;
+  const labels = vis.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<span style="left:${(nb > 1 ? i / (nb - 1) * 100 : 50).toFixed(1)}%">${esc(b.l)}</span>` : '').join('');
+  card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : (statType === 'expense' ? 'Расходы ' : 'Доходы ') + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div></div>
+    <div class="curve-box flow" role="img" aria-label="График ${word} ${P.word}"><div class="flow-svg">${flowChart(vis.map(b => b.v), 'st', 320, 100, false, true)}</div><div class="flow-labels">${labels}</div><div class="scrub-tip" hidden></div></div>`;
+  chartScrub = { vals: vis.map(b => b.v), labs: vis.map((b, i) => daily ? dd(addD(P.from, i)) : b.l), n: nb };
   dayCard.hidden = true; dayCard.innerHTML = '';
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
@@ -741,18 +741,15 @@ function shiftMonth(d) { if (tab === 'stats') { shiftPeriod(d); return; } const 
 (() => {
   let down = false, lastI = -1;
   const upd = e => {
-    const c = chartScrub, box = $('#curveBox'); if (!c || !box) return;
-    const svg = $('svg.days', box), r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * c.W;
-    let i = Math.round((x - 8) / ((c.W - 16) / Math.max(1, c.nb - 1))); i = Math.max(0, Math.min(c.last, i));
-    const mark = $('#scrubMark', box), tip = $('#scrubTip', box), lab = c.per.kind !== 'year' && c.P.days <= 62 ? dd(addD(c.P.from, i)) : c.buckets[i].l;
-    mark.hidden = false; mark.setAttribute('transform', `translate(${c.xAt(i).toFixed(1)} 0)`); mark.querySelector('circle').setAttribute('cy', c.yAt(c.cum[i]).toFixed(1));
-    tip.hidden = false; tip.textContent = `${lab} · ${maskT(money(c.cum[i]))}`;
-    tip.style.left = `${Math.min(86, Math.max(14, c.xAt(i) / c.W * 100))}%`; tip.style.top = `${Math.max(2, c.yAt(c.cum[i]) / (c.H + 22) * 100)}%`;
-    const nt = $('.now-tip', box); if (nt) nt.hidden = true;
+    const c = chartScrub, box = e.target.closest ? e.target.closest('.curve-box') || $('#catCard .curve-box') : $('#catCard .curve-box'); if (!c || !box || c.n < 1) return;
+    const svg = $('svg', box), tip = $('.scrub-tip', box); if (!svg || !tip) return;
+    const r = svg.getBoundingClientRect(); let i = Math.round((e.clientX - r.left) / r.width * Math.max(1, c.n - 1)); i = Math.max(0, Math.min(c.n - 1, i));
+    tip.hidden = false; tip.textContent = `${c.labs[i]} · ${maskT(money(c.vals[i]))}`;
+    const x = c.n > 1 ? i / (c.n - 1) : .5; tip.style.left = `${Math.min(68, Math.max(32, x * 100))}%`;
     if (i !== lastI) { lastI = i; buzz(4); }
   };
-  const end = () => { down = false; lastI = -1; const box = $('#curveBox'); if (!box) return; const m = $('#scrubMark', box), t = $('#scrubTip', box), nt = $('.now-tip', box); if (m) m.hidden = true; if (t) t.hidden = true; if (nt) nt.hidden = false; };
-  document.addEventListener('pointerdown', e => { if (e.target.closest('.curve-box')) { down = true; upd(e); } });
+  const end = () => { down = false; lastI = -1; const t = $('#catCard .scrub-tip'); if (t) t.hidden = true; };
+  document.addEventListener('pointerdown', e => { if (e.target.closest('#catCard .curve-box')) { down = true; upd(e); } });
   document.addEventListener('pointermove', e => { if (down) upd(e); });
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
 })();
