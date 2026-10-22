@@ -2523,7 +2523,7 @@ if (cloud.enabled) cloud.onAuth(u => (u ? onSignedIn(u) : onSignedOut()));
 MD.notify.init(quickAdd);
 afterDataChange();
 if (history.state && (history.state.layer || history.state.tab)) history.replaceState(null, '');
-$('#balInfo').addEventListener('click', () => { const n = $('#balNote'), open = n.hidden; n.hidden = !open; $('#balInfo').setAttribute('aria-expanded', String(open)); buzz(6); });
-document.addEventListener('click', e => { const n = $('#balNote'); if (n && !n.hidden && !e.target.closest('#balNote,#balInfo')) { n.hidden = true; $('#balInfo').setAttribute('aria-expanded', 'false'); } });
+$('#balInfo').addEventListener('click', () => { const n = $('#balNote'), open = n.hidden; n.hidden = !open; $('.bal').classList.toggle('tip-open', open); $('#balInfo').setAttribute('aria-expanded', String(open)); buzz(6); });
+document.addEventListener('click', e => { const n = $('#balNote'); if (n && !n.hidden && !e.target.closest('#balNote,#balInfo')) { n.hidden = true; $('.bal').classList.remove('tip-open'); $('#balInfo').setAttribute('aria-expanded', 'false'); } });
 })();
 
