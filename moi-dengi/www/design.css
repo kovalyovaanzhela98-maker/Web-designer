@@ -471,3 +471,4 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #lyTx .tx-sec>*{margin-top:0!important;margin-bottom:0!important}
 #lyTx .tx-sec .fl{margin:0!important;font-size:13px;font-weight:500;color:var(--d-muted)}
 #lyTx .tx-sec[aria-labelledby]{gap:var(--d-s8)}
+#lyTx .tx-utilities{display:none!important}
