@@ -635,6 +635,7 @@ function renderStats() {
     paintIcons(alt); return;
   }
   const P = periodInfo();
+  $('#s-stats').dataset.st = statType;
   renderPeriodBar(P);
   $$('#s-stats [data-st]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.st === statType)));
   const list = state.tx.filter(t => t.type === statType && inPer(t, P.f, P.t));

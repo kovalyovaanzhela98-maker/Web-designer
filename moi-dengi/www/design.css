@@ -344,3 +344,13 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-stats #catList .cats li{border:0!important}
 #s-stats #catList .cats li+li{border-top:1px solid var(--d-line)!important}
 #s-stats #catList .cats li::before,#s-stats #catList .cats li+li::before{display:none!important;content:none!important}
+
+/* Анализ: переключатель как на «Операциях», колонка процентов, подписи, цвет дохода */
+#s-ops .ops-seg,#s-stats .stats-seg{display:grid!important;gap:var(--d-s4)!important;padding:var(--d-s4)!important;border:1px solid var(--d-line)!important;border-radius:var(--d-r16)!important;background:rgba(255,255,255,.06)!important;box-shadow:none!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#s-stats .stats-seg{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#s-ops .ops-seg>*,#s-stats .stats-seg>*{height:44px!important;min-height:44px!important;border-radius:var(--d-r12)!important;font:600 14px/1 inherit!important;color:var(--d-muted)!important;background:none!important;box-shadow:none!important;border:0!important}
+#s-ops .ops-seg>[aria-checked=true],#s-stats .stats-seg>[aria-checked=true]{background:rgba(255,255,255,.1)!important;color:var(--d-text)!important;box-shadow:inset 0 0 0 1px var(--d-line)!important}
+#s-stats #catList .cat-top .pc{flex:0 0 44px!important;text-align:right}
+#s-stats #catList .cat-top .pill{min-width:92px;text-align:right;justify-content:flex-end}
+#s-stats .ins small,#s-stats .curve-h small{font:500 13px/1.3 inherit;color:var(--d-muted)}
+#s-stats[data-st=income] #catCard .curve-sum,#s-stats[data-st=income] #catList .pill,#s-stats[data-st=income] .ins b{color:var(--d-income)!important}
