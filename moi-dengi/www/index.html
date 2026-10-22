@@ -456,21 +456,29 @@
     <div class="grab" aria-hidden="true"></div>
     <div class="sheet-head"><h2 id="payHead">Новый платёж</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <form id="payForm" novalidate>
+      <section class="pay-sec" aria-labelledby="payS1">
+      <div class="fl" id="payS1">Что оплачиваем</div>
       <div class="chips scroll" id="payPresets" role="group" aria-label="Быстрый выбор названия"></div>
       <label class="field"><input id="payName" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Название</span></label>
-      <div class="bal-row" style="margin-top:12px">
+      <div class="bal-row">
         <label class="field unit"><input id="payAmount" type="text" inputmode="decimal" placeholder=" " autocomplete="off"><span>Сумма</span><span class="u" id="payCur"></span></label>
       </div>
+      </section>
+      <section class="pay-sec" aria-labelledby="payS2">
+      <div class="fl" id="payS2">Когда платить</div>
       <div class="seg pay-mode" id="payMode" role="radiogroup" aria-label="Как повторяется">
         <button type="button" role="radio" class="seg-b" data-pmode="monthly" aria-checked="true">Каждый месяц</button>
         <button type="button" role="radio" class="seg-b" data-pmode="once" aria-checked="false">Один раз</button>
       </div>
       <label class="field" id="payDayF"><input id="payDay" type="text" inputmode="numeric" maxlength="2" placeholder=" " autocomplete="off"><span>Число месяца</span></label>
       <label class="field t" id="payOnceF" hidden><input id="payOnce" type="date"><span>Дата</span></label>
-      <div class="fl">Напомнить</div>
+      </section>
+      <section class="pay-sec" aria-labelledby="payS3">
+      <div class="fl" id="payS3">Напомнить</div>
       <div class="chips" id="payRemind" role="radiogroup" aria-label="Напоминание"></div>
       <label class="field t" id="payLeadF" hidden><input id="payLead" type="text" inputmode="numeric" maxlength="2" value="7" autocomplete="off"><span>За сколько дней напомнить</span></label>
       <label class="field t" id="payTimeF" hidden><input id="payTime" type="time" value="10:00"><span>Во сколько</span></label>
+      </section>
       <div class="msg err" id="payErr" role="alert" hidden></div>
       <button class="btn primary wide" type="submit" id="paySave">Сохранить</button>
       <button class="btn soft wide" type="button" id="payMark" hidden>Отметить оплаченным</button>
