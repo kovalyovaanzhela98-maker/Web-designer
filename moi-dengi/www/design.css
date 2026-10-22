@@ -367,3 +367,16 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-stats #catList .bar{margin:-6px 0 0 48px!important}
 /* Стрелки месяца: видимая граница кнопки (рамка и стеклянный фон как у переключателя ниже), 44×44, по краям контента */
 .period-bar button.mb,.monthbar .mb{width:44px!important;height:44px!important;background:rgba(255,255,255,.06)!important;border:1px solid var(--d-line)!important;border-radius:var(--d-r12)!important;box-shadow:none!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:var(--d-accent-text)!important}
+
+/* ===== По отчётам агентов: список «По категориям» как соседняя плашка (видимый отступ 16), шевроны и значки одной роли ===== */
+#s-stats #catList .cats li{padding:12px 0!important}
+#s-stats #catList .cat-ico,#s-stats #catList .cat-ico.ci{width:24px!important;height:24px!important;flex:0 0 24px!important;margin-top:6px}
+#s-stats #catList .cat-top .nm{margin-left:0;font:500 16px/24px inherit}
+#s-stats #catList .cat-top .pill{font-size:16px}
+#s-stats #catList .bar{margin:-6px 0 0 36px!important}
+.setup-chevron .pack-icon,.ev-a .pack-icon,.rw-r .pack-icon,.g-chev .pack-icon,.rw-r svg{width:20px;height:20px}
+#homeBriefing .briefing-mark{background:none!important;box-shadow:none!important}
+#homeBriefing .briefing-mark .pack-icon,.briefing-mark .pack-icon{width:24px;height:24px}
+.period-bar .mb svg,.monthbar .mb svg{color:var(--d-accent-text)!important;width:20px;height:20px}
+#plNudge .rw-ic .pack-icon img{display:none!important}
+#plNudge .rw-ic .pack-icon{width:20px;height:20px;background:var(--d-accent-text);-webkit-mask:url(img/icons/pack/dark/gift.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/gift.svg) center/contain no-repeat}
