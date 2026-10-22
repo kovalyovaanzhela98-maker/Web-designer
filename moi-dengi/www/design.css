@@ -429,3 +429,6 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-pay .pay-row{position:relative}
 #s-pay .pay-row.late .pr-r::after{content:"";display:block;height:20px}
 #s-pay .pay-row .late-act{position:absolute;right:0;bottom:6px;padding:12px 0 8px 16px;line-height:20px}
+#s-pay .pay-row .tx-ic .pack-icon{width:28px;height:28px}
+#homeMain .h-pay .rw-r{color:var(--d-muted)}
+#homeMain .h-pay .rw-r .pack-icon,#homeMain .h-pay .rw-r svg{width:18px;height:18px;color:var(--d-muted)}

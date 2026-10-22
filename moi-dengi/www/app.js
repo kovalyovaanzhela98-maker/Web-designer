@@ -324,7 +324,7 @@ function renderHomeCards(T, pi, soon) {
   if (pi) {
     const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
     $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
-  } else $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
+  } else $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Добавьте обязательный платёж</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
 /* Общий график: плавная линия и тонкие вертикальные полоски под ней (главная и статистика) */
@@ -2049,16 +2049,16 @@ function payRowHtml(r, mk) {
 function renderPay() {
   const el = $('#payBody'), list = state.rec.list, T = new Date(), mk = R.mkOfDate(T);
   if (!list.length) {
-    el.innerHTML = `<div class="pay-empty-state"><span class="quiet-empty-ico" aria-hidden="true">${homeIcon('document')}</span><b>Пока пусто</b><p>Нажмите «+» вверху, чтобы добавить аренду, подписку или кредит. Мы напомним об оплате, но сами ничего не спишем.</p></div>`;
+    el.innerHTML = `<div class="pay-empty-state"><span class="quiet-empty-ico" aria-hidden="true">${homeIcon('document')}</span><b>Пока пусто</b><p>Нажмите «Добавить» вверху: аренда, подписка, кредит. Фин напомнит об оплате, но ничего не спишет.</p></div>`;
     return;
   }
   const rows = R.monthRows(list, mk, T), sm = R.summary(list, mk, T), later = list.filter(p => p.start > mk);
   const lim = MD.sub.limit('payments');
-  el.innerHTML = `<div class="card pay-sum"><span>Оплачено ${sm.paid} из ${sm.n}</span><b>${sm.left > 0 ? `Осталось ${esc(maskT(money(sm.left)))}` : 'Всё закрыто'}</b></div>
+  el.innerHTML = `<div class="card pay-sum"><span>Оплачено ${sm.paid} из ${sm.n}</span><b>${sm.left > 0 ? `Осталось ${esc(maskT(money(sm.left)))}` : 'Всё оплачено'}</b></div>
     <div class="block"><div class="h2-row"><h2 class="h2">${esc(MONTHS[T.getMonth()])}</h2></div><div class="card" style="padding:0 12px">${rows.length ? rows.map(r => payRowHtml(r, mk)).join('') : '<div class="note ctr" style="margin:16px 0">В этом месяце платежей нет</div>'}</div></div>
     ${later.length ? `<div class="block"><div class="h2-row"><h2 class="h2">Со следующего месяца</h2></div><div class="card" style="padding:0 12px">${later.map(p => payRowHtml({ p, date: R.dateOf(p, R.shiftMk(mk, 1)), status: 'wait' }, mk)).join('')}</div></div>` : ''}
     ${(() => { const past = list.filter(p => p.once && p.once.slice(0, 7) < mk); return past.length ? `<div class="block"><div class="h2-row"><h2 class="h2">Прошедшие</h2></div><div class="card" style="padding:0 12px">${past.map(p => payRowHtml({ p, date: R.dateOf(p, p.once.slice(0, 7)), status: R.isPaid(p, p.once.slice(0, 7)) ? 'paid' : 'wait' }, p.once.slice(0, 7))).join('')}</div></div>` : ''; })()}
-    ${lim !== Infinity ? `<div class="note ctr">Платежей: ${list.length} из ${lim}. Больше с Фин Навсегда, без подписки.</div>` : ''}
+    ${lim !== Infinity ? `<div class="note ctr">Платежей: ${list.length} из ${lim}. Больше — в Фин Навсегда.</div>` : ''}
     <div class="note ctr">Фин напоминает и помогает записать. Деньги он не списывает.</div>`;
 }
 $('#payBody').addEventListener('click', e => { const ed = e.target.closest('[data-payedit]'); if (ed) openPaySheet(ed.dataset.payedit); });
