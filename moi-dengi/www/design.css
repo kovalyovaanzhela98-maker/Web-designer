@@ -219,3 +219,14 @@ b,strong,h1,h2,h3{font-weight:600}
 #payCats .cat-tile .ci,#payCats .cat-tile[aria-checked=true] .ci,#bulkCats .cat-tile .ci,#bulkCats .cat-tile[aria-checked=true] .ci,#payCatCur .ci,.cat-cur .ci{background:none!important;border:0!important;box-shadow:none!important;color:var(--d-text2)!important}
 #payCats .cat-tile .ci,#bulkCats .cat-tile .ci{width:36px;height:36px;margin:0 auto var(--d-s4)}
 #payCats .cat-tile .ci .pack-icon,#bulkCats .cat-tile .ci .pack-icon{width:28px;height:28px}
+
+/* Чат с ИИ: плоские стеклянные плашки и поле ввода */
+.chat-hdr .chat-who>div{display:block}
+.chat-quick .cq,.chat-quick .chip{flex:none;background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important;color:var(--d-text);border-radius:var(--d-r12)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.chat-bar,.chat-rec{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;gap:var(--d-s8);align-items:center}
+.chat-bar .cfield{min-height:48px;border-radius:var(--d-r16);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);box-shadow:none;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);padding:0 var(--d-s4);gap:var(--d-s4)}
+.chat-bar .cfield textarea{padding:var(--d-s12) var(--d-s8);min-height:48px;box-sizing:border-box}
+.chat-bar .cb-btn,.chat-bar .cb-mic,.chat-bar .cb-send{flex:0 0 44px;width:44px;height:44px;border-radius:var(--d-r12);background:none!important;border:0!important;box-shadow:none!important;color:var(--d-text2)}
+.chat-bar .cb-send{color:var(--d-accent-text)}
+.chat-feed .bm{border-radius:var(--d-r20);padding:var(--d-s12) var(--d-s16)}
+.chat-bar .cfield textarea:focus{outline:0;box-shadow:none!important}

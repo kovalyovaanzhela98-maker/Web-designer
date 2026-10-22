@@ -42,8 +42,7 @@
 
   function render(noScroll) {
     const feed = $('#chatFeed'); if (!feed) return;
-    $('#chatAv').innerHTML = MD.mascot('hello', 46);
-    feed.innerHTML = aiNote() + msgs.map(html).join('');
+    feed.innerHTML = msgs.map(html).join('');
     $('#chatQuick').innerHTML = quick.map(q => `<button class="cq" type="button" data-q="${esc(q)}">${esc(q)}</button>`).join('');
     if (!noScroll) setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 30);
   }
@@ -270,7 +269,7 @@
         if (first || n >= 5) app.confetti();
       } else { m.done = 'no'; save(); render(true); bot('Хорошо, не записываю.'); }
     });
-    $('#chatClear').addEventListener('click', async () => {
+    const clr = $('#chatClear'); if (clr) clr.addEventListener('click', async () => {
       if (!msgs.length) return;
       if (!(await app.confirmDlg('Очистить переписку?', 'Записи и копилки не пострадают.', 'Очистить'))) return;
       msgs = []; last = null; greet(); save(); render();

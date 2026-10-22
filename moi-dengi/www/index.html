@@ -110,17 +110,18 @@
   <section class="screen chat" id="s-chat" data-screen="chat" aria-label="Помощник" hidden>
     <header class="hdr chat-hdr">
       <button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button>
-      <div class="chat-who"><span class="chat-av" id="chatAv" aria-hidden="true"></span><div><h1 class="title">Помощник</h1><small>Фин считает и подсказывает</small></div></div>
-      <button class="icon-btn sm" id="chatClear" type="button" aria-label="Очистить переписку"><i data-ic="trash"></i></button>
+      <div class="chat-who"><div><h1 class="title">Помощник</h1></div></div>
     </header>
     <div class="chat-feed" id="chatFeed" role="log" aria-live="polite"></div>
     <div class="chat-dock" id="chatDock">
       <div class="chat-quick" id="chatQuick"></div>
       <form class="chat-bar" id="chatForm" autocomplete="off">
-        <button type="button" class="cb-btn" id="chatAttach" aria-label="Прикрепить чек или выписку"><i data-ic="clip"></i></button>
-        <div class="cfield"><textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси Фина" aria-label="Сообщение помощнику"></textarea></div>
-        <button type="button" class="cb-mic" id="chatMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
-        <button type="submit" class="cb-send" id="chatSend" aria-label="Отправить" hidden><i data-ic="send"></i></button>
+        <div class="cfield">
+          <button type="button" class="cb-btn" id="chatAttach" aria-label="Прикрепить чек или выписку"><i data-ic="clip"></i></button>
+          <textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси Фина" aria-label="Сообщение помощнику"></textarea>
+          <button type="button" class="cb-mic" id="chatMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
+          <button type="submit" class="cb-send" id="chatSend" aria-label="Отправить" hidden><i data-ic="send"></i></button>
+        </div>
       </form>
       <div class="chat-rec" id="chatRec" hidden>
         <span class="vl-orb" aria-hidden="true"><span class="pulse"></span></span>
