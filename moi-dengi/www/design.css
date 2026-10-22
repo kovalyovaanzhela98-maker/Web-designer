@@ -407,7 +407,6 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-pay .pay-row .pr-r .st{font-size:13px;font-weight:400;color:var(--d-muted)}
 #s-pay .pay-row .pr-r .st.paid{color:var(--d-muted)}
 #s-pay .pay-row.late .pr-main{padding:14px 0!important}
-#s-pay .pay-row .late-act{flex:0 0 auto;font-size:13px;font-weight:500;color:var(--d-accent-text)!important}
 #s-pay .pay-row+.pay-row,#s-pay .pay-row.late+.pay-row{border-top:1px solid var(--d-line)!important}
 #s-pay .pay-row::before,#s-pay .pay-row::after{content:none!important}
 
@@ -428,8 +427,28 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 /* Платежи: «Записать» стоит под суммой в той же колонке, что «Ожидает» */
 #s-pay .pay-row{position:relative}
 #s-pay .pay-row.late .pr-r::after{content:"";display:block;height:20px}
-#s-pay .pay-row .late-act{position:absolute;right:0;bottom:6px;padding:12px 0 8px 16px;line-height:20px}
 #s-pay .pay-row .tx-ic .pack-icon{width:28px;height:28px}
 #homeMain .h-pay .rw-r{color:var(--d-muted)}
 #homeMain .h-pay .rw-r .pack-icon,#homeMain .h-pay .rw-r svg{width:18px;height:18px;color:var(--d-muted)}
 #homeMain .h-pay{padding-left:var(--d-s20);padding-right:var(--d-s20)}
+
+/* Главная: квадратные плитки обязательных платежей, ряд прокручивается; две плитки видны целиком */
+#homeMain .pay-tiles{display:flex;gap:var(--d-s12);overflow-x:auto;margin:0 calc(-1*var(--d-s20));padding:0 var(--d-s20);scroll-snap-type:x proximity;scrollbar-width:none}
+#homeMain .pay-tiles::-webkit-scrollbar{display:none}
+#homeMain .pay-tile{flex:0 0 calc((100% - var(--d-s20)*2 - var(--d-s12))/2);aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;padding:var(--d-s16);background:var(--d-card);border:1px solid var(--d-line);border-radius:var(--d-r20);scroll-snap-align:start;color:var(--d-text)}
+#homeMain .pay-tile b{font-size:16px;font-weight:500;line-height:1.25;overflow-wrap:anywhere}
+#homeMain .pay-tile .pt-s{display:flex;flex-direction:column;gap:var(--d-s4)}
+#homeMain .pay-tile .pt-a{font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}
+#homeMain .pay-tile small{font-size:13px;font-weight:400;color:var(--d-muted)}
+#homeMain .pay-tile small.warn{color:var(--d-warn)}
+/* Платежи: «Записать» — вторичная кнопка на всю ширину под строкой; «Добавить платёж» — главная внизу списка */
+#s-pay .pay-row{flex-wrap:wrap}
+#s-pay .pay-row .pr-main{flex:1 1 100%}
+#s-pay .pay-row .pay-write{flex:1 1 100%;margin:0 0 var(--d-s16);box-shadow:none}
+#s-pay .pay-row.late .pr-r::after{content:none}
+#s-pay #payBody>.btn{margin-top:var(--d-s24)}
+#s-pay .pay-empty-state .btn{margin-top:var(--d-s24)}
+#homeMain .pay-tiles{scroll-padding-left:var(--d-s20)}
+#homeMain .pay-tile{flex-basis:calc((100% - var(--d-s12))/2)}
+#s-pay #payBody>.btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+#s-pay .pay-empty-state .btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}

@@ -111,7 +111,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   ok('в списке отметка «Ожидает»', (await page.textContent('#payBody')).includes('Ожидает'));
   await page.click('#s-pay [data-back]'); await page.click('[data-tab=home]'); await sleep(200);
   const plaque = await page.textContent('#payCard');
-  ok('строка на главной: «Резерв 500,00 Br · через 2 дня»', /Резерв\s*500,00\s*\S+\s*·\s*через 2 дня/.test(plaque), plaque);
+  ok('плитка на главной: «Аренда 500,00 Br Через 2 дня»', /Аренда\s*500,00\s*\S+\s*Через 2 дня/.test(plaque), plaque);
   await page.click('#payCard [data-go-pay]'); await sleep(200);
   ok('тап по плашке открывает список платежей', await vis('#s-pay'));
   // совпадение операции: категория Дом, сумма 500, дата +1 день
@@ -133,7 +133,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   // 10 платежей, 11-й — предложение покупки навсегда
   for (let i = 0; i < 9; i++) {
     await page.click('[data-newpay] >> nth=0'); await sleep(120);
-    await page.fill('#payName', 'Платёж ' + i); await page.fill('#payAmount', '10'); await page.click('[data-pcat="Другое"]'); await page.click('#paySave'); await sleep(180);
+    await page.fill('#payName', 'Платёж ' + i); await page.fill('#payAmount', '10'); await page.click('#paySave'); await sleep(180);
   }
   ok('в бесплатной версии 10 платежей', (await page.$$eval('#payBody .pay-row', e => e.length)) === 10);
   await page.click('[data-newpay] >> nth=0'); await sleep(300);

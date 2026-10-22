@@ -142,7 +142,7 @@
 
   <!-- ОБЯЗАТЕЛЬНЫЕ ПЛАТЕЖИ: отдельный экран, открывается из Профиля и с плашки на Главной -->
   <section class="screen" id="s-pay" data-screen="pay" aria-label="Обязательные платежи" hidden>
-    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Платежи</h1><button class="pill-btn" type="button" data-newpay><i data-ic="plus"></i><span>Добавить</span></button></header>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Платежи</h1></header>
     <div id="payBody"></div>
   </section>
 
@@ -467,9 +467,6 @@
       </div>
       <label class="field" id="payDayF"><input id="payDay" type="text" inputmode="numeric" maxlength="2" placeholder=" " autocomplete="off"><span>Число месяца</span></label>
       <label class="field t" id="payOnceF" hidden><input id="payOnce" type="date"><span>Дата</span></label>
-      <div class="fl" id="payCatL">Категория</div>
-      <button type="button" class="cat-cur" id="payCatCur" hidden></button>
-      <div class="cat-grid" id="payCats" role="radiogroup" aria-label="Категория"></div>
       <div class="fl">Напомнить</div>
       <div class="chips" id="payRemind" role="radiogroup" aria-label="Напоминание"></div>
       <label class="field t" id="payLeadF" hidden><input id="payLead" type="text" inputmode="numeric" maxlength="2" value="7" autocomplete="off"><span>За сколько дней напомнить</span></label>

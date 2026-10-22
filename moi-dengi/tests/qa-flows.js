@@ -122,7 +122,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await p.click('[data-newpay] >> nth=0'); await sleep(250); await p.click('[data-pp="Аренда"]'); await p.fill('#payAmount', '400'); await p.fill('#payDay', String(Math.max(1, now.getDate() - 1))); await p.click('#paySave'); await sleep(400);
   s = await S(); ok('платёж добавлен', s.rec.list.length === 1);
   await p.click('#s-pay [data-back]'); await sleep(250);
-  ok('платёж на главной', (await p.textContent('#payCard')).includes('Резерв'));
+  ok('платёж на главной', (await p.textContent('#payCard')).includes('Аренда'));
   await p.evaluate(() => MD.app.showTab('pay')); await sleep(250);
   const wr = await p.$('#payBody [data-paywrite]'); if (wr) { await wr.click(); await sleep(350); await p.click('#txSave'); await sleep(250); await p.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(400); s = await S(); ok('платёж: записали и отметился оплаченным', Object.keys(s.rec.list[0].paid).length === 1, s.rec.list[0].paid); }
 
@@ -191,7 +191,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
 
   // ---- 15. платёж на конкретную дату
   await p.evaluate(() => MD.app.showTab('pay')); await sleep(250);
-  await p.click('[data-newpay] >> nth=0'); await sleep(250); await p.fill('#payName', 'Страховка'); await p.fill('#payAmount', '90'); await p.click('[data-pmode=once]'); await p.fill('#payOnce', ymd(new Date(now.getFullYear() + 1, 2, 10))); await p.click('[data-pcat="Другое"]').catch(() => {}); await p.click('#paySave'); await sleep(500);
+  await p.click('[data-newpay] >> nth=0'); await sleep(250); await p.fill('#payName', 'Страховка'); await p.fill('#payAmount', '90'); await p.click('[data-pmode=once]'); await p.fill('#payOnce', ymd(new Date(now.getFullYear() + 1, 2, 10))); await p.click('#paySave'); await sleep(500);
   ok('платёж с конкретной датой сохранён', (await S()).rec.list.some(x => x.once && x.name === 'Страховка'));
 
   // ---- 10. помощник

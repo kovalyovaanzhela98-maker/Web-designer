@@ -321,9 +321,13 @@ function renderHomeCards(T, pi, soon) {
     $('#goalCard').innerHTML = `<div class="h2-row"><h2 class="h2">Копилки</h2></div><button class="h-goal" type="button" data-go="goals" aria-label="Открыть копилки: ${esc(act.name)}, ${goalPct(act)}%"><span class="g-h"><b>${esc(act.name)}</b><span class="g-pct">${goalPct(act)}%</span></span><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
       <span class="g-foot">${per > 0 ? `<span>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</span>` : `<span>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</span>`}<i class="g-chev" aria-hidden="true">${homeIcon('next')}</i></span></button>`;
   } else $('#goalCard').innerHTML = `<div class="h2-row"><h2 class="h2">Копилки</h2></div><button class="h-empty-card h-goal-empty" type="button" data-go="goals"><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Создайте цель и следите за прогрессом</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
-  if (pi) {
-    const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
-    $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
+  const mkNow = R.mkOfDate(T), tiles = state.rec.list.length ? R.monthRows(state.rec.list, mkNow, T) : [];
+  if (tiles.length) {
+    $('#payCard').innerHTML = `<div class="h2-row"><h2 class="h2">Обязательные платежи</h2><button class="link" type="button" data-go-pay aria-label="Все обязательные платежи">Все</button></div><div class="pay-tiles">${tiles.map(r => {
+      const days = Math.round((midnight(r.date) - midnight(T)) / 864e5), late = r.status === 'late';
+      const st = r.status === 'paid' ? 'Оплачено' : late ? 'Пора оплатить' : cap(R.whenText(days));
+      return `<button class="pay-tile" type="button" data-go-pay aria-label="${esc(cap(r.p.name))}, ${esc(money(r.p.amount))}, ${esc(st)}"><b>${esc(cap(r.p.name))}</b><span class="pt-s"><span class="pt-a">${esc(maskT(money(r.p.amount)))}</span><small class="${late || (r.status !== 'paid' && days <= 3) ? 'warn' : ''}">${esc(st)}</small></span></button>`;
+    }).join('')}</div>`;
   } else $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Добавьте обязательный платёж</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
@@ -2044,22 +2048,20 @@ function payRowHtml(r, mk) {
   const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Записать</span>` : '<span class="st">Ожидает</span>';
   return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span>
     <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(R.scheduleText(p, d, true))}</small></span>
-    <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${st}</span></button>${late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать</button>` : ''}</div>`;
+    <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${late ? '' : st}</span></button>${late ? `<button class="btn secondary wide pay-write" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать</button>` : ''}</div>`;
 }
 function renderPay() {
   const el = $('#payBody'), list = state.rec.list, T = new Date(), mk = R.mkOfDate(T);
   if (!list.length) {
-    el.innerHTML = `<div class="pay-empty-state"><span class="quiet-empty-ico" aria-hidden="true">${homeIcon('document')}</span><b>Пока пусто</b><p>Нажмите «Добавить» вверху: аренда, подписка, кредит. Фин напомнит об оплате, но ничего не спишет.</p></div>`;
+    el.innerHTML = `<div class="pay-empty-state"><span class="quiet-empty-ico" aria-hidden="true">${homeIcon('document')}</span><b>Пока пусто</b><p>Аренда, подписка, кредит: Фин напомнит об оплате.</p><button class="btn primary wide" type="button" data-newpay>Добавить платёж</button></div>`;
     return;
   }
   const rows = R.monthRows(list, mk, T), sm = R.summary(list, mk, T), later = list.filter(p => p.start > mk);
-  const lim = MD.sub.limit('payments');
   el.innerHTML = `<div class="card pay-sum"><span>Оплачено ${sm.paid} из ${sm.n}</span><b>${sm.left > 0 ? `Осталось ${esc(maskT(money(sm.left)))}` : 'Всё оплачено'}</b></div>
     <div class="block"><div class="h2-row"><h2 class="h2">${esc(MONTHS[T.getMonth()])}</h2></div><div class="card" style="padding:0 12px">${rows.length ? rows.map(r => payRowHtml(r, mk)).join('') : '<div class="note ctr" style="margin:16px 0">В этом месяце платежей нет</div>'}</div></div>
     ${later.length ? `<div class="block"><div class="h2-row"><h2 class="h2">Со следующего месяца</h2></div><div class="card" style="padding:0 12px">${later.map(p => payRowHtml({ p, date: R.dateOf(p, R.shiftMk(mk, 1)), status: 'wait' }, mk)).join('')}</div></div>` : ''}
     ${(() => { const past = list.filter(p => p.once && p.once.slice(0, 7) < mk); return past.length ? `<div class="block"><div class="h2-row"><h2 class="h2">Прошедшие</h2></div><div class="card" style="padding:0 12px">${past.map(p => payRowHtml({ p, date: R.dateOf(p, p.once.slice(0, 7)), status: R.isPaid(p, p.once.slice(0, 7)) ? 'paid' : 'wait' }, p.once.slice(0, 7))).join('')}</div></div>` : ''; })()}
-    ${lim !== Infinity ? `<div class="note ctr">Платежей: ${list.length} из ${lim}. Больше — в Фин Навсегда.</div>` : ''}
-    <div class="note ctr">Фин напоминает и помогает записать. Деньги он не списывает.</div>`;
+    <button class="btn primary wide" type="button" data-newpay>Добавить платёж</button>`;
 }
 $('#payBody').addEventListener('click', e => { const ed = e.target.closest('[data-payedit]'); if (ed) openPaySheet(ed.dataset.payedit); });
 
@@ -2086,10 +2088,8 @@ function openPaySheet(id) {
 }
 function renderPaySheet() {
   $('#payPresets').innerHTML = R.PRESETS.map(x => `<button type="button" class="chip" data-pp="${esc(x[0])}" aria-checked="${pm.name === x[0]}">${esc(x[0])}</button>`).join('');
-  const editing = !!pm.id, open = !editing || pm.catOpen || !pm.cat;      // при правке: короче, без быстрых названий, категория одной строкой
-  $('#payPresets').hidden = editing; $('#payCats').hidden = !open; $('#payCatCur').hidden = open;
-  if (!open) { const ci = catInfo('expense', pm.cat); $('#payCatCur').innerHTML = `<span class="ci" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span><b>${esc(pm.cat)}</b><span class="ch">Изменить</span>`; }
-  $('#payCats').innerHTML = CATS.expense.map(c => `<button type="button" role="radio" class="cat-tile" data-pcat="${esc(c[0])}" aria-checked="${c[0] === pm.cat}"><span class="ci" style="${cs(c)};--on:${onColor(c[2])}" aria-hidden="true">${cIcon(c)}<span class="tick">${icon('check')}</span></span><span>${esc(c[0])}</span></button>`).join('');
+  const editing = !!pm.id;      // при правке: короче, без быстрых названий, категория одной строкой
+  $('#payPresets').hidden = editing;
   $('#payRemind').innerHTML = R.REMIND.map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${esc(r.label)}</button>`).join('');
   $('#payTimeF').hidden = pm.remind === 'off'; $('#payLeadF').hidden = pm.remind !== 'custom'; $('#payLead').value = pm.leadN;
   $$('#payMode [data-pmode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.pmode === pm.mode)));
@@ -2098,15 +2098,13 @@ function renderPaySheet() {
 $('#payMode').addEventListener('click', e => { const b = e.target.closest('[data-pmode]'); if (!b || !pm) return; pm.mode = b.dataset.pmode; renderPaySheet(); buzz(6); });
 $('#lyPay').addEventListener('click', e => {
   if (!pm) return;
-  const pp = e.target.closest('[data-pp]'), pc = e.target.closest('[data-pcat]'), pr = e.target.closest('[data-pr]');
+  const pp = e.target.closest('[data-pp]'), pr = e.target.closest('[data-pr]');
   if (pp) {
     pm.name = pp.dataset.pp; $('#payName').value = pm.name;
     const pre = R.PRESETS.find(x => x[0] === pm.name); if (pre && !pm.cat) pm.cat = pre[1];
     renderPaySheet(); buzz(6); if (!$('#payAmount').value) setTimeout(() => $('#payAmount').focus(), 60);
-  } else if (pc) { pm.cat = pc.dataset.pcat; if (pm.id) pm.catOpen = false; renderPaySheet(); buzz(6); }
-  else if (pr) { pm.remind = pr.dataset.pr; renderPaySheet(); buzz(6); }
+  } else if (pr) { pm.remind = pr.dataset.pr; renderPaySheet(); buzz(6); }
 });
-$('#payCatCur').addEventListener('click', () => { if (pm) { pm.catOpen = true; renderPaySheet(); } });
 $('#payName').addEventListener('input', e => { pm.name = e.target.value; hideErr($('#payErr')); });
 $('#payAmount').addEventListener('input', e => {
   let v = e.target.value.replace(/[^\d.,]/g, ''); const i = v.search(/[.,]/);
@@ -2123,7 +2121,7 @@ $('#payForm').addEventListener('submit', async e => {
   if (!(amount > 0)) { showErr(err, 'Впиши сумму, например 500.'); $('#payAmount').focus(); return; }
   if (pm.mode === 'once') { if (!parseYmd(once)) { showErr(err, 'Выбери дату платежа.'); return; } }
   else if (!(day >= 1 && day <= 31)) { showErr(err, 'Впиши число месяца от 1 до 31.'); $('#payDay').focus(); return; }
-  if (!pm.cat) { showErr(err, 'Выбери категорию, и сохраним.'); return; }
+  if (!pm.cat) pm.cat = 'Другое';
   const time = /^\d{2}:\d{2}$/.test($('#payTime').value) ? $('#payTime').value : '10:00', T = new Date();
   let p = pm.id && payById(pm.id);
   if (p) {

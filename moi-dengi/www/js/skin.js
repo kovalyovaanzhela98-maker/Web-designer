@@ -14,7 +14,7 @@
     });
     all(root, '.btn-bord', b => b.classList.add('btn', 'btn--outline', 'btn--block'));
     all(root, '.link', b => b.classList.add('btn', 'btn--text'));
-    all(root, '.late-act,.ev-gift,.ev-a,.quiz-back,.auth-skip,.tk,.vl-stop,.pl-btn', b => b.classList.add('btn', 'btn--text'));
+    all(root, '.ev-gift,.ev-a,.quiz-back,.auth-skip,.tk,.vl-stop,.pl-btn', b => b.classList.add('btn', 'btn--text'));
     all(root, '.tour-btns .tx', b => b.classList.add('btn', 'btn--primary'));
     all(root, '.abtn', b => b.classList.add('btn', 'btn--secondary', 'btn--block'));
     all(root, '.btn.danger-solid', b => b.classList.add('btn--danger'));
