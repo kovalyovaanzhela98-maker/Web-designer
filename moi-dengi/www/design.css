@@ -246,3 +246,7 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 .chat-hdr .chat-who>div{margin:0!important;padding:0!important;flex:none}
 .chat-hdr .chat-who .title,.chat-hdr .chat-who h1{margin:0!important;padding:0!important;position:static!important;transform:none!important;flex:none;width:auto}
 .chat-hdr .back{margin-left:-8px!important}
+/* Чат: «Назад» как на остальных экранах (акцент), стрелка из пака красится цветом текста */
+.chat-hdr .back,.chat-hdr .back span{color:var(--d-accent-text)!important}
+.chat-hdr .back .pack-icon img{display:none!important}
+.chat-hdr .back .pack-icon{background:currentColor;-webkit-mask:url(img/icons/pack/dark/next.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/next.svg) center/contain no-repeat;color:var(--d-accent-text)}
