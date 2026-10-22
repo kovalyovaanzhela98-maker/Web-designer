@@ -336,3 +336,11 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-stats .scrub-mark{position:absolute;width:1px;background:var(--d-accent-text);opacity:.7;pointer-events:none;transform:translateX(-.5px);z-index:2}
 #s-stats .scrub-mark[hidden]{display:none!important}
 #s-home .bal{cursor:pointer}
+/* Анализ: строки списка категорий по системе (карточка 16 от края, строка 14, зазор 12, полоса по левому краю названия) */
+#s-stats #catList .cats li{padding:14px 0!important;margin:0!important}
+#s-stats #catList .cat-top{gap:var(--d-s12)!important}
+#s-stats #catList .bar{margin:var(--d-s8) 0 0 48px!important}
+#s-stats #catList .cats li+li{border-top:1px solid var(--d-line)}
+#s-stats #catList .cats li{border:0!important}
+#s-stats #catList .cats li+li{border-top:1px solid var(--d-line)!important}
+#s-stats #catList .cats li::before,#s-stats #catList .cats li+li::before{display:none!important;content:none!important}
