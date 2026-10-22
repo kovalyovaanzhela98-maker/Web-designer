@@ -606,7 +606,7 @@ function renderPeriodBar(P) {
     el.innerHTML = `<div class="range-row"><label class="field t"><input id="perFrom" type="date" value="${P.f}"><span>С</span></label><label class="field t"><input id="perTo" type="date" value="${P.t}"><span>По</span></label></div>`;
     return;
   }
-  el.innerHTML = `<div class="period period-bar"><button class="mb" data-pshift="-1" aria-label="Предыдущий период">${icon('left')}</button><b class="pl" data-pnow role="button" tabindex="0" aria-label="${esc(P.label)}. Нажми, чтобы вернуться к текущему периоду">${esc(P.label)}</b><button class="mb" data-pshift="1" aria-label="Следующий период">${icon('right')}</button></div>`;
+  el.innerHTML = `<div class="period period-bar"><button class="mb" data-pshift="-1" aria-label="Предыдущий месяц">${icon('left')}</button><b class="pl" data-pnow role="button" tabindex="0" aria-label="${esc(P.label)}. Нажми, чтобы вернуться к текущему месяцу">${esc(P.label)}</b><button class="mb" data-pshift="1" aria-label="Следующий месяц">${icon('right')}</button></div>`;
 }
 let chartScrub = null;
 function renderStats() {
@@ -657,7 +657,7 @@ function renderStats() {
   const big = list.slice().sort((a, b) => b.amount - a.amount)[0];
   {
     const top = esc(rows[0][0]), topSum = esc(maskT(money(rows[0][1]))), share = Math.round(rows[0][1] / total * 100);
-    const main = statType === 'income' ? `Главный источник: <em>${top}</em>` : `Больше всего ушло на <em>${top}</em>`;
+    const main = statType === 'income' ? `<em>${top}</em> — ${share}% доходов` : `На <em>${top}</em> ушло ${share}% расходов`;
     let head;
     if (prev > 0) {
       const pct = Math.round((total - prev) / prev * 100), good = statType === 'expense' ? pct <= 0 : pct >= 0;

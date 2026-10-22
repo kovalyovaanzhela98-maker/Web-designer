@@ -384,3 +384,11 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-stats #catList .cat-top .nm{font-weight:400!important;font-size:15px!important;line-height:24px!important}
 #s-stats #catList .cat-top .pill,#s-stats #catList .cat-top .pill b,#s-stats #catList .cat-top .pill b *{font-size:15px!important}
 #s-stats #catList .cat-top .pc{font-size:14px}
+/* Анализ: зазор значок → текст 12 в обеих плашках; значок Фина чуть крупнее (28) для равного визуального веса */
+#s-stats #catList .cat-top .nm{margin-left:var(--d-s4)}
+#s-stats .stat-insight{gap:var(--d-s12)}
+#s-stats .stat-insight-ico,#s-stats .stat-insight-ico .pack-icon{width:28px;height:28px}
+/* Значок и зазор: одинаково в «Больше всего» и в списке (значок 28, зазор 12, текст на одной вертикали) */
+#s-stats #catList .cat-ico,#s-stats #catList .cat-ico.ci{width:28px!important;height:28px!important;flex:0 0 28px!important;margin-top:4px}
+#s-stats #catList .cat-ico .pack-icon{width:28px;height:28px}
+#s-stats #catList .bar{margin:-6px 0 0 40px!important}
