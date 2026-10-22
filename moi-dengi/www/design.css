@@ -81,7 +81,6 @@ b,strong,h1,h2,h3{font-weight:600}
   background:radial-gradient(90% 120% at 100% 0%,rgba(255,255,255,.24),transparent 58%),var(--d-accent);color:var(--d-text)}
 .bal-head{display:flex;align-items:center;gap:var(--d-s8)}
 .bal-head small{color:rgba(244,246,255,.85);font-size:15px}
-.bal-info{margin:-12px -12px -12px auto;color:var(--d-text);opacity:.9}
 .bal-sum,.bal-sum small{color:var(--d-text)}
 .bal-sum small{opacity:.8}
 .bal-all{color:rgba(244,246,255,.85)}
@@ -108,21 +107,23 @@ b,strong,h1,h2,h3{font-weight:600}
 .h-goal .g-chev{display:grid;flex:none;color:var(--d-muted)}.h-goal .g-chev svg,.h-goal .g-chev img{width:18px;height:18px}
 .link,#homeMain .link,#homeMain .h2-row .link{color:var(--d-accent-text)!important}
 
-/* Значок «i»: зона 44 × 44, видимый круг 32 (как у закрытия шторки), правый край круга на поле 20 */
+/* Значок «i»: кружок 32 нарисован самой кнопкой (иконка строго по центру), зона нажатия 44 даёт невидимое поле вокруг */
 .bal-head{position:relative;min-height:32px}
-.bal-info{position:relative;display:grid;place-items:center;width:44px;height:44px;margin:-6px -6px -6px auto;padding:0;border:0;background:none;color:var(--d-text);opacity:1}
-.bal-info::before{content:"";position:absolute;left:6px;top:6px;width:32px;height:32px;border-radius:50%;background:rgba(244,246,255,.2);border:1px solid rgba(244,246,255,.28)}
-.bal-info svg{position:relative;width:20px;height:20px}
-.bal-info[aria-expanded=true]::before{background:rgba(244,246,255,.34)}
+.bal-info{position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:32px;height:32px;margin:0 0 0 auto;padding:0;border-radius:50%;
+  background:rgba(244,246,255,.2);border:1px solid rgba(244,246,255,.28);color:var(--d-text);opacity:1;
+  -webkit-tap-highlight-color:transparent;outline:none;touch-action:manipulation}
+.bal-info::before{content:none}
+.bal-info::after{content:"";position:absolute;left:-6px;right:-6px;top:-6px;bottom:-6px}
+.bal-info svg{display:block;width:20px;height:20px;margin:0;flex:none}
+.bal-info[aria-expanded=true],.bal-info:active{background:rgba(244,246,255,.34)}
+.bal-info:focus,.bal-info:focus-visible{outline:none}
+.bal-info:focus-visible{box-shadow:0 0 0 2px var(--d-text)}
 /* Подсказка: прямоугольная стеклянная панель, на 16 ниже значка */
 .bal-note{left:0;right:0;top:calc(100% + 8px);padding:var(--d-s12) var(--d-s16);border-radius:var(--d-r16);font-size:14px;line-height:1.4;font-weight:400;color:var(--d-text);
   background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.06)),rgba(11,11,26,.72);border:1px solid rgba(255,255,255,.3);
   -webkit-backdrop-filter:blur(40px) saturate(150%);backdrop-filter:blur(40px) saturate(150%)}
 .bal-note::before,.bal-note::after{content:none}
-.bal-info{-webkit-tap-highlight-color:transparent;outline:none;touch-action:manipulation}
-.bal-info:focus{outline:none}
-.bal-info:focus-visible::before{box-shadow:0 0 0 2px var(--d-text)}
-.bal-info:active::before{background:rgba(244,246,255,.34)}
 /* Пока открыта подсказка, всё под ней размыто и приглушено, чтобы не просвечивало */
 .bal-sum,.bal-all,.bal-chart{transition:filter .2s ease,opacity .2s ease}
 .bal.tip-open .bal-sum,.bal.tip-open .bal-all,.bal.tip-open .bal-chart{filter:blur(10px);opacity:.25}
+.bal-info svg{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}

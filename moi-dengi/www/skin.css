@@ -77,8 +77,6 @@
 .h-greet{font-size:30px!important;font-weight:600!important}
 .bal-head{display:flex;align-items:center;gap:2px}
 .bal-head small{font-size:15px;color:rgba(244,246,255,.72)}
-.bal-info{display:grid;place-items:center;width:44px;height:44px;margin:-12px 0 -12px -4px;background:none;border:0;color:rgba(244,246,255,.6);cursor:pointer}
-.bal-info svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .bal-note{margin:8px 0 0;font-size:14px;line-height:1.4;color:rgba(244,246,255,.78)}
 .bal-sum{display:block;text-align:left;margin-top:4px;padding:0;background:none;border:0;color:#fff;font-size:44px;line-height:1.1;font-weight:600;letter-spacing:-.6px;font-variant-numeric:tabular-nums;cursor:pointer}
 .bal-sum small{font-size:24px;font-weight:500;color:rgba(244,246,255,.7);letter-spacing:0}
