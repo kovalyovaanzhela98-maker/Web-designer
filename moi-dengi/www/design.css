@@ -232,3 +232,17 @@ b,strong,h1,h2,h3{font-weight:600}
 .chat-bar .cfield textarea:focus{outline:0;box-shadow:none!important}
 .flip-x .pack-icon{transform:scaleX(-1)}
 .chat-hdr .back .pack-icon,.chat-hdr .icon-btn .pack-icon,.chat-bar .pack-icon{width:24px;height:24px}
+
+/* Чат: шапка по центру, поле ввода у низа с отступом 20, подсказки отличаются от поля */
+.chat-hdr{position:relative;justify-content:flex-start}
+.chat-hdr .back{padding-left:0;margin-left:0;color:var(--d-text)}
+.chat-hdr .back span{color:var(--d-text)}
+.chat-hdr .chat-who{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.chat-hdr .chat-who .title,.chat-hdr .chat-who h1{text-align:center}
+.chat-dock{bottom:calc(var(--d-s20) + env(safe-area-inset-bottom,0px))!important}
+body.kb .chat-dock{bottom:var(--d-s20)!important}
+.chat-quick .cq,.chat-quick .chip{background:var(--d-row)!important;border:0!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+.chat-hdr{padding:0!important}
+.chat-hdr .chat-who>div{margin:0!important;padding:0!important;flex:none}
+.chat-hdr .chat-who .title,.chat-hdr .chat-who h1{margin:0!important;padding:0!important;position:static!important;transform:none!important;flex:none;width:auto}
+.chat-hdr .back{margin-left:-8px!important}
