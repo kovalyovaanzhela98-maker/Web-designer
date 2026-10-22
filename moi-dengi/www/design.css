@@ -353,7 +353,6 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-stats #catList .cat-top .pc{flex:0 0 44px!important;text-align:right}
 #s-stats #catList .cat-top .pill{min-width:92px;text-align:right;justify-content:flex-end}
 #s-stats .ins small,#s-stats .curve-h small{font:500 13px/1.3 inherit;color:var(--d-muted)}
-#s-stats[data-st=income] #catCard .curve-sum,#s-stats[data-st=income] #catList .pill,#s-stats[data-st=income] .ins b{color:var(--d-income)!important}
 /* Плашка баланса: шеврон показывает, что она открывает «Анализ» */
 .bal-chev{display:inline-grid;vertical-align:-5px;margin-left:var(--d-s4);width:20px;height:20px}
 .bal-chev .pack-icon{width:20px;height:20px}
