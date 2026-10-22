@@ -67,7 +67,6 @@ b,strong,h1,h2,h3{font-weight:600}
 .chat-hdr .rnd{flex:none}
 .chat-quick{display:flex;gap:var(--d-s8);overflow-x:auto;scrollbar-width:none;margin:0 calc(-1*var(--d-s20));padding:0 var(--d-s20)}
 .chat-dock{left:var(--d-s20);right:var(--d-s20);bottom:calc(120px + env(safe-area-inset-bottom,0px))}
-.sheet>.sheet-head .close,.sheet .close{right:0}
 .chat-hdr #chatClear,.chat-hdr .rnd,.chat-hdr .icon-btn{position:static;transform:none;margin:0;flex:none}
 .chat-hdr .chat-who>div{min-width:0}
 
@@ -143,3 +142,14 @@ b,strong,h1,h2,h3{font-weight:600}
 .field.area textarea::placeholder{color:transparent}
 .field.area textarea:focus + span,.field.area textarea:not(:placeholder-shown) + span{top:7px;font-size:13px;font-weight:500;color:var(--d-muted)}
 .field.area textarea{padding-top:24px}
+
+/* Закрытие шторки: только значок крестика, без кружка и эффектов; зона 44, правый край значка на поле 20 */
+.sheet-head .close,.sheet>.sheet-head .icon-btn,.sheet .close{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:44px;display:grid;place-items:center;
+  background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;color:var(--d-text2);-webkit-tap-highlight-color:transparent}
+.sheet-head .close i,.sheet .close i{width:auto;height:auto;display:grid;place-items:center;background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;color:inherit}
+.sheet-head .close svg,.sheet .close svg{width:20px;height:20px}
+.sheet-head .close:active{color:var(--d-text)}
+.sheet-head .close::after{content:none}
+/* Поля ввода: в покое чуть светлее фона шторки, чтобы было видно */
+.sheet .field input,.sheet .field textarea,.sheet .field select,.field.area textarea{background:var(--d-row);border:1px solid rgba(196,203,255,.2)}
+.sheet .field input:focus,.sheet .field textarea:focus,.field.area textarea:focus{border-color:var(--d-accent-text)}
