@@ -261,3 +261,5 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-chat .cc h4{font-size:16px;font-weight:600;color:var(--d-text)}
 #s-chat .cc-row b.e,#s-chat .cc-row .e{color:var(--d-text)}
 #s-chat .chat-quick .cq{min-height:44px;height:44px;font-size:14px;font-weight:500}
+/* Чат: шапка не уезжает при прокрутке ленты */
+#s-chat .chat-hdr{position:sticky;top:0;z-index:20;background:var(--d-bg);padding-top:var(--d-s12)!important;padding-bottom:var(--d-s8)!important}

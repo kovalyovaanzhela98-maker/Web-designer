@@ -262,10 +262,11 @@
     $('#chatFeed').addEventListener('click', e => {
       const act = e.target.closest('[data-act]');
       if (act && act.dataset.act === 'ai-setup') { app.openAiPanel(); return; }
-      if (act && ['deltx', 'setamt', 'edittx'].includes(act.dataset.act)) {
+      if (act && ['deltx', 'setamt', 'edittx', 'undoadd'].includes(act.dataset.act)) {
         const id = act.dataset.id, kind = act.dataset.act;
         msgs.forEach(x => { if (x.k === 'action' && x.id === id) x.done = true; }); save(); render(true);
-        if (kind === 'deltx') { app.deleteTx(id); bot('Удалил. Если передумаешь, нажми «Отменить» внизу.'); }
+        if (kind === 'undoadd') { app.removeTx(id.split(',')); bot('Запись отменена.'); }
+        else if (kind === 'deltx') { app.deleteTx(id); bot('Удалил. Если передумаешь, нажми «Отменить» внизу.'); }
         else if (kind === 'setamt') { app.updateTx(id, { amount: Number(act.dataset.amt) }); bot('Сумма изменена.'); }
         else app.openTx(id);
         return;
@@ -277,7 +278,9 @@
       if (dr.dataset.dr === 'ok') {
         const first = !app.state.tx.length;
         const n = app.addTx(m.items); m.done = 'saved'; save(); render(true);
-        bot(`Записал: <em>${n}</em>.<small>Баланс и аналитика обновились.</small>`);
+        const ids = app.state.tx.slice(-n).map(t => t.id), one = m.items.length === 1 ? m.items[0] : null;
+        bot(one ? `Записал: <em>${esc([one.note && one.note !== one.cat ? one.note : '', (one.type === 'income' ? '+' : '−') + M(one.amount), one.cat].filter(Boolean).join(', '))}</em>` : `Записал ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'операцию' : 'операции'}: <em>${n}</em>`);
+        push({ k: 'action', kind: 'undoadd', label: 'Отменить', id: ids.join(',') });
         quick = ['Сводка за месяц', 'Куда уходят деньги']; render();
         if (first || n >= 5) app.confetti();
       } else { m.done = 'no'; save(); render(true); bot('Хорошо, не записываю.'); }
