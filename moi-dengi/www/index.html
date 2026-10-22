@@ -426,12 +426,15 @@
   <div class="sheet add-sheet" role="dialog" aria-modal="true" aria-labelledby="addTitle">
     <div class="grab" aria-hidden="true"></div>
     <div class="sheet-head"><h2 id="addTitle">Добавить запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
-    <div class="grp" id="addOpts">
+    <div class="add-opts" id="addOpts">
       <button class="row" type="button" data-addway="photo"><span class="rw-ic" aria-hidden="true"><i data-home-icon="document"></i></span><span class="rw-t"><b>По фото чека</b><small>Сфотографируй чек</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
-      <button class="row" type="button" data-addway="text"><span class="rw-ic" aria-hidden="true"><i data-home-icon="message"></i></span><span class="rw-t"><b>Текстом<span class="tag">быстро</span></b><small>Например: «кофе 250»</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+      <button class="row" type="button" data-addway="text"><span class="rw-ic" aria-hidden="true"><i data-home-icon="message"></i></span><span class="rw-t"><b>Текстом<span class="tag">Быстрее</span></b><small>Например: «сегодня кофе 8»</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
       <button class="row" type="button" data-addway="manual"><span class="rw-ic" aria-hidden="true"><i data-home-icon="wallet"></i></span><span class="rw-t"><b>Вручную</b><small>Сумма, категория, счёт</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
     </div>
-    <form id="addTextForm" hidden autocomplete="off"><label class="field"><input id="addTextIn" type="text" maxlength="200" placeholder=" " enterkeyhint="done"><span>Например: кофе 250</span></label><button class="btn primary wide" type="submit">Понять</button><button class="btn ghost wide" type="button" id="addTextBack">Назад</button></form>
+    <form id="addTextForm" hidden autocomplete="off">
+      <label class="field area"><textarea id="addTextIn" rows="1" maxlength="2000" placeholder=" " enterkeyhint="enter"></textarea><span>Например: сегодня кофе 8</span></label>
+      <div class="area-count" id="addTextCount" aria-live="polite" hidden></div>
+      <button class="btn primary wide" type="submit">Понять</button><button class="btn ghost wide" type="button" id="addTextBack">Назад</button></form>
     <input id="addPhoto" type="file" accept="image/*" capture="environment" hidden>
   </div>
 </div>

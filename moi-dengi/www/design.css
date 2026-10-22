@@ -128,3 +128,18 @@ b,strong,h1,h2,h3{font-weight:600}
 .bal-note{margin-top:var(--d-s8);margin-bottom:var(--d-s8)}
 /* Подсказка лежит ПОВЕРХ карточки, не сдвигая содержимое; до значка 8 */
 .bal-note{position:absolute;left:0;right:0;top:calc(100% + 8px);margin:0;z-index:6;flex:none}
+
+/* Добавление записи: две отдельные плашки, акцентное слово «Быстрее» */
+.add-opts{display:flex;flex-direction:column;gap:var(--d-s8)}
+.add-opts .row{border:1px solid var(--d-line);background:var(--d-card);border-radius:var(--d-r20);padding:14px}
+.add-opts .row::before{content:none}
+.add-opts .tag{margin-left:var(--d-s8);font-size:13px;font-weight:500;color:var(--d-accent-text)}
+/* Текст: многострочное поле до 2000 символов */
+.field.area{display:block}
+.field.area textarea{display:block;width:100%;min-height:56px;max-height:240px;resize:none;overflow-y:auto;padding:var(--d-s20) var(--d-s16) var(--d-s8);border-radius:var(--d-r16);background:var(--d-card);border:1px solid var(--d-line);color:var(--d-text);font:inherit;line-height:1.4;box-sizing:border-box}
+.area-count{margin:var(--d-s8) var(--d-s4) 0;text-align:right;font-size:13px;color:var(--d-muted);font-variant-numeric:tabular-nums}
+.area-count[hidden]{display:none}
+.field.area{position:relative}
+.field.area textarea::placeholder{color:transparent}
+.field.area textarea:focus + span,.field.area textarea:not(:placeholder-shown) + span{top:7px;font-size:13px;font-weight:500;color:var(--d-muted)}
+.field.area textarea{padding-top:24px}

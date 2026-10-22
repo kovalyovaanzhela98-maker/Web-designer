@@ -480,8 +480,17 @@ $('#accDel').addEventListener('click', () => {
 $('#accountsBody').addEventListener('click', e => { const r = e.target.closest('[data-acc]'); if (r) { openAccSheet(r.dataset.acc); return; } if (e.target.closest('[data-accnew]')) openAccSheet(null); });
 
 /* ---------- Добавить запись: выбор способа ---------- */
+/* Текстовый ввод: до 2000 символов, поле растёт по высоте, при нескольких строках внизу показано, сколько символов осталось */
+const ADD_MAX = 2000;
+function fitAddText() {
+  const ta = $('#addTextIn'), c = $('#addTextCount'); if (!ta) return;
+  ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
+  const multi = ta.scrollHeight > 64 || ta.value.includes('\n');
+  c.hidden = !multi; c.textContent = `Осталось ${ADD_MAX - ta.value.length}`;
+}
+document.addEventListener('input', e => { if (e.target.id === 'addTextIn') fitAddText(); });
 function openAddSheet() {
-  $('#addOpts').hidden = false; $('#addTextForm').hidden = true; $('#addTextIn').value = '';
+  $('#addOpts').hidden = false; $('#addTextForm').hidden = true; $('#addTextIn').value = ''; fitAddText();
   openLayer($('#lyAdd'));
 }
 $('#lyAdd').addEventListener('click', e => {
@@ -489,7 +498,7 @@ $('#lyAdd').addEventListener('click', e => {
   buzz(10);
   if (b.dataset.addway === 'manual') { closeLayer($('#lyAdd')); openTx(); }
   else if (b.dataset.addway === 'photo') $('#addPhoto').click();
-  else { $('#addOpts').hidden = true; $('#addTextForm').hidden = false; setTimeout(() => $('#addTextIn').focus(), 50); }
+  else { $('#addOpts').hidden = true; $('#addTextForm').hidden = false; setTimeout(() => { $('#addTextIn').focus(); fitAddText(); }, 50); }
 });
 $('#addTextBack').addEventListener('click', () => { $('#addOpts').hidden = false; $('#addTextForm').hidden = true; });
 $('#addTextForm').addEventListener('submit', e => {
