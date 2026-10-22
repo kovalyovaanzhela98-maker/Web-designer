@@ -474,3 +474,5 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #lyTx .tx-utilities{display:none!important}
 #lyTx .note-row .pack-icon,.dr-ed .pack-icon{width:20px;height:20px;flex:none}
 .dr .dr-chev{flex:none;display:inline-flex;margin-left:var(--d-s8)}.dr .dr-chev .pack-icon{width:18px;height:18px}
+#lyTx .note-row{gap:var(--d-s12);font-size:15px}
+#lyLink .rw-r .pack-icon{width:18px;height:18px}
