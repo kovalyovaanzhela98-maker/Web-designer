@@ -284,3 +284,7 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-chat .cc-bar{background:var(--d-line)}
 #s-chat .cc-act .btn:only-child{flex:0 0 auto;padding-left:var(--d-s24);padding-right:var(--d-s24)}
 #chatInput::placeholder{color:var(--d-muted);opacity:1}
+/* Чат: текст кнопок не крупнее текста сообщений */
+#s-chat .cc-act .btn{font-size:15px;font-weight:500;min-height:44px;height:44px;padding-top:0;padding-bottom:0}
+#s-chat .cc-row,#s-chat .cc-row span,#s-chat .cc-row b{font-size:15px}
+#s-chat .cc h4{font-size:16px}
