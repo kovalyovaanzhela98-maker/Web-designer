@@ -143,15 +143,63 @@ b,strong,h1,h2,h3{font-weight:600}
 .field.area textarea:focus + span,.field.area textarea:not(:placeholder-shown) + span{top:7px;font-size:13px;font-weight:500;color:var(--d-muted)}
 .field.area textarea{padding-top:24px}
 
-/* Закрытие шторки добавления (выбор способа и новая запись): только значок крестика, без кружка и эффектов.
-   Зона нажатия 48, значок 24, правый край значка на поле 20 как у плашек. Остальные шторки не меняются. */
-#lyAdd .sheet-head .close,#lyTx .sheet-head .close,#lyAdd .sheet>.sheet-head .icon-btn,#lyTx .sheet>.sheet-head .icon-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);width:48px;height:48px;display:grid;place-items:center;
+/* Закрытие шторки: во всех шторках одинаково, только значок крестика без фона и эффектов; значок 32, зона 48, правый край значка на поле 20 */
+.sheet .sheet-head .close,.sheet>.sheet-head .icon-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);width:48px;height:48px;display:grid;place-items:center;
   background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;color:var(--d-text2);-webkit-tap-highlight-color:transparent}
-#lyAdd .sheet-head .close i,#lyTx .sheet-head .close i{width:auto;height:auto;display:grid;place-items:center;background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;color:inherit}
-#lyAdd .sheet-head .close svg,#lyTx .sheet-head .close svg{width:32px;height:32px}
-#lyAdd .sheet-head .close:active,#lyTx .sheet-head .close:active{color:var(--d-text)}
-#lyAdd .sheet-head .close::after,#lyTx .sheet-head .close::after{content:none}
-.sheet>.sheet-head .close,.sheet .close{right:0}
+.sheet .sheet-head .close i,.sheet>.sheet-head .icon-btn i{width:auto;height:auto;display:grid;place-items:center;background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;color:inherit}
+.sheet .sheet-head .close svg,.sheet>.sheet-head .icon-btn svg{width:32px;height:32px}
+.sheet .sheet-head .close:active{color:var(--d-text)}
+.sheet .sheet-head .close::after,.sheet>.sheet-head .icon-btn::after{content:none}
 /* Поля ввода: в покое чуть светлее фона шторки, чтобы было видно */
 .sheet .field input,.sheet .field textarea,.sheet .field select,.field.area textarea{background:var(--d-row);border:1px solid rgba(196,203,255,.2)}
 .sheet .field input:focus,.sheet .field textarea:focus,.field.area textarea:focus{border-color:var(--d-accent-text)}
+
+/* ===== Шторки добавления: кнопки, сверка, ручной ввод, тост ===== */
+:root{--d-accent-solid:#3159DF;--d-success:#34C759}
+/* Главная кнопка в этих шторках: сплошной акцент со стеклом, без градиента */
+#lyAdd .btn--primary,#lyTx .btn--primary,#lyDraft .btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#lyAdd .btn--primary:hover,#lyTx .btn--primary:hover,#lyDraft .btn--primary:hover{filter:none;background:rgba(49,89,223,.86)}
+#lyAdd .btn--primary:active,#lyTx .btn--primary:active,#lyDraft .btn--primary:active{filter:none;background:rgba(49,89,223,.94);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+#lyAdd .btn--primary:disabled,#lyTx .btn--primary:disabled,#lyDraft .btn--primary:disabled{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);box-shadow:none}
+/* Сверка: строки с отдельными действиями, значок по верхнему краю, еле видные линии */
+#draftList{display:flex;flex-direction:column;margin:0 0 var(--d-s16)}
+.draft-row{display:flex;align-items:flex-start;gap:var(--d-s8);padding:var(--d-s12) 0;border-top:1px solid rgba(196,203,255,.08)}
+.draft-row:first-child{border-top:0}
+.draft-row .dr{flex:1;min-width:0;display:flex;align-items:flex-start;gap:var(--d-s12);padding:0;text-align:left;background:none;border:0;color:var(--d-text)}
+.draft-row .tx-ic{width:36px;height:36px;flex:0 0 36px;border-radius:var(--d-r10);background:none!important}
+.draft-row .dr-b{flex:1;min-width:0}
+.draft-row .dr-t{font-size:16px;font-weight:500;line-height:1.3}
+.draft-row .tx-n,.draft-row .dr-s{font-size:13px;color:var(--d-muted);line-height:1.3}
+.draft-row .tx-a{flex:none;font-size:16px;font-weight:500;white-space:nowrap;line-height:1.3}
+.dr-acts{display:flex;flex:none;margin:-4px -12px -4px 0}
+.dr-ed,.dr-x{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;background:none;border:0;color:var(--d-muted);-webkit-tap-highlight-color:transparent}
+.dr-ed svg,.dr-x svg{width:20px;height:20px}
+.dr-ed:active,.dr-x:active{color:var(--d-text)}
+/* Ручной ввод */
+#lyTx .tx-rest{gap:var(--d-s16)}
+#lyTx .tx-rest>*{margin-top:0!important;margin-bottom:0!important}
+#txAmount::placeholder{color:var(--d-muted);opacity:.45}
+#lyTx .seg,#lyTx .cur-row.seg{background:rgba(255,255,255,.06);box-shadow:none;border:0;border-radius:var(--d-r16);padding:var(--d-s4)}
+#lyTx .seg button{box-shadow:none!important;background:transparent;border:0;border-radius:var(--d-r12);color:var(--d-text2)}
+#lyTx .seg button[aria-pressed=true]{background:rgba(255,255,255,.16);color:var(--d-text)}
+#lyTx .seg:not(.seg--sm) button{font-size:17px;font-weight:600}
+#lyTx .seg button[data-type][aria-pressed=true]{background:rgba(49,89,223,.85);color:#fff}
+#lyTx .tx-grp{display:flex;flex-direction:column;gap:var(--d-s16);background:none;border:0;border-radius:0;padding:0;overflow:visible}
+#lyTx .tt-dates{padding:0;border:0;background:none;min-height:0}
+#lyTx .tt-dates .date-row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--d-s8);width:100%}
+#lyTx .tt-dates .chip{width:100%;min-height:44px;padding:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);box-shadow:none;color:var(--d-text);border-radius:var(--d-r12);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#lyTx .tt-dates .chip[aria-pressed=true]{background:rgba(49,89,223,.85);border-color:rgba(255,255,255,.3);color:#fff;box-shadow:none}
+#lyTx .note-row{border:1px solid var(--d-line);border-radius:var(--d-r16);background:var(--d-card);padding:0 var(--d-s16)}
+/* Категории: минималистичные плитки 36, невыбранные приглушены, выбранная 100% */
+#lyTx .cat-grid{gap:var(--d-s8);padding:0 var(--d-s20);margin:0 calc(-1*var(--d-s20))}
+#lyTx .cat-tile{width:64px;opacity:.5;transition:opacity .15s ease}
+#lyTx .cat-tile .ci{width:36px;height:36px;margin:0 auto var(--d-s8);border-radius:var(--d-r10);box-shadow:none!important}
+#lyTx .cat-tile[aria-checked=true]{opacity:1;color:var(--d-text)}
+/* Записано: две вторичные кнопки друг под другом */
+.tx-done-more{display:flex;flex-direction:column;gap:var(--d-s8)}
+/* Уведомление: отступ 16 со всех сторон, зелёный кружок с галочкой */
+.toast{padding:var(--d-s16);gap:var(--d-s12);align-items:center}
+.toast-ic{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;color:#fff}
+.toast-ic.ok{background:var(--d-success)}.toast-ic.bad{background:var(--d-danger)}
+.toast-ic svg{width:14px;height:14px}

@@ -236,7 +236,7 @@
     <form id="txForm" novalidate>
       <div class="tx-rest">
         <div class="amt-line">
-          <label class="amt-in"><input id="txAmount" data-autofocus type="text" inputmode="decimal" autocomplete="off" placeholder=" " aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
+          <label class="amt-in"><input id="txAmount" data-autofocus type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
         </div>
         <div class="tx-utilities"><button type="button" class="voice-btn cam-btn" id="txCam" aria-label="Сфотографировать чек"><i data-ic="camera"></i><span>Чек</span></button><button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i><span>Голосом</span></button></div>
                 <div class="seg" role="radiogroup" aria-label="Тип записи">
@@ -280,7 +280,7 @@
       <b id="txDoneT">Записано</b>
       <small id="txDoneD"></small>
       <button class="btn primary wide" type="button" id="txDoneOk">Готово</button>
-      <div class="tx-done-more"><button class="btn ghost" type="button" data-more="expense" id="moreExp">Ещё расход</button><button class="btn ghost" type="button" data-more="income" id="moreInc">Ещё доход</button></div>
+      <div class="tx-done-more"><button class="btn soft wide" type="button" data-more="expense" id="moreExp">Ещё расход</button><button class="btn soft wide" type="button" data-more="income" id="moreInc">Ещё доход</button></div>
     </div>
   </div>
 </div>
@@ -291,9 +291,8 @@
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="draftTitle">
     <div class="grab" aria-hidden="true"></div>
     <div class="sheet-head"><h2 id="draftTitle">Всё верно?</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
-    <p class="note top0">Нажми на строку, чтобы изменить. Крестик убирает лишнее.</p>
+    <p class="note top0">Карандаш меняет запись, крестик убирает лишнее.</p>
     <div id="draftList"></div>
-    <div class="draft-sum" id="draftSum"></div>
     <button class="btn primary wide" id="draftOk">Всё верно</button>
     <button class="btn ghost wide" id="draftCancel" type="button">Отмена</button>
   </div>

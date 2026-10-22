@@ -74,7 +74,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await page.fill('#txAmount', '7'); await page.click('#txSave'); await sleep(250); await page.evaluate(() => { const b = document.querySelector('#txDoneOk'); if (b && b.offsetParent) b.click(); }); await sleep(350);
   ok('после правки вернулись в «Всё верно?»', await vis('#lyDraft') && (await page.textContent('#draftList')).includes('7,00'));
   await page.click('#draftOk'); await sleep(300);
-  ok('сохранено: тост «Записано: 2»', (await page.textContent('#toast')).includes('Записано: 2'));
+  ok('сохранено: тост «Успешно добавлено 2»', (await page.textContent('#toast')).includes('Успешно добавлено 2'));
   // непонятная фраза: без вины
   await page.evaluate(() => MD.app.spoken('абвгд', false)); await sleep(200);
   ok('не понял: подсказка с примером, без слова «ошибка»', /вчера такси 12/.test(await page.textContent('#toast')) && !/ошибк/i.test(await page.textContent('#toast')));

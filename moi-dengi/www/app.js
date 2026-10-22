@@ -862,7 +862,7 @@ function toast(msg, actionLabel, action, pose, ms) {
   const t = $('#toast'), dur = ms || (actionLabel ? 6000 : 4000);
   t.hidden = true; void t.offsetWidth;
   t.style.transform = ''; t.style.opacity = ''; t.style.setProperty('--tms', dur + 'ms');
-  t.innerHTML = (pose ? `<span class="toast-m">${MD.mascot(pose, msg.length > 60 ? 44 : 30)}</span>` : '') + `<span>${esc(msg.split('\n')[0])}${msg.indexOf('\n') > 0 ? `<small class="t2">${esc(msg.split('\n').slice(1).join(' '))}</small>` : ''}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
+  t.innerHTML = (pose ? `<span class="toast-ic ${pose === 'oops' ? 'bad' : 'ok'}" aria-hidden="true">${icon(pose === 'oops' ? 'close' : 'check')}</span>` : '') + `<span>${esc(msg.split('\n')[0])}${msg.indexOf('\n') > 0 ? `<small class="t2">${esc(msg.split('\n').slice(1).join(' '))}</small>` : ''}</span>` + (actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : '');
   if (actionLabel) $('button', t).onclick = () => { clearTimeout(toastT); t.hidden = true; action(); };
   t.hidden = false;
   clearTimeout(toastT);
@@ -910,7 +910,7 @@ function renderTxForm() {
 }
 $('#txCatCur').addEventListener('click', () => { tx.catOpen = true; renderTxForm(); });
 $('#txAcc').addEventListener('change', e => { tx.acc = e.target.value; });
-const fitAmt = () => { const el = $('#txAmount'); const v = el.value; el.style.width = Math.max(1.2, v.replace(/[.,\s]/g, '').length * 1.02 + (v.length - v.replace(/[.,\s]/g, '').length) * 0.5 + 0.3) + 'ch'; };
+const fitAmt = () => { const el = $('#txAmount'); const v = el.value; el.style.width = Math.max(1.3, v.replace(/[.,\s]/g, '').length * 1.02 + (v.length - v.replace(/[.,\s]/g, '').length) * 0.5 + 0.3) + 'ch'; };
 $('#txAmount').addEventListener('input', fitAmt);
 $('#txNoteBtn').addEventListener('click', () => { tx.noteOpen = true; renderTxForm(); setTimeout(() => $('#txNote').focus(), 40); });
 /* Валюта операции: подписка в долларах, евро или рублях пересчитывается в основную валюту по курсу на дату */
@@ -1161,7 +1161,7 @@ function afterAdd(items, first, pay, quiet) {
       markPaid(sim.p.id, sim.mk, items[0].id); save(); render();
       toast(`Класс, в этом месяце ты вносишь платёж за «${cap(sim.p.name)}» больше, чем нужно. Так держать!` + (R.isLoan(sim.p) ? `\nЕсли вносить больше нужного, кредит выплатится быстрее ${R.earlier(sim.p, sim.extra)}.` : ''), null, null, 'joy', 7000);
     } else if (m) toast(`Записано. Это оплата «${cap(m.p.name)}»?`, 'Отметить', () => { markPaid(m.p.id, m.mk, hit.id); save(); render(); if (!askClash(m.p.id, hit.date)) toast(`Отмечено: ${cap(m.p.name)}`, null, null, 'happy'); }, 'joy', 8000);
-    else if (!quiet || madeCat) toast(madeCat ? `Записано. Завёл категорию «${madeCat.n}»` : items.length > 1 ? `Записано: ${items.length}` : 'Записано', null, null, 'joy');
+    else if (!quiet || madeCat) toast(madeCat ? `Записано. Завёл категорию «${madeCat.n}»` : `Успешно добавлено ${items.length} ${pluralN(items.length, 'запись', 'записи', 'записей')}`, null, null, 'joy');
   }
   maybeAskFest(items);
   if (first) setTimeout(offerLogin, 1800);
@@ -1677,15 +1677,13 @@ function normalizeItems(items, max = 30) {
 function renderDraft() {
   $('#draftList').innerHTML = draft.map((d, i) => {
     const ci = catInfo(d.type, d.cat);
-    return `<div class="draft-row"><button class="dr" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}, ${esc(signed(d.amount, d.type))}"><div class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</div>
+    return `<div class="draft-row"><button class="dr" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}, ${esc(signed(d.amount, d.type))}"><div class="tx-ic" aria-hidden="true">${cIcon(ci)}</div>
       <div class="dr-b"><div class="dr-t">${esc(d.cat)}</div>${d.note ? `<div class="tx-n">${esc(d.note)}</div>` : ''}<div class="dr-s">${esc(dayTitle(d.date))}</div></div>
       <div class="tx-a ${d.type === 'income' ? 'inc' : 'exp'}">${esc(signed(d.amount, d.type))}</div></button>
-      <button class="dr-x" type="button" data-drop="${i}" aria-label="Убрать строку: ${esc(d.cat)}">${icon('close')}</button></div>`;
+      <span class="dr-acts"><button class="dr-ed" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}">${icon('pencil')}</button><button class="dr-x" type="button" data-drop="${i}" aria-label="Убрать строку: ${esc(d.cat)}">${icon('close')}</button></span></div>`;
   }).join('');
-  const inc = sumOf(draft, 'income'), exp = sumOf(draft, 'expense');
-  $('#draftSum').innerHTML = `<span>Записей: ${draft.length}</span>${inc ? `<span class="i">Доход +${esc(money(inc))}</span>` : ''}${exp ? `<span class="e">Расход −${esc(money(exp))}</span>` : ''}`;
   $('#draftOk').disabled = !draft.length;
-  $('#draftOk').textContent = draft.length > 1 ? `Всё верно · ${draft.length}` : 'Всё верно';
+  $('#draftOk').textContent = draft.length > 1 ? `Добавить ${draft.length} ${pluralN(draft.length, 'запись', 'записи', 'записей')}` : 'Добавить запись';
 }
 $('#draftList').addEventListener('click', e => {
   const x = e.target.closest('[data-drop]');
