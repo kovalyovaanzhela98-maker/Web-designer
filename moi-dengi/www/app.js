@@ -341,7 +341,7 @@ function flowChart(vals, uid, W = 320, H = 84, light = false) {
     <circle cx="${xs[n - 1].toFixed(1)}" cy="${ys[n - 1].toFixed(1)}" r="4" fill="#fff"/></svg>`;
 }
 function renderBalanceTrend(T) {
-  const currentBalance = state.accounts.reduce((s, a) => s + (Number(a.balance) || 0), 0), N = 28, points = [];
+  const currentBalance = totalBalance(), N = 28, points = [];
   for (let i = N - 1; i >= 0; i--) {
     const day = ymd(addD(T, -i));
     const after = state.tx.reduce((sum, t) => t.date > day ? sum + (t.type === 'income' ? t.amount : -t.amount) : sum, 0);

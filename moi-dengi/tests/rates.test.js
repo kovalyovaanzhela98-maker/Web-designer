@@ -9,5 +9,7 @@ let fail = 0; const ok = (n, c, i) => { if (!c) { fail++; console.log('✗', n, 
   r = await R.convert(5, 'BYN', 'BYN', '2026-10-01'); ok('та же валюта без пересчёта', r.amount === 5);
   global.fetch = async () => { throw new Error('offline'); };
   r = await R.convert(10, 'USD', 'BYN', '2026-11-01'); ok('без сети: последний сохранённый курс и пометка «примерно»', r.amount === 32.5 && r.est === true, r);
+  global.fetch = async () => ({ ok: true, json: async () => ({ Cur_OfficialRate: 27.6, Cur_Scale: 1 }) });
+  r = await R.convert(540, 'RUB', 'BYN', '2026-12-01'); ok('перевёрнутый курс RUB отбрасывается, берём запасной', r.amount < 30 && r.est === true, r);
   console.log(fail ? `Провалено: ${fail}` : 'Все тесты прошли'); process.exit(fail ? 1 : 0);
 })();
