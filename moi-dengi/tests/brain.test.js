@@ -12,7 +12,7 @@ const tx = [
 ];
 const ctx = { now, tx, goals: [{ name: 'Отпуск', target: 3000, saved: 600 }], sym: 'Br', startBalance: 100, freeMoney: 900 };
 const R = (s, extra) => B.reply(s, Object.assign({}, ctx, extra || {}));
-const text = r => r.blocks.filter(b => b.t === 'text').map(b => b.html).join(' ');
+const text = r => r.blocks.filter(b => b.t === 'text').map(b => b.html).join(' ').replace(/\u00A0/g, ' ');
 
 let r = R('кофе 6 и такси 12');
 eq('запись: черновик из двух', [r.blocks[0].t, r.blocks[0].items.length], ['draft', 2]);
@@ -76,8 +76,8 @@ r = R('Я трачу больше, чем в прошлом месяце?'); ok(
 r = R('Сравни траты на кофе с сентябрем'); ok('сравнение категории с другим месяцем', /%/.test(text(r)) && /сентябр/.test(text(r)), text(r));
 r = R('Сколько осталось от бюджета на кафе?'); ok('лимитов нет: честный ответ, без выдуманных цифр', /Лимитов по категориям у меня нет/.test(text(r)), text(r));
 r = R('Хватит ли мне денег до конца месяца?'); ok('прогноз: свободные деньги и сумма в день', /Свободных денег 900,00/.test(text(r)) && /в день/.test(text(r)), text(r));
-r = R('Удали последнюю запись'); ok('удаление: превью и кнопки, без молчаливого удаления', r.blocks.some(b => b.t === 'action' && b.kind === 'deltx') && r.blocks.some(b => b.t === 'action' && b.kind === 'edittx'), text(r));
-r = R('Измени вчерашнее такси на 20 рублей', { now: new Date(2026, 9, 17) }); ok('изменение суммы: превью с кнопкой', r.blocks.some(b => b.t === 'action' && b.kind === 'setamt' && b.amount === 20), text(r));
+r = R('Удали последнюю запись'); ok('удаление: превью и кнопки, без молчаливого удаления', r.blocks.some(b => b.t === 'card' && b.title === 'Удалить запись?' && b.actions.some(a => a.kind === 'deltx') && b.actions.some(a => a.kind === 'edittx')), text(r));
+r = R('Измени вчерашнее такси на 20 рублей', { now: new Date(2026, 9, 17) }); ok('изменение суммы: превью с кнопкой', r.blocks.some(b => b.t === 'card' && b.actions.some(a => a.kind === 'setamt' && a.amount === 20)), text(r));
 r = R('Какие платежи скоро?'); ok('платежи: ответ без выдумки', /платеж/i.test(text(r)));
 r = R('Привет'); ok('приветствие остаётся коротким', /Привет/.test(text(r)));
 r = R('Посмотреть статистику'); ok('кнопка «Посмотреть статистику» ведёт к сводке', r.blocks.some(b => b.t === 'card'));

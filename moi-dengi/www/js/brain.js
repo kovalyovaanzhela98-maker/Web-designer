@@ -53,7 +53,7 @@
   /* ---------- Ответы ---------- */
   const T = html => ({ t: 'text', html });
   const make = (ctx) => {
-    const M = n => `${fmt(n)} ${ctx.sym}`;
+    const M = n => `${fmt(n)}\u00A0${ctx.sym}`;
     const now = ctx.now, all = ctx.tx;
     const sumCard = (p, list) => {
       const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense'), net = r2(inc - exp);
@@ -282,7 +282,7 @@
     H.delLast = () => {
       const t = all.length ? all[all.length - 1] : null;
       if (!t) return { blocks: [T('Записей пока нет, удалять нечего.')], quick: [] };
-      return { blocks: [T(`Последняя запись: <em>${esc(t.note || t.cat)}</em>, ${esc(M(t.amount))}, ${esc(dd(t.date))}. Удалить?`), { t: 'action', kind: 'deltx', label: 'Удалить', id: t.id }, { t: 'action', kind: 'edittx', label: 'Изменить', id: t.id }], quick: [] };
+      return { blocks: [{ t: 'card', title: 'Удалить запись?', rows: [{ l: `${upper(t.note || t.cat)} · ${dd(t.date)}`, v: (t.type === 'income' ? '+' : '−') + M(t.amount) }], actions: [{ kind: 'edittx', label: 'Изменить', id: t.id }, { kind: 'deltx', label: 'Удалить', id: t.id, danger: true }] }], quick: [] };
     };
     H.editAmt = (text) => {
       const ent = wordOf(text);
@@ -294,7 +294,7 @@
       sub = sub.sort((x, y) => (y.date > x.date ? 1 : -1));
       if (!sub.length) return { blocks: [T('Я не нашёл такую запись. Уточни, что именно изменить, или открой её в «Операциях».')], quick: [] };
       const t = sub[0];
-      return { blocks: [T(`Нашёл: <em>${esc(t.note || t.cat)}</em>, ${esc(dd(t.date))}, сейчас ${esc(M(t.amount))}. Изменить сумму на ${esc(M(amount))}?`), { t: 'action', kind: 'setamt', label: `Изменить на ${M(amount)}`, id: t.id, amount }, { t: 'action', kind: 'edittx', label: 'Открыть запись', id: t.id }], quick: [] };
+      return { blocks: [{ t: 'card', title: 'Изменить сумму?', rows: [{ l: `${upper(t.note || t.cat)} · ${dd(t.date)}`, v: `${M(t.amount)} → ${M(amount)}` }], actions: [{ kind: 'edittx', label: 'Открыть', id: t.id }, { kind: 'setamt', label: 'Подтвердить', id: t.id, amount, primary: true }] }], quick: [] };
     };
 
     return H;
@@ -345,13 +345,13 @@
   function reply(input, ctx) {
     const text = norm(input).replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
     ctx = Object.assign({ now: new Date(), tx: [], goals: [], sym: 'Br', startBalance: 0, freeMoney: null, last: null, accounts: [] }, ctx);
-    const H = make(ctx), M = n => `${fmt(n)} ${ctx.sym}`;
+    const H = make(ctx), M = n => `${fmt(n)}\u00A0${ctx.sym}`;
     if (!text) return { blocks: [T('Напиши, что записать или о чём спросить.')], quick: [] };
     // Ответ на «На что?»
     if (ctx.last && ctx.last.intent === 'ask-cat' && ctx.last.item && !/\d/.test(text) && text.length <= 30 && parser) {
       const it = ctx.last.item, names = (root.MD && root.MD.CATS ? root.MD.CATS[it.type].map(c => c[0]) : []).concat(['Другое']);
       const hit = names.find(n => norm(n) === text), cat = hit || parser.pickCategory(text, it.type);
-      return { blocks: [{ t: 'draft', items: [Object.assign({}, it, { cat, note: hit || cat === 'Другое' ? '' : (it.note || '') })], intro: `Понял так: ${M(it.amount)}, ${cat}` }], quick: [] };
+      return { blocks: [{ t: 'draft', items: [Object.assign({}, it, { cat, note: hit || cat === 'Другое' ? '' : (it.note || '') })], intro: it.type === 'income' ? 'Записать доход?' : 'Записать расход?' }], quick: [] };
     }
     if (/^записать трату$/.test(text)) return { blocks: [T('Напиши, что и сколько: «кофе 5» или «вчера такси 12». Можно сразу несколько: «50 на продукты и 15 на такси».')], quick: [] };
     if (/^записать доход$/.test(text)) return { blocks: [T('Напиши, что пришло: «зарплата 2000» или «вчера подработка 150».')], quick: [] };
@@ -379,7 +379,7 @@
       }
       if (items.length) {
         const inc = items.filter(i => i.type === 'income').length;
-        return { blocks: [{ t: 'draft', items, intro: items.length === 1 ? `Понял так: ${[items[0].note && norm(items[0].note) !== norm(items[0].cat) ? items[0].note : '', M(items[0].amount), items[0].cat].filter(Boolean).join(', ')}` : `Понял так: операций ${items.length}` }], quick: [] };
+        return { blocks: [{ t: 'draft', items, intro: items.length === 1 ? (inc ? 'Записать доход?' : 'Записать расход?') : `Записать ${items.length} ${plural(items.length, 'запись', 'записи', 'записей')}?` }], quick: [] };
       }
     }
 

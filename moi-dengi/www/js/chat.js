@@ -18,10 +18,13 @@
 
   /* ---------- Рисуем ---------- */
   const row = (r, extra = '') => `<div class="cc-row"><span class="l">${r.color ? `<i class="d" style="background:${r.color}"></i>` : ''}<span>${esc(r.l)}</span></span><b class="${r.cls || ''}">${esc(r.v)}</b></div>${r.pct != null && r.color ? `<div class="cc-bar"><i style="--c:${r.color};width:${Math.max(2, r.pct)}%"></i></div>` : ''}${extra}`;
+  const MG = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  const dayRu = d => `${+d.slice(8)} ${MG[+d.slice(5, 7) - 1]}`;
+  const actBtn = a => `<button class="btn ${a.danger ? 'danger' : a.primary ? 'primary' : 'soft'}" type="button" data-act="${esc(a.kind)}"${a.id ? ` data-id="${esc(a.id)}"` : ''}${a.amount != null ? ` data-amt="${esc(a.amount)}"` : ''}>${esc(a.label)}</button>`;
   function draftRows(items) {
     const shown = items.slice(0, 6);
     const inc = items.filter(i => i.type === 'income').reduce((s, i) => s + i.amount, 0), exp = items.filter(i => i.type === 'expense').reduce((s, i) => s + i.amount, 0);
-    return shown.map(i => `<div class="cc-row"><span class="l"><i class="d" style="background:${catColor(i)}"></i><span>${esc(i.cat === 'Другое' && i.note ? i.note : i.cat)} · ${esc(i.date.slice(8))}.${esc(i.date.slice(5, 7))}</span></span><b class="${i.type === 'income' ? 'i' : 'e'}">${i.type === 'income' ? '+' : '−'}${esc(M(i.amount))}</b></div>`).join('') +
+    return shown.map(i => `<div class="cc-row"><span class="l"><i class="d" style="background:${catColor(i)}"></i><span>${esc(i.cat === 'Другое' && i.note ? i.note : i.cat)} · ${esc(dayRu(i.date))}</span></span><b class="${i.type === 'income' ? 'i' : 'e'}">${i.type === 'income' ? '+' : '−'}${esc(M(i.amount))}</b></div>`).join('') +
       (items.length > shown.length ? `<div class="cc-row"><span class="l"><span>и ещё ${items.length - shown.length}</span></span></div>` : '') +
       (items.length > 1 ? `<div class="cc-row"><span class="l"><span>Итого</span></span><b>${inc ? `<span class="i">+${esc(M(inc))}</span> ` : ''}${exp ? `<span class="e">−${esc(M(exp))}</span>` : ''}</b></div>` : '');
   }
@@ -32,10 +35,14 @@
     if (m.k === 'file') return `<div class="bm me file">${app.icon(m.icon || 'file')}<span>${esc(m.name)}</span></div>`;
     if (m.k === 'typing') return `<div class="bm bot typing" aria-label="Фин печатает"><i></i><i></i><i></i></div>`;
     if (m.k === 'progress') return `<div class="bm bot">${esc(m.text)}</div>`;
-    if (m.k === 'card') return `<div class="cc"><h4>${esc(m.title)}</h4>${m.sub ? `<p class="cc-s">${esc(m.sub)}</p>` : ''}${m.rows.map(r => row(r, r.sub ? `<div class="cc-s" style="margin:-4px 0 6px">${esc(r.sub)}</div>` : '')).join('')}</div>`;
+    if (m.k === 'card') return `<div class="cc"><h4>${esc(m.title)}</h4>${m.sub ? `<p class="cc-s">${esc(m.sub)}</p>` : ''}${m.rows.map(r => row(r, r.sub ? `<div class="cc-s" style="margin:-4px 0 6px">${esc(r.sub)}</div>` : '')).join('')}${m.actions ? `<div class="cc-act">${m.actions.map(actBtn).join('')}</div>` : ''}</div>`;
     if (m.k === 'action') return m.done ? '' : `<div class="cc-act cc-act-m"><button class="btn soft" type="button" data-act="${esc(m.kind)}"${m.kind === 'deltx' ? ' data-danger' : ''}${m.id ? ` data-id="${esc(m.id)}"` : ''}${m.amount != null ? ` data-amt="${esc(m.amount)}"` : ''}>${esc(m.label)}</button></div>`;
     if (m.k === 'draft') {
-      if (m.done) return `<div class="cc done"><h4>${esc(m.intro)}</h4>${draftRows(m.items)}<p class="cc-s" style="margin:8px 0 0">${m.done === 'saved' ? 'Сохранено' : m.done === 'edit' ? 'Отправлено на правку' : 'Отменено'}</p></div>`;
+      if (m.done) {
+        const one = m.items[0], sv = m.done === 'saved', head = sv ? (m.items.length > 1 ? `Записано: ${m.items.length}` : one.type === 'income' ? 'Доход записан' : 'Расход записан') : m.intro;
+        const st = { edit: 'Открыто для правки', undone: 'Запись отменена', no: 'Отменено' }[m.done];
+        return `<div class="cc done"><h4>${esc(head)}</h4>${draftRows(m.items)}${st ? `<p class="cc-s" style="margin:8px 0 0">${st}</p>` : ''}${sv && m.undo ? `<div class="cc-act">${actBtn({ kind: 'undoadd', label: 'Отменить запись', id: m.undo })}</div>` : ''}</div>`;
+      }
       return `<div class="cc" data-draft="${m.id}"><h4>${esc(m.intro)}</h4>${m.note ? `<p class="cc-s">${esc(m.note)}</p>` : ''}${draftRows(m.items)}<div class="cc-act"><button class="btn soft" type="button" data-dr="edit">Изменить</button><button class="btn primary" type="button" data-dr="ok">Подтвердить</button></div></div>`;
     }
     return '';
@@ -128,7 +135,7 @@
     last = r.last || last;
     r.blocks.forEach(b => {
       if (b.t === 'text') push({ k: 'text', r: 'bot', html: b.html });
-      else if (b.t === 'card') push({ k: 'card', title: b.title, sub: b.sub, rows: b.rows });
+      else if (b.t === 'card') push({ k: 'card', title: b.title, sub: b.sub, rows: b.rows, actions: b.actions });
       else if (b.t === 'draft') push({ k: 'draft', items: b.items, intro: b.intro });
       else if (b.t === 'action') push({ k: 'action', kind: b.kind, label: b.label, id: b.id, amount: b.amount });
     });
@@ -264,9 +271,9 @@
       if (act && act.dataset.act === 'ai-setup') { app.openAiPanel(); return; }
       if (act && ['deltx', 'setamt', 'edittx', 'undoadd'].includes(act.dataset.act)) {
         const id = act.dataset.id, kind = act.dataset.act;
-        msgs.forEach(x => { if (x.k === 'action' && x.id === id) x.done = true; }); save(); render(true);
-        if (kind === 'undoadd') { app.removeTx(id.split(',')); bot('Запись отменена.'); }
-        else if (kind === 'deltx') { app.deleteTx(id); bot('Удалил. Если передумаешь, нажми «Отменить» внизу.'); }
+        msgs.forEach(x => { if (x.k === 'card' && x.actions && x.actions.some(a => a.id === id)) x.actions = null; if (x.k === 'draft' && x.undo === id) { x.undo = null; if (kind === 'undoadd') x.done = 'undone'; } }); save(); render(true);
+        if (kind === 'undoadd') { app.removeTx(id.split(',')); }
+        else if (kind === 'deltx') { const t = app.state.tx.find(x => x.id === id); app.deleteTx(id); bot(t ? `Удалил: ${esc(t.note || t.cat)}, ${t.type === 'income' ? '+' : '−'}${esc(M(t.amount))}. Вернуть можно кнопкой «Отменить» внизу.` : 'Удалил. Вернуть можно кнопкой «Отменить» внизу.'); }
         else if (kind === 'setamt') { app.updateTx(id, { amount: Number(act.dataset.amt) }); bot('Сумма изменена.'); }
         else app.openTx(id);
         return;
@@ -278,8 +285,8 @@
       if (dr.dataset.dr === 'ok') {
         const first = !app.state.tx.length;
         const n = app.addTx(m.items); m.done = 'saved'; save(); render(true);
-        const ids = app.state.tx.slice(-n).map(t => t.id), one = m.items.length === 1 ? m.items[0] : null;
-        push({ k: 'action', kind: 'undoadd', label: 'Отменить', id: ids.join(',') });
+        const ids = app.state.tx.slice(-n).map(t => t.id);
+        m.undo = ids.join(','); save(); render(true);
         quick = ['Сводка за месяц', 'Куда уходят деньги']; render();
         if (first || n >= 5) app.confetti();
       } else { m.done = 'no'; save(); render(true); bot('Хорошо, не записываю.'); }

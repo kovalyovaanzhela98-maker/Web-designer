@@ -877,7 +877,7 @@ function toast(msg, actionLabel, action, pose, ms) {
   t.addEventListener('touchstart', e => { sx = e.touches[0].clientX; dx = 0; t.style.transition = 'none'; }, { passive: true });
   t.addEventListener('touchmove', e => { if (sx === null) return; dx = Math.max(0, e.touches[0].clientX - sx); t.style.transform = `translateX(${dx}px)`; t.style.opacity = String(1 - Math.min(1, dx / 220)); }, { passive: true });
   t.addEventListener('touchend', () => { if (sx === null) return; sx = null; t.style.transition = ''; if (dx > 70) { clearTimeout(toastT); t.hidden = true; } t.style.transform = ''; t.style.opacity = ''; }, { passive: true }); }
-const undoToast = (msg, undo) => toast(msg, 'Отмена', undo, null, 6000);
+const undoToast = (msg, undo) => toast(msg, 'Отменить', undo, null, 6000);
 const showErr = (el, msg) => { el.textContent = msg; el.hidden = false; };
 const hideErr = el => { el.hidden = true; };
 

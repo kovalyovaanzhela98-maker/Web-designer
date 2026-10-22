@@ -83,7 +83,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await sleep(4200);
   await page.click('#recentList [data-tx] >> nth=0'); await sleep(250); await page.click('#txDetailEdit'); await sleep(250);
   await page.click('#txDelete'); await sleep(250);
-  ok('удалено: тост «Отмена»', (await page.textContent('#toast')).includes('Отмена'));
+  ok('удалено: тост «Отмена»', (await page.textContent('#toast')).includes('Отмен'));
   ok('удаление: окно закрыто, диалогов нет', (await openLayers()) === 0);
   await sleep(4800);
   ok('«Отмена» живёт больше 5 секунд', await vis('#toast'));
