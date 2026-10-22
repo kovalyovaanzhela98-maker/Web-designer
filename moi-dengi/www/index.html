@@ -236,6 +236,7 @@
     <div class="sheet-head"><h2 id="txTitle" class="sr">Новая запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
     <form id="txForm" novalidate>
       <div class="tx-rest">
+        <section class="tx-sec">
         <div class="amt-line">
           <label class="amt-in"><input id="txAmount" data-autofocus type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
         </div>
@@ -247,9 +248,15 @@
         <div class="chips cur-row" id="txCurRow" role="radiogroup" aria-label="Валюта операции"></div>
         <div class="note cur-note" id="txCurNote" hidden></div>
         <div class="msg err" id="txAmountErr" hidden></div>
+        </section>
+        <section class="tx-sec" aria-labelledby="txS2">
+        <div class="fl" id="txS2">Категория</div>
         <div class="msg err" id="txCatErr" hidden></div>
         <button type="button" class="cat-cur" id="txCatCur" hidden></button>
         <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
+        </section>
+        <section class="tx-sec" aria-labelledby="txS3">
+        <div class="fl" id="txS3">Когда</div>
         <div class="grp tx-grp">
           <div class="tt-row" id="txAccRow" hidden><span>Счёт</span><select id="txAcc" aria-label="Счёт"></select></div>
           <div class="tt-row tt-dates">
@@ -262,9 +269,12 @@
             </div>
           </div>
         </div>
+        </section>
+        <section class="tx-sec">
         <button type="button" class="tt-row note-row" id="txNoteBtn"><i data-ic="pencil"></i><span>Добавить заметку</span></button>
         <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder="Заметка (необязательно)" autocomplete="off" aria-label="Заметка (необязательно)"><span id="txNoteL">Заметка (необязательно)</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
         <div class="msg err" id="txNoteErr" hidden></div>
+        </section>
         <div class="save-bar"><button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button></div>
         <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить запись</button>
       </div>

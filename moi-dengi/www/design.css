@@ -461,3 +461,13 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #lyPay .pay-sec .bal-row{margin:0!important}
 #lyPay #payErr{margin-bottom:var(--d-s16)}
 #lyPay #payRemind{display:flex;flex-wrap:wrap;overflow:visible;gap:var(--d-s8)}
+#s-pay #payBody{gap:0}
+#s-pay .pay-sum{padding:var(--d-s16)!important}
+#s-pay #payBody>.block{margin-top:var(--d-s24)}
+
+/* Шторка записи: блоки (сумма, категория, когда, заметка): между блоками 24, подпись → содержимое 8, внутри 16 */
+#lyTx .tx-rest{gap:var(--d-s24)}
+#lyTx .tx-sec{display:flex;flex-direction:column;gap:var(--d-s16);margin:0!important}
+#lyTx .tx-sec>*{margin-top:0!important;margin-bottom:0!important}
+#lyTx .tx-sec .fl{margin:0!important;font-size:13px;font-weight:500;color:var(--d-muted)}
+#lyTx .tx-sec[aria-labelledby]{gap:var(--d-s8)}
