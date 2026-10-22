@@ -159,9 +159,9 @@ b,strong,h1,h2,h3{font-weight:600}
 /* Главная кнопка в этих шторках: сплошной акцент со стеклом, без градиента */
 #lyAdd .btn--primary,#lyTx .btn--primary,#lyDraft .btn--primary,#lyPay .btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.28);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-#lyAdd .btn--primary:hover,#lyTx .btn--primary:hover,#lyDraft .btn--primary,#lyPay .btn--primary:hover{filter:none;background:rgba(49,89,223,.86)}
-#lyAdd .btn--primary:active,#lyTx .btn--primary:active,#lyDraft .btn--primary,#lyPay .btn--primary:active{filter:none;background:rgba(49,89,223,.94);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
-#lyAdd .btn--primary:disabled,#lyTx .btn--primary:disabled,#lyDraft .btn--primary,#lyPay .btn--primary:disabled{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);box-shadow:none}
+#lyAdd .btn--primary:hover,#lyTx .btn--primary:hover,#lyDraft .btn--primary:hover,#lyPay .btn--primary:hover{filter:none;background:rgba(49,89,223,.86)}
+#lyAdd .btn--primary:active,#lyTx .btn--primary:active,#lyDraft .btn--primary:active,#lyPay .btn--primary:active{filter:none;background:rgba(49,89,223,.94);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+#lyAdd .btn--primary:disabled,#lyTx .btn--primary:disabled,#lyDraft .btn--primary:disabled,#lyPay .btn--primary:disabled{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);box-shadow:none}
 /* Сверка: строки с отдельными действиями, значок по верхнему краю, еле видные линии */
 #draftList{display:flex;flex-direction:column;margin:0 0 var(--d-s16)}
 .draft-row{display:flex;align-items:flex-start;gap:var(--d-s8);padding:var(--d-s12) 0;border-top:1px solid rgba(196,203,255,.08)}
@@ -425,3 +425,7 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #lyPay .seg button{font-size:15px!important}
 #lyPay .cat-tile{font-size:13px}
 #lyPay #payPresets{gap:var(--d-s8)}#lyPay #payPresets .chip{padding:0 var(--d-s8)!important}
+/* Платежи: «Записать» стоит под суммой в той же колонке, что «Ожидает» */
+#s-pay .pay-row{position:relative}
+#s-pay .pay-row.late .pr-r::after{content:"";display:block;height:20px}
+#s-pay .pay-row .late-act{position:absolute;right:0;bottom:6px;padding:12px 0 8px 16px;line-height:20px}
