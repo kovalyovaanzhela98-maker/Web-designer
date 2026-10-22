@@ -2047,7 +2047,7 @@ function payRowHtml(r, mk) {
   const p = r.p, ci = catInfo('expense', p.cat), d = r.date, late = r.status === 'late';
   const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Записать</span>` : `<span class="st">${esc(cap(R.whenText(Math.round((midnight(d) - midnight(new Date())) / 864e5))))}</span>`;
   return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span>
-    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(R.scheduleText(p, d, true))}</small></span>
+    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(cap(R.scheduleText(p, d, true)))}</small></span>
     <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${late ? '' : st}</span></button>${late ? `<button class="btn secondary wide pay-write" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать оплату</button>` : ''}</div>`;
 }
 function renderPay() {
