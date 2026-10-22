@@ -114,7 +114,12 @@ b,strong,h1,h2,h3{font-weight:600}
 .bal-info::before{content:"";position:absolute;left:6px;top:6px;width:32px;height:32px;border-radius:50%;background:rgba(244,246,255,.2);border:1px solid rgba(244,246,255,.28)}
 .bal-info svg{position:relative;width:20px;height:20px}
 .bal-info[aria-expanded=true]::before{background:rgba(244,246,255,.34)}
-/* Подсказка: отдельное «облако» с хвостиком, на 16 ниже значка */
-.bal-note{left:0;right:0;top:calc(100% + 13px);padding:var(--d-s12) var(--d-s16);border-radius:var(--d-r16);background:var(--d-row);border:1px solid var(--d-accent-text)}
-.bal-note::before{content:"";position:absolute;right:12px;top:-7px;width:12px;height:12px;background:var(--d-row);border-left:1px solid var(--d-accent-text);border-top:1px solid var(--d-accent-text);transform:rotate(45deg);border-top-left-radius:3px}
-.bal-note dl>div{font-size:14px}
+/* Подсказка: прямоугольная стеклянная панель, на 16 ниже значка */
+.bal-note{left:0;right:0;top:calc(100% + 13px);padding:var(--d-s12) var(--d-s16);border-radius:var(--d-r16);font-size:14px;line-height:1.4;font-weight:400;color:var(--d-text);
+  background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.06)),rgba(11,11,26,.62);border:1px solid rgba(255,255,255,.3);
+  -webkit-backdrop-filter:blur(24px) saturate(150%);backdrop-filter:blur(24px) saturate(150%)}
+.bal-note::before,.bal-note::after{content:none}
+.bal-info{-webkit-tap-highlight-color:transparent;outline:none;touch-action:manipulation}
+.bal-info:focus{outline:none}
+.bal-info:focus-visible::before{box-shadow:0 0 0 2px var(--d-text)}
+.bal-info:active::before{background:rgba(244,246,255,.34)}

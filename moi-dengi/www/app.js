@@ -372,8 +372,7 @@ function renderHome() {
   if (w) return;
   const pi = payInfo(T), soon = eventsSoon(T);
   setNum($('#heroSum'), moneyH, freeNow(T, pi, soon));
-  { const reserve = pi ? pi.reserve : 0, gifts = round2(soon.reduce((s2, x) => s2 + (MD.events.itemsTotal(x.e) || 0), 0)), m = n => hide ? MASK : money(n);
-    $('#balNote').innerHTML = `<dl><div><dt>На счетах</dt><dd>${esc(m(totalBalance()))}</dd></div><div><dt>Платежи месяца</dt><dd>${reserve > 0 ? '−' : ''}${esc(m(reserve))}</dd></div><div><dt>Подарки, 14 дней</dt><dd>${gifts > 0 ? '−' : ''}${esc(m(gifts))}</dd></div><div class="eq"><dt>Можно тратить</dt><dd>${esc(m(freeNow(T, pi, soon)))}</dd></div></dl>`; }
+  $('#balNote').textContent = 'Здесь показано, сколько останется после платежей по счёту. А внизу — общий остаток';
   $('#heroAll').textContent = hide ? `На счетах: ${MASK}` : `На счетах: ${money(totalBalance())}`;
   const monthList = monthTx(now0.getFullYear(), now0.getMonth());
   $('#homePeriod').textContent = MONTHS[now0.getMonth()];
