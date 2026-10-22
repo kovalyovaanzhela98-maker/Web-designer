@@ -172,10 +172,11 @@
   function notifications(list, now, money) {
     const out = [], cur = mkOfDate(now);
     for (const p of list) {
-      const ids = remindIds(p), mpr = ids.length <= 2 ? 12 : 6;
+      const ids = remindIds(p), mpr = ids.length <= 2 ? 12 : 6, seen = new Set();
       ids.forEach((rid, k) => {
         const r0 = REMIND.find(x => x.id === rid); if (!r0 || r0.lead === null) return;
         const r = r0.id === 'custom' ? { lead: Math.max(0, Math.min(60, Number(p.leadN) || 0)) } : r0;
+        if (seen.has(r.lead)) return; seen.add(r.lead);           // «Свой срок» = 1 и «За 1 день» не дублируются
         const [h, mi] = p.time.split(':').map(Number);
         for (let i = 0; i < mpr; i++) {
           const mk = shiftMk(cur, i);

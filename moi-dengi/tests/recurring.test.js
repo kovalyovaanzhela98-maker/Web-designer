@@ -57,6 +57,9 @@ eq('санитайзер: массив чистится, дубли и «off» �
 eq('санитайзер: один элемент массива становится строкой', R.sanitize({ list: [{ name: 'А', amount: 5, cat: 'Другое', days: [{ from: '0000-00', day: 3 }], remind: ['3'] }] }).list[0].remind, '3');
 eq('remindIds: строка и массив', [R.remindIds({ remind: 'off' }), R.remindIds({ remind: '1' }), R.remindIds({ remind: ['0', '3'] })], [[], ['1'], ['0', '3']]);
 
+const nd = R.notifications([mk({ remind: ['1', 'custom'], leadN: 1, days: [{ from: '0000-00', day: 28 }] })], now, money);
+eq('одинаковые сроки не дублируются', nd.filter(n => f(n.at).startsWith('2026-10')).length, 1);
+
 // свой срок напоминания: за 10 дней
 const nc = R.notifications([mk({ remind: 'custom', leadN: 10, days: [{ from: '0000-00', day: 28 }] })], now, money);
 eq('свой срок: за 10 дней до 28-го', [f(nc[0].at), nc[0].body.startsWith('Через 10 дней')], ['2026-10-18', true]);
