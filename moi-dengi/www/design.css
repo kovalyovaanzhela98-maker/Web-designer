@@ -293,3 +293,11 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-chat .cc.done{opacity:1}
 #s-chat .cc.done h4,#s-chat .cc.done .cc-row,#s-chat .cc.done .cc-row span,#s-chat .cc.done .cc-row b{color:var(--d-text2)}
 #s-chat .cc-act .btn[data-danger]{color:var(--d-danger)}
+
+/* Иконки шторок и поля ввода: без подложек, один размер на роль */
+#lyAdd .rw-ic,#lyAttach .rw-ic{background:none!important;box-shadow:none!important;border:0!important}
+#lyAdd .rw-ic .pack-icon,#lyAttach .rw-ic .pack-icon,#lyAdd .rw-ic svg,#lyAttach .rw-ic svg{width:24px;height:24px}
+#lyAdd .rw-r .pack-icon,#lyAttach .rw-r .pack-icon,#lyAttach .rw-r svg{width:18px;height:18px;color:var(--d-muted)}
+.chat-bar .cb-mic svg,.chat-bar .cb-send svg{width:24px;height:24px}
+#chatAttach .pack-icon img{display:none!important}
+#chatAttach .pack-icon{background:currentColor;-webkit-mask:url(img/icons/pack/dark/document.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/document.svg) center/contain no-repeat;color:var(--d-text2)}
