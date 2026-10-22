@@ -2070,7 +2070,7 @@ let pm = null;
 const payDefaultDay = () => new Date().getDate();
 function openPaySheet(id) {
   const p = id && payById(id);
-  pm = p ? { id: p.id, name: p.name, amount: p.amount, day: R.curDay(p), mode: p.once ? 'once' : 'monthly', once: p.once || '', cat: p.cat, remind: p.remind, leadN: p.leadN == null ? 7 : p.leadN, time: p.time, catOpen: false }
+  pm = p ? { id: p.id, remind0: p.remind, name: p.name, amount: p.amount, day: R.curDay(p), mode: p.once ? 'once' : 'monthly', once: p.once || '', cat: p.cat, remind: p.remind, leadN: p.leadN == null ? 7 : p.leadN, time: p.time, catOpen: false }
     : { id: null, name: '', amount: '', day: payDefaultDay(), mode: 'monthly', once: '', cat: '', remind: 'off', leadN: 7, time: '10:00' };
   $('#payHead').textContent = p ? 'Платёж' : 'Новый платёж';
   $('#payName').value = pm.name; $('#payAmount').value = pm.amount ? String(pm.amount).replace('.', ',') : ''; $('#payDay').value = pm.day; $('#payTime').value = pm.time; $('#payOnce').value = pm.once || today();
@@ -2090,7 +2090,7 @@ function renderPaySheet() {
   $('#payPresets').innerHTML = R.PRESETS.map(x => `<button type="button" class="chip" data-pp="${esc(x[0])}" aria-checked="${pm.name === x[0]}">${esc(x[0])}</button>`).join('');
   const editing = !!pm.id;      // при правке: короче, без быстрых названий, категория одной строкой
   $('#payPresets').hidden = editing;
-  $('#payRemind').innerHTML = R.REMIND.filter(r => ['off', '0', '1'].includes(r.id) || r.id === pm.remind).map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${r.id === 'off' ? 'Нет' : esc(r.label)}</button>`).join('');
+  $('#payRemind').innerHTML = R.REMIND.filter(r => ['off', '0', '1'].includes(r.id) || r.id === pm.remind || r.id === pm.remind0).map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${r.id === 'off' ? 'Нет' : esc(r.label)}</button>`).join('');
   $('#payTimeF').hidden = pm.remind === 'off'; $('#payLeadF').hidden = pm.remind !== 'custom'; $('#payLead').value = pm.leadN;
   $$('#payMode [data-pmode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.pmode === pm.mode)));
   $('#payDayF').hidden = pm.mode === 'once'; $('#payOnceF').hidden = pm.mode !== 'once';
