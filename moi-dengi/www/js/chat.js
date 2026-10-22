@@ -10,6 +10,7 @@
   let app = null, msgs = [], quick = [], last = null, busy = false, started = false;
 
   const load = () => { try { msgs = (JSON.parse(localStorage.getItem(KEY) || '[]') || []).filter(m => m.k !== 'draft' || m.done); } catch (_) { msgs = []; } };
+  const refreshGreeting = () => { const g = msgs[0]; if (msgs.length === 1 && g && g.r === 'bot' && /Спроси про траты или скажи, что записать/.test(g.html || '')) { g.html = greeting(); quick = GREET_QUICK; } };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(msgs.filter(m => m.k !== 'typing' && m.k !== 'progress').slice(-40))); } catch (_) {} };
   const uid = () => Math.random().toString(36).slice(2, 9);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -32,10 +33,10 @@
     if (m.k === 'typing') return `<div class="bm bot typing" aria-label="Фин печатает"><i></i><i></i><i></i></div>`;
     if (m.k === 'progress') return `<div class="bm bot">${esc(m.text)}</div>`;
     if (m.k === 'card') return `<div class="cc"><h4>${esc(m.title)}</h4>${m.sub ? `<p class="cc-s">${esc(m.sub)}</p>` : ''}${m.rows.map(r => row(r, r.sub ? `<div class="cc-s" style="margin:-4px 0 6px">${esc(r.sub)}</div>` : '')).join('')}</div>`;
-    if (m.k === 'action') return `<div class="cc-act"><button class="btn soft" type="button" data-act="${esc(m.kind)}">${esc(m.label)}</button></div>`;
+    if (m.k === 'action') return m.done ? '' : `<div class="cc-act"><button class="btn soft" type="button" data-act="${esc(m.kind)}"${m.id ? ` data-id="${esc(m.id)}"` : ''}${m.amount != null ? ` data-amt="${esc(m.amount)}"` : ''}>${esc(m.label)}</button></div>`;
     if (m.k === 'draft') {
-      if (m.done) return `<div class="cc done"><h4>${esc(m.intro)}</h4>${draftRows(m.items)}<p class="cc-s" style="margin:8px 0 0">${m.done === 'saved' ? 'Сохранено' : 'Отменено'}</p></div>`;
-      return `<div class="cc" data-draft="${m.id}"><h4>${esc(m.intro)}</h4>${m.note ? `<p class="cc-s">${esc(m.note)}</p>` : ''}${draftRows(m.items)}<div class="cc-act"><button class="btn ghost" type="button" data-dr="no">Отмена</button><button class="btn primary" type="button" data-dr="ok">${m.items.length > 1 ? `Сохранить всё · ${m.items.length}` : 'Сохранить'}</button></div></div>`;
+      if (m.done) return `<div class="cc done"><h4>${esc(m.intro)}</h4>${draftRows(m.items)}<p class="cc-s" style="margin:8px 0 0">${m.done === 'saved' ? 'Сохранено' : m.done === 'edit' ? 'Отправлено на правку' : 'Отменено'}</p></div>`;
+      return `<div class="cc" data-draft="${m.id}"><h4>${esc(m.intro)}</h4>${m.note ? `<p class="cc-s">${esc(m.note)}</p>` : ''}${draftRows(m.items)}<div class="cc-act"><button class="btn ghost" type="button" data-dr="edit">Изменить</button><button class="btn primary" type="button" data-dr="ok">Подтвердить</button></div></div>`;
     }
     return '';
   }
@@ -53,10 +54,12 @@
   function bot(htmlStr) { return push({ k: 'text', r: 'bot', html: htmlStr }); }
   function drop(m) { msgs = msgs.filter(x => x !== m); }
 
+  const GREET_QUICK = ['Записать трату', 'Самая крупная покупка', 'Сколько осталось до конца месяца', 'Сравни с прошлым месяцем'];
+  const greeting = () => { const n = (app.ctx().name || '').split(/\s+/)[0]; return `${n ? `Привет, ${esc(n)}!` : 'Привет!'} Я Фин — твой помощник по финансам.<small>Я могу записать трату, найти самую крупную покупку или сказать, сколько осталось до зарплаты.<br>Попробуй одно из действий ниже или просто напиши мне, что хочешь узнать про свой бюджет.</small>`; };
   function greet() {
     if (msgs.length) return;
-    msgs.push({ k: 'text', r: 'bot', html: 'Привет! Я Фин.<small>Спроси про траты или скажи, что записать.</small>', id: uid() });
-    quick = ['Сводка за месяц', 'Куда уходят деньги', 'Сколько можно тратить в день', 'Что ты умеешь'];
+    msgs.push({ k: 'text', r: 'bot', html: greeting(), id: uid() });
+    quick = GREET_QUICK;
   }
 
   /* ---------- ИИ ---------- */
@@ -112,13 +115,14 @@
   /* ---------- Диалог ---------- */
   async function send(text) {
     text = String(text || '').trim(); if (!text || busy) return;
-    if (MD.ai && MD.ai.available()) { $('#chatInput').value = ''; fit(); return askAi(text, [], []); }
+    const probe = MD.brain.reply(text, Object.assign(app.ctx(), { last }));
+    if (MD.ai && MD.ai.available() && probe.fallback) { $('#chatInput').value = ''; fit(); return askAi(text, [], []); }
     busy = true; quick = [];
     push({ k: 'text', r: 'me', html: esc(text) });
     $('#chatInput').value = ''; fit();
     const t = push({ k: 'typing' });
     const started = Date.now();
-    let r = MD.brain.reply(text, Object.assign(app.ctx(), { last }));
+    const r = probe;
     await new Promise(res => setTimeout(res, Math.max(0, 450 - (Date.now() - started))));
     drop(t);
     last = r.last || last;
@@ -126,7 +130,7 @@
       if (b.t === 'text') push({ k: 'text', r: 'bot', html: b.html });
       else if (b.t === 'card') push({ k: 'card', title: b.title, sub: b.sub, rows: b.rows });
       else if (b.t === 'draft') push({ k: 'draft', items: b.items, intro: b.intro });
-      else if (b.t === 'action') push({ k: 'action', kind: b.kind, label: b.label });
+      else if (b.t === 'action') push({ k: 'action', kind: b.kind, label: b.label, id: b.id, amount: b.amount });
     });
     quick = r.quick || [];
     render();
@@ -247,7 +251,7 @@
 
   function init(a) {
     if (started) return; started = true; app = a;
-    load(); greet(); render(true);
+    load(); refreshGreeting(); greet(); render(true);
     $('#chatForm').addEventListener('submit', e => { e.preventDefault(); send($('#chatInput').value); });
     $('#chatInput').addEventListener('input', fit);
     $('#chatInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send($('#chatInput').value); } });
@@ -258,9 +262,18 @@
     $('#chatFeed').addEventListener('click', e => {
       const act = e.target.closest('[data-act]');
       if (act && act.dataset.act === 'ai-setup') { app.openAiPanel(); return; }
+      if (act && ['deltx', 'setamt', 'edittx'].includes(act.dataset.act)) {
+        const id = act.dataset.id, kind = act.dataset.act;
+        msgs.forEach(x => { if (x.k === 'action' && x.id === id) x.done = true; }); save(); render(true);
+        if (kind === 'deltx') { app.deleteTx(id); bot('Удалил. Если передумаешь, нажми «Отменить» внизу.'); }
+        else if (kind === 'setamt') { app.updateTx(id, { amount: Number(act.dataset.amt) }); bot('Сумма изменена.'); }
+        else app.openTx(id);
+        return;
+      }
       if (act && act.dataset.act === 'newgoal') { app.showTab('goals'); setTimeout(() => app.openQuiz(), 150); return; }
       const dr = e.target.closest('[data-dr]'); if (!dr) return;
       const card = dr.closest('[data-draft]'), m = msgs.find(x => x.id === card.dataset.draft); if (!m || m.done) return;
+      if (dr.dataset.dr === 'edit') { m.done = 'edit'; save(); render(true); app.openImport(m.items.map(i => Object.assign({}, i)), { source: 'чат' }); return; }
       if (dr.dataset.dr === 'ok') {
         const first = !app.state.tx.length;
         const n = app.addTx(m.items); m.done = 'saved'; save(); render(true);

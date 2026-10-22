@@ -30,6 +30,7 @@
     if (has(t, /(?<![а-я])позавчера/)) { const d = day(now, -2); return { from: ymd(d), to: ymd(d), label: 'позавчера', key: 'd2', kind: 'day' }; }
     if (has(t, /(?<![а-я])вчера/)) { const d = day(now, -1); return { from: ymd(d), to: ymd(d), label: 'вчера', key: 'd1', kind: 'day' }; }
     if (has(t, /(?<![а-я])сегодня/)) return { from: ymd(now), to: ymd(now), label: 'сегодня', key: 'd0', kind: 'day' };
+    if (has(t, /прошл[а-яёa-z0-9]+ недел/)) return { from: ymd(day(now, -13)), to: ymd(day(now, -7)), label: 'на прошлой неделе', key: 'pw', kind: 'week' };
     if (has(t, /(недел)/)) return { from: ymd(day(now, -6)), to: ymd(now), label: 'за 7 дней', key: 'w', kind: 'week' };
     if (has(t, /(прошл\w+ месяц|в прошлом|за прошлый)/)) { const d = new Date(y, m - 1, 1); return monthP(d.getFullYear(), d.getMonth(), true); }
     if (has(t, /(этом году|за год|за весь год|в году)/)) return { from: `${y}-01-01`, to: `${y}-12-31`, label: 'в этом году', key: 'y', kind: 'year' };
@@ -76,7 +77,7 @@
     H.top = (text, p) => {
       const list = inP(all, p).filter(t => t.type === 'expense'), exp = sumOf(list, 'expense');
       if (!list.length) return { blocks: [T(`Расходов ${esc(p.label)} нет.`)], quick: ['Сводка за месяц'] };
-      const rows = byCat(list, 'expense').slice(0, 6).map(([c, s]) => ({ l: c, v: M(s), color: COLORS[c], pct: Math.round(s / exp * 100) }));
+      const topN = (/топ[ -]?(\d)/.exec(text) || [])[1], rows = byCat(list, 'expense').slice(0, topN ? +topN : 6).map(([c, s]) => ({ l: c, v: M(s), color: COLORS[c], pct: Math.round(s / exp * 100) }));
       return { blocks: [T(`Больше всего ушло на <em>${esc(rows[0].l)}</em>: ${rows[0].pct}% расходов.`), { t: 'card', title: 'Куда уходят деньги', sub: `${p.label}, всего ${M(exp)}`, rows, bars: true, split: 0 }], quick: ['Сравни с прошлым месяцем', 'Совет'] };
     };
 
@@ -86,7 +87,8 @@
       return { blocks: [T(`Сейчас на счёте <em>${esc(M(bal))}</em>.<small>В этом месяце пришло ${esc(M(sumOf(list, 'income')))}, потрачено ${esc(M(sumOf(list, 'expense')))}.</small>`)], quick: ['Сколько можно тратить в день', 'Сводка за месяц'] };
     };
 
-    H.daily = () => {
+    H.daily = () => ctx.freeMoney != null ? H.forecast() : H.dailyByIncome();
+    H.dailyByIncome = () => {
       const cur = monthP(now.getFullYear(), now.getMonth(), false, true), list = inP(all, cur);
       const inc = sumOf(list, 'income'), exp = sumOf(list, 'expense');
       const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), left = dim - now.getDate() + 1;
@@ -179,11 +181,127 @@
       quick: ['Сводка за месяц', 'Куда уходят деньги', 'Сколько можно тратить в день']
     });
 
+    /* ---------- Поиск, счёт, тренды, сравнения: только цифры из записей ---------- */
+    const MONTHS_G = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const dd = d => `${+d.slice(8)} ${MONTHS_G[+d.slice(5, 7) - 1]}`;
+    const upper = x => x.charAt(0).toUpperCase() + x.slice(1);
+    const pct = (a, b) => Math.round((a - b) / b * 100);
+    const matcher = stem => t => norm(t.note).includes(stem) || norm(t.cat).includes(stem);
+    const labelOf = (ent, sub) => { if (sub && sub.length) { const n = sub.slice().sort((x, y) => (y.date > x.date ? 1 : -1))[0]; const same = sub.every(t => t.cat === n.cat); return `«${upper(norm(n.note) && norm(n.note).includes(ent.stem) ? n.note : (same ? n.cat : ent.stem))}»`; } return `«${ent.word || ent.stem}»`; };
+    const monthsBack = n => Array.from({ length: n }, (_, i) => { const d = new Date(now.getFullYear(), now.getMonth() - (n - 1 - i), 1); return monthP(d.getFullYear(), d.getMonth(), false, i === n - 1); });
+    const exps = list => list.filter(t => t.type === 'expense');
+
+    H.count = (text, p, ent) => {
+      const list = exps(inP(all, p)), sub = ent ? list.filter(matcher(ent.stem)) : list;
+      if (!sub.length) return { blocks: [T(ent ? `Я не нашёл трат на ${esc(labelOf(ent))} ${esc(p.label)}.` : `Расходов ${esc(p.label)} нет.`)], quick: ['Сводка за месяц'] };
+      return { blocks: [T(`${ent ? `По ${esc(labelOf(ent, sub))}` : 'Всего'} ${esc(p.label)}: <em>${cnt(sub.length)}</em>.<small>На сумму ${esc(M(sumOf(sub, 'expense')))}.</small>`)], quick: ['Куда уходят деньги', 'Сравни с прошлым месяцем'], last: { intent: 'count', ex: ent } };
+    };
+    H.lastOne = (text, ent) => {
+      const sub = ent ? all.filter(matcher(ent.stem)) : all;
+      if (!sub.length) return { blocks: [T(`Я не нашёл трат на ${esc(labelOf(ent || { stem: 'это' }))}.`)], quick: ['Сводка за месяц'] };
+      const t = sub.slice().sort((x, y) => (y.date > x.date ? 1 : -1))[0];
+      return { blocks: [T(`Последний раз ${esc(labelOf(ent, sub))}: <em>${esc(dd(t.date))}</em>, ${esc(M(t.amount))}.<small>Всего записей: ${sub.length}, на ${esc(M(sumOf(sub, t.type)))}.</small>`)], quick: ['Куда уходят деньги'] };
+    };
+    H.list = (text, p, ent) => {
+      const sub = exps(inP(all, p)).filter(matcher(ent.stem)).sort((x, y) => (y.date > x.date ? 1 : -1));
+      if (!sub.length) return { blocks: [T(`Я не нашёл трат на ${esc(labelOf(ent))} ${esc(p.label)}.`)], quick: ['Сводка за месяц', 'Куда уходят деньги'] };
+      const rows = sub.slice(0, 6).map(t => ({ l: `${t.note || t.cat}, ${dd(t.date)}`, v: M(t.amount), color: COLORS[t.cat] }));
+      return { blocks: [T(`На ${esc(labelOf(ent, sub))} ${esc(p.label)} ушло <em>${esc(M(sumOf(sub, 'expense')))}</em>.`), { t: 'card', title: upper(esc(labelOf(ent, sub)).replace(/[«»]/g, '')), sub: `${p.label}, ${cnt(sub.length)}`, rows }], quick: ['Куда уходят деньги'] };
+    };
+    H.avgCheck = (text, p, ent) => {
+      const list = exps(inP(all, p)), sub = ent ? list.filter(matcher(ent.stem)) : list;
+      if (!sub.length) return { blocks: [T(ent ? `Я не нашёл трат на ${esc(labelOf(ent))} ${esc(p.label)}.` : `Расходов ${esc(p.label)} нет.`)], quick: [] };
+      const s = sumOf(sub, 'expense');
+      return { blocks: [T(`Средний чек${ent ? ' ' + esc(labelOf(ent, sub)) : ''} ${esc(p.label)}: <em>${esc(M(r2(s / sub.length)))}</em>.<small>${cnt(sub.length)}, всего ${esc(M(s))}.</small>`)], quick: ['Куда уходят деньги', 'Сколько можно тратить в день'] };
+    };
+    H.vs = (text, p) => {
+      const parts = norm(text).replace(/[?!.,:]/g, ' ').split(/\sили\s/);
+      if (parts.length < 2) return null;
+      const lastWord = side => { const ws = side.split(/\s+/).filter(w => w.length >= 4 && !/^(больше|меньше|чаще|дороже|трачу|тратишь|потратил[а-яёa-z0-9]*|сколько|что|на|или)$/.test(w)); const w = ws[ws.length - 1]; return w ? (w.length > 5 ? w.slice(0, w.length - 2) : w) : null; };
+      const a = lastWord(parts[0]), b = lastWord(parts[1]);
+      if (!a || !b || a === b) return null;
+      const list = exps(inP(all, p)), A = list.filter(matcher(a)), B = list.filter(matcher(b));
+      const sa = sumOf(A, 'expense'), sb = sumOf(B, 'expense');
+      if (!sa && !sb) return { blocks: [T(`Я не нашёл трат на «${esc(a)}» и «${esc(b)}» ${esc(p.label)}.`)], quick: ['Куда уходят деньги'] };
+      const la = labelOf({ stem: a }, A), lb = labelOf({ stem: b }, B);
+      const big = sa >= sb ? [la, sa, lb, sb] : [lb, sb, la, sa];
+      const lead = sa === sb ? `На ${esc(la)} и ${esc(lb)} ушло поровну: ${esc(M(sa))}.` : `На ${esc(la)} ушло ${esc(M(sa))}, а на ${esc(lb)} — ${esc(M(sb))}. Дороже обходится ${esc(big[0])}: на ${esc(M(r2(big[1] - big[3])))}.`;
+      return { blocks: [T(lead)], quick: ['Куда уходят деньги', 'Сравни с прошлым месяцем'] };
+    };
+    H.trend = (text, ent) => {
+      const nm = (text.match(/(\d)\s*(месяц|мес)/) || [])[1], n = Math.min(6, Math.max(3, nm ? +nm : 3)), ms = monthsBack(n);
+      const sub = ent ? exps(all).filter(matcher(ent.stem)) : exps(all);
+      const vals = ms.map(m => sumOf(inP(sub, m), 'expense'));
+      if (!vals.some(v => v > 0)) return { blocks: [T(`Я не нашёл трат${ent ? ' на ' + esc(labelOf(ent)) : ''} за последние ${n} ${plural(n, 'месяц', 'месяца', 'месяцев')}.`)], quick: ['Сводка за месяц'] };
+      const up = vals.every((v, i) => !i || v > vals[i - 1]), down = vals.every((v, i) => !i || v < vals[i - 1]);
+      const what = ent ? `Траты на ${esc(labelOf(ent, sub))}` : 'Расходы';
+      const lead = up ? `${what} растут ${n}-й месяц подряд.` : down ? `${what} снижаются ${n}-й месяц подряд.` : `${what} меняются неровно: то больше, то меньше.`;
+      const rows = ms.map((m, i) => ({ l: upper(m.name), v: M(vals[i]) }));
+      return { blocks: [T(lead), { t: 'card', title: 'Динамика', sub: `за ${n} ${plural(n, 'месяц', 'месяца', 'месяцев')}`, rows }], quick: ['Куда уходят деньги', 'Совет'], last: { intent: 'trend', ex: ent } };
+    };
+    H.compareCat = (text, p, ent) => {
+      const y = now.getFullYear(), m = now.getMonth(), cur = monthP(y, m, false, true);
+      const ex = periodOf(text, now), other = !ex.isDefault && ex.key !== cur.key && ex.kind === 'month' ? ex : (() => { const d = new Date(y, m - 1, 1); return monthP(d.getFullYear(), d.getMonth(), true); })();
+      const sub = exps(all).filter(matcher(ent.stem)), a = sumOf(inP(sub, cur), 'expense'), b = sumOf(inP(sub, other), 'expense');
+      const lb = labelOf(ent, sub);
+      if (!a && !b) return { blocks: [T(`Я не нашёл трат на ${esc(lb)} за эти месяцы.`)], quick: ['Куда уходят деньги'] };
+      if (!b) return { blocks: [T(`На ${esc(lb)} ${esc(other.label)} трат не было, сравнивать не с чем. Сейчас ${esc(M(a))}.`)], quick: ['Куда уходят деньги'] };
+      const pc = pct(a, b), diff = r2(Math.abs(a - b));
+      return { blocks: [T(pc === 0 ? `На ${esc(lb)} трачу столько же, как ${esc(other.label)}: ${esc(M(a))}.` : `На ${esc(lb)} ${esc(cur.label)} ${pc > 0 ? 'ушло больше' : 'ушло меньше'} на <em>${Math.abs(pc)}%</em> (${pc > 0 ? '+' : '−'}${esc(M(diff))}) чем ${esc(other.label)}.<small>${esc(M(a))} против ${esc(M(b))}.</small>`)], quick: ['Куда уходят деньги', 'Совет'] };
+    };
+    H.total = (text, p, type) => {
+      const list = inP(all, p), s = sumOf(list, type);
+      const verb = type === 'income' ? 'заработал' : 'потратил';
+      if (!s) return { blocks: [T(`${upper(p.label)} ${type === 'income' ? 'доходов' : 'расходов'} нет.`)], quick: ['Сводка за месяц'] };
+      let tail = '';
+      if (p.kind === 'month') { const d = new Date(p.y, p.m - 1, 1), prev = monthP(d.getFullYear(), d.getMonth(), true), ps = sumOf(inP(all, prev), type); if (ps) { const pc = pct(s, ps); tail = pc === 0 ? ' Столько же, как в прошлом месяце.' : ` Это на ${Math.abs(pc)}% ${pc < 0 ? 'меньше' : 'больше'}, чем в ${MONTHS_P[d.getMonth()]}.`; } }
+      return { blocks: [T(`${upper(p.label)} ты ${verb} <em>${esc(M(s))}</em>.${tail}`)], quick: ['Куда уходят деньги', 'Сравни с прошлым месяцем'], last: { intent: 'summary' } };
+    };
+    H.budget = (text, ent) => {
+      const cur = monthP(now.getFullYear(), now.getMonth(), false, true), sub = ent ? exps(inP(all, cur)).filter(matcher(ent.stem)) : exps(inP(all, cur));
+      const lb = ent ? labelOf(ent, sub) : 'расходам';
+      return { blocks: [T(`Лимитов по категориям у меня нет, поэтому сказать «остаток от бюджета» честно не смогу.<small>Зато по ${esc(lb)} ${esc(cur.label)} потрачено ${esc(M(sumOf(sub, 'expense')))}. Могу посчитать, сколько можно тратить в день.</small>`)], quick: ['Сколько можно тратить в день', 'Куда уходят деньги'] };
+    };
+    H.forecast = () => {
+      const cur = monthP(now.getFullYear(), now.getMonth(), false, true), list = inP(all, cur);
+      const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), left = dim - now.getDate() + 1;
+      const base = ctx.freeMoney != null ? ctx.freeMoney : r2(sumOf(list, 'income') - sumOf(list, 'expense'));
+      if (ctx.freeMoney == null && !list.length) return { blocks: [T('Пока не вижу записей за этот месяц, поэтому прогноз не посчитать. Запиши приход и траты, и я скажу, хватит ли денег.')], quick: ['Что ты умеешь'] };
+      if (base <= 0) return { blocks: [T(`Свободных денег до конца месяца нет: ${esc(M(base))}. Дней осталось: ${left}. Лучше тратить только необходимое.`)], quick: ['Куда уходят деньги', 'Совет'] };
+      const per = Math.floor(base / left * 100) / 100;
+      return { blocks: [T(`До конца месяца ${left} ${plural(left, 'день', 'дня', 'дней')}. Свободных денег ${esc(M(base))}.<small>Можно тратить по <em>${esc(M(per))}</em> в день, чтобы не уйти в минус.</small>`)], quick: ['Куда уходят деньги', 'Совет'], last: { intent: 'daily' } };
+    };
+    H.payments = () => {
+      const R = root.MD && root.MD.recurring, list = ctx.rec || [];
+      if (!R || !list.length) return { blocks: [T('Обязательных платежей пока нет. Добавь их на главном экране: «Обязательные платежи».')], quick: ['Что ты умеешь'] };
+      const mk = R.mkOfDate(now), rows = R.monthRows(list, mk, now).filter(r => r.status !== 'paid');
+      if (!rows.length) return { blocks: [T('В этом месяце все платежи оплачены.')], quick: ['Сводка за месяц'] };
+      const total = r2(rows.reduce((a, r) => a + r.p.amount, 0));
+      return { blocks: [T(`Осталось оплатить: ${rows.length} на <em>${esc(M(total))}</em>.`), { t: 'card', title: 'Платежи', sub: 'в этом месяце', rows: rows.slice(0, 6).map(r => ({ l: `${upper(r.p.name)}, ${dd(ymd(r.date))}`, v: M(r.p.amount), cls: r.status === 'late' ? 'e' : '' })) }], quick: ['Сколько можно тратить в день'] };
+    };
+    H.delLast = () => {
+      const t = all.length ? all[all.length - 1] : null;
+      if (!t) return { blocks: [T('Записей пока нет, удалять нечего.')], quick: [] };
+      return { blocks: [T(`Последняя запись: <em>${esc(t.note || t.cat)}</em>, ${esc(M(t.amount))}, ${esc(dd(t.date))}. Удалить?`), { t: 'action', kind: 'deltx', label: 'Удалить запись', id: t.id }, { t: 'action', kind: 'edittx', label: 'Изменить', id: t.id }], quick: [] };
+    };
+    H.editAmt = (text) => {
+      const ent = wordOf(text);
+      const am = text.match(/на\s+(\d+(?:[.,]\d+)?)\s*(?:br|руб|р\b|byn|₽)?\s*$/) || text.match(/(\d+(?:[.,]\d+)?)\s*(?:br|руб[а-я]*|р|byn|₽)?\s*$/);
+      if (!am) return null;
+      const amount = Number(am[1].replace(',', '.')), p = periodOf(text, now);
+      let sub = all.slice(); if (!p.isDefault) sub = inP(sub, p);
+      if (ent && ent.stem !== am[1]) sub = sub.filter(matcher(ent.stem));
+      sub = sub.sort((x, y) => (y.date > x.date ? 1 : -1));
+      if (!sub.length) return { blocks: [T('Я не нашёл такую запись. Уточни, что именно изменить, или открой её в «Операциях».')], quick: [] };
+      const t = sub[0];
+      return { blocks: [T(`Нашёл: <em>${esc(t.note || t.cat)}</em>, ${esc(dd(t.date))}, сейчас ${esc(M(t.amount))}. Изменить сумму на ${esc(M(amount))}?`), { t: 'action', kind: 'setamt', label: `Изменить на ${M(amount)}`, id: t.id, amount }, { t: 'action', kind: 'edittx', label: 'Открыть запись', id: t.id }], quick: [] };
+    };
+
     return H;
   };
 
   /* ---------- Распознавание намерения ---------- */
-  const Q = /^(сколько|что|как|куда|почему|когда|покажи|расскажи|дай|сделай|сравни|посчитай|где|на что|можно ли|хватит ли|какой|какая|какие|скажи|подскажи|есть ли|а\s)/;
+  const Q = /^(топ|траты|расходы|доходы|мои|удали|убери|измени|исправь|поменяй|последн|сколько|что|как|куда|почему|когда|покажи|расскажи|дай|сделай|сравни|посчитай|где|на что|можно ли|хватит ли|какой|какая|какие|скажи|подскажи|есть ли|а\s)/;
   const GENERIC = new Set(['сколько', 'потратил', 'потратила', 'потратили', 'трачу', 'тратил', 'потрачено', 'расходов', 'расходы', 'трат', 'траты', 'деньги', 'денег', 'месяц', 'месяце', 'прошлом', 'этом', 'октябре', 'сентябре', 'вчера', 'сегодня', 'неделю', 'неделе', 'году', 'было', 'есть', 'ушло', 'мне', 'мои', 'моих', 'всего', 'вообще', 'итого']);
 
   function keywordOf(text, list) {
@@ -195,6 +313,13 @@
       if (n > bestN) { best = stem; bestN = n; }
     }
     return best;
+  }
+
+  const STOPW = /^(сколько|потратил[а-яёa-z0-9]*|трачу|тратил[а-яёa-z0-9]*|покупал[а-яёa-z0-9]*|ходил[а-яёa-z0-9]*|покажи|найди|последний|последн[а-яёa-z0-9]+|траты|трата|покупк[а-яёa-z0-9]*|расход[а-яёa-z0-9]*|деньги|денег|больше|меньше|чем|что|мои|мне|все|всё|этом|прошл[а-яёa-z0-9]+|месяц[а-яёa-z0-9]*|недел[а-яёa-z0-9]*|год[а-яёa-z0-9]*|дня|дней|оплат[а-яёa-z0-9]*|которые|самая|самый|большая|большой|средний|среднем|можно|осталось|лимит|бюджет|бюджета|лимиты|меня|себя|нас|тебя|него|нее|неё)$/;
+  function wordOf(text) {
+    const t = norm(text).replace(/[^а-яa-z0-9\s]/g, ' '), re = /(?:^|\s)(?:на|в|во|у|по|за)\s+([а-яa-z]{4,})/g;
+    let m; while ((m = re.exec(t))) { const w = m[1]; if (STOPW.test(w) || STEMS.some(x => w.startsWith(x))) continue; return { stem: w.length > 5 ? w.slice(0, w.length - 2) : w, word: w }; }
+    return null;
   }
 
   const SMALL = [
@@ -218,12 +343,22 @@
   ];
 
   function reply(input, ctx) {
-    const text = norm(input);
+    const text = norm(input).replace(/,/g, ' ').replace(/\s+/g, ' ').trim();
     ctx = Object.assign({ now: new Date(), tx: [], goals: [], sym: 'Br', startBalance: 0, freeMoney: null, last: null, accounts: [] }, ctx);
-    const H = make(ctx);
+    const H = make(ctx), M = n => `${fmt(n)} ${ctx.sym}`;
     if (!text) return { blocks: [T('Напиши, что записать или о чём спросить.')], quick: [] };
+    // Ответ на «На что?»
+    if (ctx.last && ctx.last.intent === 'ask-cat' && ctx.last.item && !/\d/.test(text) && text.length <= 30 && parser) {
+      const it = ctx.last.item, names = (root.MD && root.MD.CATS ? root.MD.CATS[it.type].map(c => c[0]) : []).concat(['Другое']);
+      const hit = names.find(n => norm(n) === text), cat = hit || parser.pickCategory(text, it.type);
+      return { blocks: [{ t: 'draft', items: [Object.assign({}, it, { cat, note: hit || cat === 'Другое' ? '' : (it.note || '') })], intro: `Понял так: ${hit || cat === 'Другое' ? cat : (it.note || cat)}, ${M(it.amount)}, ${cat}` }], quick: [] };
+    }
+    if (/^записать трату$/.test(text)) return { blocks: [T('Напиши, что и сколько: «кофе 5» или «вчера такси 12». Можно сразу несколько: «50 на продукты и 15 на такси».')], quick: [] };
+    if (/^записать доход$/.test(text)) return { blocks: [T('Напиши, что пришло: «зарплата 2000» или «вчера подработка 150».')], quick: [] };
+    if (/^посмотреть статистику$/.test(text)) return { ...H.summary(text, periodOf('этот месяц', ctx.now)), last: { intent: 'summary' } };
+    if (/^создать копилку$/.test(text)) return { blocks: [T('Скажи, на что и сколько копишь: «хочу накопить 1000 на наушники за 4 месяца». Я посчитаю взнос.'), { t: 'action', kind: 'newgoal', label: 'Создать цель' }], quick: [] };
     const p = periodOf(text, ctx.now), hasP = !p.isDefault;
-    const isQ = Q.test(text) || /\?\s*$/.test(text);
+    const isQ = (Q.test(text) && !/^а (еще|ещё|и) /.test(text)) || /\?\s*$/.test(text);
 
     // Уточнение к прошлому вопросу: «а в сентябре?»
     if (ctx.last && /^а\s/.test(text) && hasP && H[ctx.last.intent]) {
@@ -238,15 +373,37 @@
     // Запись: есть сумма, это не вопрос
     if (!isQ && /(\d|ноль|один|одну|два|две|три|четыр|пят|шест|сем|восем|девят|десят|сто|двест|тысяч|полтор)/.test(text) && parser) {
       const items = parser.parseNotes(input, { today: ctx.now, accounts: ctx.accounts && ctx.accounts.length ? ctx.accounts : [{ id: 'main', name: 'Основной', last4: '' }] });
+      if (items.length === 1 && items[0].cat === 'Другое' && !items[0].note) {
+        const it = items[0], cats = root.MD && root.MD.CATS ? root.MD.CATS[it.type].map(c => c[0]).filter(n => n !== 'Другое').slice(0, 3) : ['Продукты', 'Кафе', 'Транспорт'];
+        return { blocks: [T(it.type === 'income' ? `Что за доход на ${esc(M(it.amount))}?` : `На что потратил ${esc(M(it.amount))}?`)], quick: cats.concat(['Другое']), last: { intent: 'ask-cat', item: it } };
+      }
       if (items.length) {
         const inc = items.filter(i => i.type === 'income').length;
-        return { blocks: [{ t: 'draft', items, intro: items.length === 1 ? `Записать ${inc ? 'доход' : 'трату'}?` : `Нашёл записей: ${items.length}. Сохранить?` }], quick: [] };
+        return { blocks: [{ t: 'draft', items, intro: items.length === 1 ? `Понял так: ${items[0].note || items[0].cat}, ${M(items[0].amount)}, ${items[0].cat}` : `Понял так: операций ${items.length}` }], quick: [] };
       }
     }
 
     for (const [re, fn] of SMALL) if (re.test(text) && text.length < 60 && !/сколько|потрат/.test(text)) return fn(ctx);
 
     const L = (intent, r) => { r.last = r.last || { intent }; return r; };
+    const is = re => re.test(text);
+    const ent = wordOf(text);
+    if (is(/(удали|удалить|убери)\s.*(запис|трат|операци)/)) return H.delLast();
+    if (is(/(измени|исправь|поменяй)\s/) && /\d/.test(text)) { const r = H.editAmt(text); if (r) return r; }
+    if (is(/(какие|что за|мои).*(платеж|оплат)|(платеж[а-яёa-z0-9]*|оплат[а-яёa-z0-9]*)\s(скоро|ближайш)/)) return H.payments();
+    if (is(/(сколько раз|как часто|сколько (покупок|операций|записей))/)) return L('count', H.count(text, p, ent));
+    if (is(/(когда.*последн|последний раз)/)) return H.lastOne(text, ent);
+    if (ent && is(/(покажи|найди|выведи|список).*(трат|покупк|операц|расход)/)) return H.list(text, p, ent);
+    if (is(/ или /) && is(/(больше|дороже|чаще|меньше)/)) { const r = H.vs(text, p); if (r) return r; }
+    if (is(/(раст[уё]т|падают|падает|снижа|тренд|менялись|динамик)/)) return L('trend', H.trend(text, ent));
+    if (ent && is(/(сравни|больше чем|меньше чем|чем в )/)) return H.compareCat(text, p, ent);
+    if (is(/(бюджет|лимит)/) && !is(/(в день|на день)/)) return H.budget(text, ent);
+    if (is(/(хватит ли|до конца месяца|до зарплаты|еще смогу|ещё смогу|смогу потратить|сколько осталось)/)) return L('forecast', H.forecast());
+    if (is(/средн[а-яёa-z0-9]+ чек/)) return H.avgCheck(text, p, ent);
+    if (is(/(трачу|тратил[а-яёa-z0-9]*|траты|расход[а-яёa-z0-9]*).*(в день|на день)/) && !is(/можно/)) return L('average', H.average(text, p));
+    if (is(/(топ[ -]?\d|куда ушл)/)) return L('top', H.top(text, p));
+    if (!ent && is(/(сколько|мои|покажи).*(потратил|трат|расход)|^(траты|расходы)/) && !is(/(сводк|итог|совет|крупн)/)) return H.total(text, p, 'expense');
+    if (!ent && is(/(сколько|мои).*(заработал|доход|пришло|получил)/)) return H.total(text, p, 'income');
     if (/(что ты умеешь|что умеешь|помощь|помоги мне|как пользоваться|твои возможности|что можешь)/.test(text)) return L('help', H.help());
     if (/(сводк|итог|как мои дела|как прошел|как прошла|обзор|отчет|отчёт|подведи)/.test(text)) return L('summary', H.summary(text, p));
     if (/(сравни|по сравнению|против прошл|динамик|стало больше|стало меньше|меньше чем|больше чем)/.test(text)) return L('compare', H.compare(text));
@@ -273,7 +430,7 @@
       const inc = sumOf(inP(ctx.tx, p), 'income');
       return { blocks: [T(`Доходов ${esc(p.label)}: <em>${esc(`${fmt(inc)} ${ctx.sym}`)}</em>.`)], quick: ['Сводка за месяц'] };
     }
-    return { blocks: [T('Об этом у меня нет готового ответа: я считаю твои деньги, а не нейросеть. Могу поговорить о тратах и накоплениях. Спроси: «сколько потратил на кофе», «сводка за месяц», «куда уходят деньги». Или скажи, что записать: «такси 12».')], quick: ['Сводка за месяц', 'Куда уходят деньги', 'Что ты умеешь'] };
+    return { blocks: [T('Я пока не умею отвечать на такие вопросы. Но я могу: посчитать траты за месяц, найти самую крупную покупку, сравнить расходы с прошлым месяцем или показать, сколько осталось до конца месяца. Что выбрать?')], quick: ['Записать трату', 'Посмотреть статистику', 'Создать копилку', 'Самая крупная покупка'], fallback: true };
   }
 
   const api = { reply, periodOf };

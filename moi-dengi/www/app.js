@@ -2517,8 +2517,9 @@ function addTx(items) {
 setTimeout(() => { if (!document.querySelector('#auth').hidden) return; const st = clashState(); if (st.day !== today()) { if (askClash(undefined, today(), 2)) { st.day = today(); clashSave(st); } } }, 3500);
 MD.app = {
   get state() { return state; },
-  ctx() { ensureAccount(); return { cur: state.currency, now: new Date(), tx: state.tx, goals: state.goals, sym: sym(), startBalance: startBal(), freeMoney: MD.goals.freeMoney(state.tx, new Date()), accounts: state.accounts }; },
+  ctx() { ensureAccount(); return { cur: state.currency, now: new Date(), tx: state.tx, goals: state.goals, sym: sym(), startBalance: startBal(), freeMoney: MD.goals.freeMoney(state.tx, new Date()), accounts: state.accounts, name: userName(), rec: (state.rec && state.rec.list) || [] }; },
   openAiPanel() { openPanel('ai'); },
+  deleteTx, updateTx(id, patch) { const t = state.tx.find(x => x.id === id); if (!t) return; Object.assign(t, patch); save(); render(); nudgeRefresh(true); },
   addTx, openTx, openQuiz: startNewGoal, showTab, toast, confirmDlg, openLayer, closeLayer, confetti, buzz,
   refreshAll: () => { render(); },
   normalizeItems, esc, icon, money, fmt, paintIcons, quickAdd, spoken, openImport,
