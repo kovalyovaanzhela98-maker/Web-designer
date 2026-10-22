@@ -282,7 +282,7 @@
     H.delLast = () => {
       const t = all.length ? all[all.length - 1] : null;
       if (!t) return { blocks: [T('Записей пока нет, удалять нечего.')], quick: [] };
-      return { blocks: [{ t: 'card', title: 'Удалить запись?', rows: [{ l: `${upper(t.note || t.cat)} · ${dd(t.date)}`, v: (t.type === 'income' ? '+' : '−') + M(t.amount) }], actions: [{ kind: 'edittx', label: 'Изменить', id: t.id }, { kind: 'deltx', label: 'Удалить', id: t.id, danger: true }] }], quick: [] };
+      return { blocks: [{ t: 'card', title: 'Удалить запись?', rows: [{ l: `${upper(t.note || t.cat)} · ${dd(t.date)}`, v: (t.type === 'income' ? '+' : '−') + M(t.amount) }], actions: [{ kind: 'deltx', label: 'Удалить', id: t.id, danger: true }] }], quick: [] };
     };
     H.editAmt = (text) => {
       const ent = wordOf(text);

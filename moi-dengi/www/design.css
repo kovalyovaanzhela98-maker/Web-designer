@@ -290,6 +290,6 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-chat .cc h4{font-size:16px}
 /* Чат: в карточке только две роли кнопок: главная и вторичная, обе на равной ширине; одиночная на всю ширину */
 #s-chat .cc-act .btn,#s-chat .cc-act .btn:only-child{flex:1 1 0;min-width:0;padding-left:var(--d-s16);padding-right:var(--d-s16)}
-#s-chat .cc-act .btn[data-danger]{color:inherit}
 #s-chat .cc.done{opacity:1}
 #s-chat .cc.done h4,#s-chat .cc.done .cc-row,#s-chat .cc.done .cc-row span,#s-chat .cc.done .cc-row b{color:var(--d-text2)}
+#s-chat .cc-act .btn[data-danger]{color:var(--d-danger)}
