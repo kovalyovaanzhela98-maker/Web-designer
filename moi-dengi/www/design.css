@@ -476,3 +476,7 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 .dr .dr-chev{flex:none;display:inline-flex;margin-left:var(--d-s8)}.dr .dr-chev .pack-icon{width:18px;height:18px}
 #lyTx .note-row{gap:var(--d-s12);font-size:15px}
 #lyLink .rw-r .pack-icon{width:18px;height:18px}
+
+/* Платежи: «Добавить платёж» закреплена внизу экрана (нижнего меню на этом экране нет), поле снизу 16 */
+#s-pay [data-newpay]{position:fixed;left:var(--d-s20);right:var(--d-s20);bottom:max(var(--d-s16),env(safe-area-inset-bottom,0px));width:auto;margin:0!important;z-index:30}
+#s-pay{padding-bottom:calc(52px + var(--d-s16) + var(--d-s24) + env(safe-area-inset-bottom,0px))}
