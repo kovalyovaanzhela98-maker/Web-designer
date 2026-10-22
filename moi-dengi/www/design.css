@@ -488,3 +488,5 @@ body:has(#s-pay:not([hidden])) .toast{bottom:calc(52px + var(--d-s20) + var(--d-
 #s-pay>.hdr{position:sticky;top:var(--sat,0px);z-index:20;background:var(--d-bg)}
 #s-pay>.hdr::before{content:"";position:absolute;left:calc(-1*var(--d-s20));right:calc(-1*var(--d-s20));top:calc(-1*var(--sat,0px));height:var(--sat,0px);background:var(--d-bg)}
 #s-pay .pay-write{font-size:15px;font-weight:500}
+#lyPay #payRemind{flex-wrap:nowrap}
+#lyPay #payRemind .chip{flex:1 1 auto;padding:0 var(--d-s8)!important;justify-content:center}
