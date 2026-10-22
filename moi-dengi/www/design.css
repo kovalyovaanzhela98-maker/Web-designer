@@ -250,3 +250,14 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 .chat-hdr .back,.chat-hdr .back span{color:var(--d-accent-text)!important}
 .chat-hdr .back .pack-icon img{display:none!important}
 .chat-hdr .back .pack-icon{background:currentColor;-webkit-mask:url(img/icons/pack/dark/next.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/next.svg) center/contain no-repeat;color:var(--d-accent-text)}
+
+/* Чат: пузыри и карточки по системе */
+#s-chat .bm{font-size:15px;font-weight:400;line-height:1.4}
+#s-chat .bm.bot{background:var(--d-row);color:var(--d-text)}
+#s-chat .bm.me{background:var(--d-accent);color:#fff}
+#s-chat .bm em,#s-chat .cc em{color:var(--d-accent-text);font-weight:600}
+#s-chat .bm.me em{color:#fff}
+#s-chat .cc{border-radius:var(--d-r20);padding:var(--d-s16);border:1px solid var(--d-line);background:var(--d-card);box-shadow:none}
+#s-chat .cc h4{font-size:16px;font-weight:600;color:var(--d-text)}
+#s-chat .cc-row b.e,#s-chat .cc-row .e{color:var(--d-text)}
+#s-chat .chat-quick .cq{min-height:44px;height:44px;font-size:14px;font-weight:500}

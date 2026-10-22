@@ -109,7 +109,7 @@
       const lead = pct === 0 ? 'Расходы такие же, как в прошлом месяце.' : `Расходы ${pct < 0 ? 'меньше' : 'больше'} на <em>${Math.abs(pct)}%</em>, чем в прошлом месяце: ${esc(M(ea))} против ${esc(M(eb))}.`;
       const ca = Object.fromEntries(byCat(a, 'expense')), cb = Object.fromEntries(byCat(b, 'expense'));
       const diffs = [...new Set([...Object.keys(ca), ...Object.keys(cb)])].map(c => [c, r2((ca[c] || 0) - (cb[c] || 0))]).sort((x, y2) => Math.abs(y2[1]) - Math.abs(x[1])).slice(0, 3);
-      const rows = diffs.map(([c, d]) => ({ l: c, v: (d > 0 ? '+' : d < 0 ? '−' : '') + M(Math.abs(d)), cls: d > 0 ? 'e' : 'i' }));
+      const rows = diffs.map(([c, d]) => ({ l: c, v: (d > 0 ? '+' : d < 0 ? '−' : '') + M(Math.abs(d)) }));
       return { blocks: [T(lead), { t: 'card', title: 'Что изменилось', sub: 'по категориям', rows }], quick: ['Совет', 'Куда уходят деньги'] };
     };
 
@@ -272,7 +272,7 @@
       return { blocks: [T(`До конца месяца ${left} ${plural(left, 'день', 'дня', 'дней')}. Свободных денег ${esc(M(base))}.<small>Можно тратить по <em>${esc(M(per))}</em> в день, чтобы не уйти в минус.</small>`)], quick: ['Куда уходят деньги', 'Совет'], last: { intent: 'daily' } };
     };
     H.payments = () => {
-      const R = root.MD && root.MD.recurring, list = ctx.rec || [];
+      const R = root.MD && (root.MD.rec || root.MD.recurring), list = ctx.rec || [];
       if (!R || !list.length) return { blocks: [T('Обязательных платежей пока нет. Добавь их на главном экране: «Обязательные платежи».')], quick: ['Что ты умеешь'] };
       const mk = R.mkOfDate(now), rows = R.monthRows(list, mk, now).filter(r => r.status !== 'paid');
       if (!rows.length) return { blocks: [T('В этом месяце все платежи оплачены.')], quick: ['Сводка за месяц'] };
@@ -351,7 +351,7 @@
     if (ctx.last && ctx.last.intent === 'ask-cat' && ctx.last.item && !/\d/.test(text) && text.length <= 30 && parser) {
       const it = ctx.last.item, names = (root.MD && root.MD.CATS ? root.MD.CATS[it.type].map(c => c[0]) : []).concat(['Другое']);
       const hit = names.find(n => norm(n) === text), cat = hit || parser.pickCategory(text, it.type);
-      return { blocks: [{ t: 'draft', items: [Object.assign({}, it, { cat, note: hit || cat === 'Другое' ? '' : (it.note || '') })], intro: `Понял так: ${hit || cat === 'Другое' ? cat : (it.note || cat)}, ${M(it.amount)}, ${cat}` }], quick: [] };
+      return { blocks: [{ t: 'draft', items: [Object.assign({}, it, { cat, note: hit || cat === 'Другое' ? '' : (it.note || '') })], intro: `Понял так: ${M(it.amount)}, ${cat}` }], quick: [] };
     }
     if (/^записать трату$/.test(text)) return { blocks: [T('Напиши, что и сколько: «кофе 5» или «вчера такси 12». Можно сразу несколько: «50 на продукты и 15 на такси».')], quick: [] };
     if (/^записать доход$/.test(text)) return { blocks: [T('Напиши, что пришло: «зарплата 2000» или «вчера подработка 150».')], quick: [] };
@@ -379,7 +379,7 @@
       }
       if (items.length) {
         const inc = items.filter(i => i.type === 'income').length;
-        return { blocks: [{ t: 'draft', items, intro: items.length === 1 ? `Понял так: ${items[0].note || items[0].cat}, ${M(items[0].amount)}, ${items[0].cat}` : `Понял так: операций ${items.length}` }], quick: [] };
+        return { blocks: [{ t: 'draft', items, intro: items.length === 1 ? `Понял так: ${[items[0].note && norm(items[0].note) !== norm(items[0].cat) ? items[0].note : '', M(items[0].amount), items[0].cat].filter(Boolean).join(', ')}` : `Понял так: операций ${items.length}` }], quick: [] };
       }
     }
 
