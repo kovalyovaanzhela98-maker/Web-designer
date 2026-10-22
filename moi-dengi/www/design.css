@@ -427,7 +427,7 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 /* Платежи: «Записать» стоит под суммой в той же колонке, что «Ожидает» */
 #s-pay .pay-row{position:relative}
 #s-pay .pay-row.late .pr-r::after{content:"";display:block;height:20px}
-#s-pay .pay-row .tx-ic .pack-icon{width:28px;height:28px}
+#s-pay .pay-row .tx-ic .pack-icon{width:24px;height:24px}
 #homeMain .h-pay .rw-r{color:var(--d-muted)}
 #homeMain .h-pay .rw-r .pack-icon,#homeMain .h-pay .rw-r svg{width:18px;height:18px;color:var(--d-muted)}
 #homeMain .h-pay{padding-left:var(--d-s20);padding-right:var(--d-s20)}
@@ -452,3 +452,4 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #homeMain .pay-tile{flex-basis:calc((100% - var(--d-s12))/2)}
 #s-pay #payBody>.btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
 #s-pay .pay-empty-state .btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+#homeMain .pay-tile{padding:var(--d-s20)}

@@ -108,7 +108,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await page.fill('#payDay', String(d.getDate()));
   await page.click('#paySave'); await sleep(300);        // тап 3
   ok('платёж создан за три тапа', (await page.textContent('#toast')).includes('Платёж добавлен') && (await page.textContent('#payBody')).includes('Аренда'));
-  ok('в списке отметка «Ожидает»', (await page.textContent('#payBody')).includes('Ожидает'));
+  ok('в списке срок «Через 2 дня»', (await page.textContent('#payBody')).includes('Через 2 дня'));
   await page.click('#s-pay [data-back]'); await page.click('[data-tab=home]'); await sleep(200);
   const plaque = await page.textContent('#payCard');
   ok('плитка на главной: «Аренда 500,00 Br Через 2 дня»', /Аренда\s*500,00\s*\S+\s*Через 2 дня/.test(plaque), plaque);
