@@ -536,7 +536,7 @@ function dayTitle(s) {
 function txRow(t, useHomeIcon = false) {
   const ci = catInfo(t.type, t.cat), on = sel.on && sel.ids.has(t.id);
   const amt = hide ? MASK : `${t.type === 'income' ? '+' : '−'}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}`;
-  const title = (t.note || '').trim() || t.cat, sub = '';
+  const title = cap((t.note || '').trim() || t.cat), sub = '';
   return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="plate" aria-hidden="true">Удалить</div>
     <div class="row tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(t.type === 'income' ? '+' : '−')}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}, ${esc(dayShort(t.date))}">
       ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<span class="rico" aria-hidden="true">${categoryIcon(ci)}</span>
