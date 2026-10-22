@@ -627,7 +627,7 @@ function renderStats() {
       const expenses = state.tx.filter(t => t.type === 'expense').slice().sort((a,b) => b.amount-a.amount), top = expenses[0], cats = {};
       expenses.forEach(t => { cats[t.cat] = (cats[t.cat] || 0) + t.amount; }); const topCat = Object.entries(cats).sort((a,b) => b[1]-a[1])[0];
       const staticRows = expenses.slice(0, 8).map(t => { const ci = catInfo(t.type, t.cat); return `<div class="tx stats-static-row"><span class="tx-ic" aria-hidden="true">${categoryIcon(ci)}</span><span class="tx-body"><span class="tx-t">${esc(t.cat)}</span>${t.note ? `<span class="tx-n">${esc(t.note)}</span>` : ''}</span><span class="tx-a exp">−${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}</span></div>`; }).join('');
-      alt.innerHTML = `<div class="stats-alt-head"><h2>Крупные траты</h2><p>Самые большие расходы за всё время</p></div>${top ? `<div class="stat-insight"><span class="stat-insight-ico">${icon('spark')}</span><p>Крупнейшая трата — <em>${esc(top.cat)}</em><small>${topCat ? `Больше всего расходов также в категории ${esc(topCat[0])} — ${esc(maskT(money(topCat[1])))}.` : ''} Проверь, какие покупки можно перенести или сократить.</small></p></div><div class="grp stats-glass-list">${staticRows}</div>` : `<div class="stats-empty-state"><b>Здесь пока пусто</b><span>Нажми +, чтобы добавить трату, или выбери другой период</span></div>`}`;
+      alt.innerHTML = `<div class="stats-alt-head"><h2>Крупные траты</h2><p>Самые большие расходы за всё время</p></div>${top ? `<div class="stat-insight"><span class="stat-insight-ico">${homeIcon('chart')}</span><p>Крупнейшая трата — <em>${esc(top.cat)}</em><small>${topCat ? `Больше всего расходов также в категории ${esc(topCat[0])} — ${esc(maskT(money(topCat[1])))}.` : ''} Проверь, какие покупки можно перенести или сократить.</small></p></div><div class="grp stats-glass-list">${staticRows}</div>` : `<div class="stats-empty-state"><b>Здесь пока пусто</b><span>Нажми +, чтобы добавить трату, или выбери другой период</span></div>`}`;
     } else {
       const upcoming = MD.events.upcoming(festList(), new Date()).map(u => ({ e: u.e, occ: u.occ, d: MD.events.daysTo(u.occ, new Date()) }));
       alt.innerHTML = `<div class="stats-alt-head"><h2>События</h2><p>Праздники, даты и отложенные суммы</p></div>${upcoming.length ? `<div class="grp stats-glass-list">${upcoming.map(x => `<button class="row" type="button" data-go="events"><span class="rw-ic"><i data-ic="gift"></i></span><span class="rw-t"><b>${esc(MD.events.whatText(x.e))}</b><small>${x.d === 0 ? 'Сегодня' : x.d === 1 ? 'Завтра' : `Через ${dayWord(x.d)}`}</small></span><span class="rw-r">${x.e.total ? esc(maskT(money(x.e.total))) : ''}</span></button>`).join('')}</div>` : `<div class="card stats-empty"><b>Ближайших событий нет</b><span>Добавь праздник или важную дату, чтобы спланировать накопления.</span><button class="btn primary" type="button" data-go="events">Добавить событие</button></div>`}`;
@@ -683,8 +683,8 @@ function renderStats() {
   const step = nb <= 12 ? 1 : Math.ceil(nb / 6);
   const labels = vis.map((b, i) => (i % step === 0 || i === nb - 1) && !(i === nb - 2 && step > 1) ? `<span style="left:${(nb > 1 ? i / (nb - 1) * 100 : 50).toFixed(1)}%">${esc(b.l)}</span>` : '').join('');
   card.innerHTML = `<div class="curve-h"><div><small class="muted">${statCat ? esc(statCat) : (statType === 'expense' ? 'Расходы ' : 'Доходы ') + P.word}</small><b class="curve-sum">${esc(maskT(money(shownSum)))}</b></div></div>
-    <div class="curve-box flow" role="img" aria-label="График ${word} ${P.word}"><div class="flow-svg">${flowChart(vis.map(b => b.v), 'st', 320, 100, false, true)}</div><div class="flow-labels">${labels}</div><div class="scrub-tip" hidden></div></div>`;
-  chartScrub = { vals: vis.map(b => b.v), labs: vis.map((b, i) => daily ? dd(addD(P.from, i)) : b.l), n: nb };
+    <div class="curve-box flow" role="img" aria-label="График ${word} ${P.word}"><div class="flow-svg">${flowChart(vis.map(b => b.v), 'st', 320, 100, false, true)}</div><div class="flow-labels">${labels}</div><i class="scrub-mark" hidden></i></div>`;
+  chartScrub = { vals: vis.map(b => b.v), labs: vis.map((b, i) => daily ? dd(addD(P.from, i)) : b.l), n: nb, cap: statCat ? esc(statCat) : (statType === 'expense' ? 'Расходы ' : 'Доходы ') + P.word, sum: esc(maskT(money(shownSum))) };
   dayCard.hidden = true; dayCard.innerHTML = '';
 
   catList.innerHTML = `<h3>По категориям</h3><ul class="cats">${rows.map(([name, sum]) => {
@@ -739,16 +739,20 @@ function shiftMonth(d) { if (tab === 'stats') { shiftPeriod(d); return; } const 
 })();
 /* Скраббинг графика пальцем: плашка с суммой над пальцем, лёгкий отклик на каждом дне */
 (() => {
+  /* Как в Apple Health и Copilot: дата и сумма заменяют заголовок графика, на графике только тонкая линия */
   let down = false, lastI = -1;
+  const head = () => { const c = $('#catCard'); return c ? { cap: $('.curve-h small', c), sum: $('.curve-sum', c), box: $('.curve-box', c) } : {}; };
   const upd = e => {
-    const c = chartScrub, box = e.target.closest ? e.target.closest('.curve-box') || $('#catCard .curve-box') : $('#catCard .curve-box'); if (!c || !box || c.n < 1) return;
-    const svg = $('svg', box), tip = $('.scrub-tip', box); if (!svg || !tip) return;
-    const r = svg.getBoundingClientRect(); let i = Math.round((e.clientX - r.left) / r.width * Math.max(1, c.n - 1)); i = Math.max(0, Math.min(c.n - 1, i));
-    tip.hidden = false; tip.textContent = `${c.labs[i]} · ${maskT(money(c.vals[i]))}`;
-    const x = c.n > 1 ? i / (c.n - 1) : .5; tip.style.left = `${Math.min(68, Math.max(32, x * 100))}%`;
+    const c = chartScrub, h = head(); if (!c || !h.box || c.n < 1) return;
+    const svg = $('svg', h.box), mark = $('.scrub-mark', h.box); if (!svg || !mark) return;
+    const r = svg.getBoundingClientRect(), br = h.box.getBoundingClientRect();
+    let i = Math.round((e.clientX - r.left) / r.width * Math.max(1, c.n - 1)); i = Math.max(0, Math.min(c.n - 1, i));
+    h.cap.textContent = c.labs[i]; h.sum.textContent = maskT(money(c.vals[i]));
+    const x = c.n > 1 ? i / (c.n - 1) : .5;
+    mark.hidden = false; mark.style.left = `${(r.left - br.left + x * r.width).toFixed(1)}px`; mark.style.top = `${(r.top - br.top).toFixed(1)}px`; mark.style.height = `${r.height.toFixed(1)}px`;
     if (i !== lastI) { lastI = i; buzz(4); }
   };
-  const end = () => { down = false; lastI = -1; const t = $('#catCard .scrub-tip'); if (t) t.hidden = true; };
+  const end = () => { down = false; lastI = -1; const c = chartScrub, h = head(); if (!h.box) return; const mark = $('.scrub-mark', h.box); if (mark) mark.hidden = true; if (c && h.cap) { h.cap.innerHTML = c.cap; h.sum.textContent = c.sum.replace(/&nbsp;/g, '\u00A0'); } };
   document.addEventListener('pointerdown', e => { if (e.target.closest('#catCard .curve-box')) { down = true; upd(e); } });
   document.addEventListener('pointermove', e => { if (down) upd(e); });
   document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
@@ -757,6 +761,7 @@ $$('.nav-item').forEach(b => b.addEventListener('click', () => { buzz(8); showTa
 document.addEventListener('click', e => {
   if (e.target.closest('[data-back]')) { showTab(base); return; }
   if (e.target.closest('.h-free') && !e.target.closest('[data-go]')) { showTab('stats'); return; }
+  if (e.target.closest('#s-home .bal') && !e.target.closest('#balInfo, #balNote, [data-go]')) { buzz(8); showTab('stats'); return; }
   const g = e.target.closest('[data-go]');
   if (g) showTab(g.dataset.go);
   if (e.target.closest('[data-go-pay]')) openPayScreen();
@@ -2259,7 +2264,7 @@ function renderPanel(err) {
     say = ups.length ? null : ['hello', 'Добавь чей-то день рождения или праздник<small>Напомню заранее отложить деньги на подарок.</small>'];
     html = (ups.length ? `<div class="grp flat">${ups.map(({ e, occ }) => `<button class="row" type="button" data-pn="ev-edit:${esc(e.id)}"><span class="rw-ic" aria-hidden="true"><i data-ic="gift"></i></span><span class="rw-t"><b>${esc(MD.events.whatText(e))}</b><small>${esc(MD.events.dayText(occ))}${e.yearly ? ', каждый год' : ''} · ${esc(MD.events.reminderLine(e, new Date()))}${esc(festTot(e))}</small></span><span class="rw-r">${icon('right')}</span></button>`).join('')}</div>` : '') +
       pnBtn('ev-add', 'Добавить праздник', 'primary') +
-      `<div class="grp flat"><button class="row" type="button" data-pn="ev-ask" role="switch" aria-checked="${state.fest.ask}"><span class="rw-ic" aria-hidden="true"><i data-ic="spark"></i></span><span class="rw-t"><b>Спрашивать о праздниках</b><small>Предлагать внести праздник</small></span><span class="sw-t" aria-checked="${state.fest.ask}"></span></button></div>`;
+      `<div class="grp flat"><button class="row" type="button" data-pn="ev-ask" role="switch" aria-checked="${state.fest.ask}"><span class="rw-ic" aria-hidden="true"><i data-home-icon="gift"></i></span><span class="rw-t"><b>Спрашивать о праздниках</b><small>Предлагать внести праздник</small></span><span class="sw-t" aria-checked="${state.fest.ask}"></span></button></div>`;
   } else if (P.kind === 'nudge') {
     const ng = state.nudge;
     say = ['hello', `${NG.counter(ng)}<small>Выбери, по каким категориям Фин может подсказывать.</small>`];

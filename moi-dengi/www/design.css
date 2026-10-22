@@ -328,3 +328,11 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-stats .scrub-tip[hidden]{display:none!important}
 .period-bar button.mb,.monthbar .mb{background:none!important;box-shadow:none!important;border-radius:var(--d-r12)!important;color:var(--d-accent-text)!important}
 #s-ops .ops-seg,#s-stats .stats-seg{border-radius:var(--d-r16)!important;padding:var(--d-s4)!important}
+
+/* Анализ: шапка к строке месяца как на «Операциях»; блоки итогов сразу под графиком */
+#s-stats{gap:0!important}
+#s-stats>#statsAccountView{margin-top:var(--d-s8)!important;display:flex;flex-direction:column;gap:var(--d-s16)}
+#s-stats>#statsAccountView>*{margin-top:0!important}
+#s-stats .scrub-mark{position:absolute;width:1px;background:var(--d-accent-text);opacity:.7;pointer-events:none;transform:translateX(-.5px);z-index:2}
+#s-stats .scrub-mark[hidden]{display:none!important}
+#s-home .bal{cursor:pointer}
