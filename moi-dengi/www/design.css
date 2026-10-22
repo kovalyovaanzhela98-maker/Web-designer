@@ -230,3 +230,5 @@ b,strong,h1,h2,h3{font-weight:600}
 .chat-bar .cb-send{color:var(--d-accent-text)}
 .chat-feed .bm{border-radius:var(--d-r20);padding:var(--d-s12) var(--d-s16)}
 .chat-bar .cfield textarea:focus{outline:0;box-shadow:none!important}
+.flip-x .pack-icon{transform:scaleX(-1)}
+.chat-hdr .back .pack-icon,.chat-hdr .icon-btn .pack-icon,.chat-bar .pack-icon{width:24px;height:24px}

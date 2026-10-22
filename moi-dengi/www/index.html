@@ -109,7 +109,7 @@
   <!-- ПОМОЩНИК -->
   <section class="screen chat" id="s-chat" data-screen="chat" aria-label="Помощник" hidden>
     <header class="hdr chat-hdr">
-      <button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button>
+      <button class="icon-btn" data-back aria-label="Назад"><i data-home-icon="next" class="flip-x"></i><span>Назад</span></button>
       <div class="chat-who"><div><h1 class="title">Помощник</h1></div></div>
     </header>
     <div class="chat-feed" id="chatFeed" role="log" aria-live="polite"></div>
@@ -117,7 +117,7 @@
       <div class="chat-quick" id="chatQuick"></div>
       <form class="chat-bar" id="chatForm" autocomplete="off">
         <div class="cfield">
-          <button type="button" class="cb-btn" id="chatAttach" aria-label="Прикрепить чек или выписку"><i data-ic="clip"></i></button>
+          <button type="button" class="cb-btn" id="chatAttach" aria-label="Прикрепить чек или выписку"><i data-home-icon="document"></i></button>
           <textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси Фина" aria-label="Сообщение помощнику"></textarea>
           <button type="button" class="cb-mic" id="chatMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
           <button type="submit" class="cb-send" id="chatSend" aria-label="Отправить" hidden><i data-ic="send"></i></button>
