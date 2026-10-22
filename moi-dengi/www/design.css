@@ -119,11 +119,10 @@ b,strong,h1,h2,h3{font-weight:600}
 .bal-info:focus,.bal-info:focus-visible{outline:none}
 .bal-info:focus-visible{box-shadow:0 0 0 2px var(--d-text)}
 /* Подсказка: прямоугольная стеклянная панель, на 16 ниже значка */
-.bal-note{left:0;right:0;top:calc(100% + 8px);padding:var(--d-s12) var(--d-s16);border-radius:var(--d-r16);font-size:14px;line-height:1.4;font-weight:400;color:var(--d-text);
+.bal-note{position:static;order:9;flex:1 0 100%;margin-top:var(--d-s8);padding:var(--d-s12) var(--d-s16);border-radius:var(--d-r16);font-size:14px;line-height:1.4;font-weight:400;color:var(--d-text);
   background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.06)),rgba(11,11,26,.72);border:1px solid rgba(255,255,255,.3);
   -webkit-backdrop-filter:blur(40px) saturate(150%);backdrop-filter:blur(40px) saturate(150%)}
 .bal-note::before,.bal-note::after{content:none}
-/* Пока открыта подсказка, всё под ней размыто и приглушено, чтобы не просвечивало */
-.bal-sum,.bal-all,.bal-chart{transition:filter .2s ease,opacity .2s ease}
-.bal.tip-open .bal-sum,.bal.tip-open .bal-all,.bal.tip-open .bal-chart{filter:blur(10px);opacity:.25}
 .bal-info svg{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.bal-head{flex-wrap:wrap;row-gap:0}
+.bal-note{margin-top:var(--d-s8);margin-bottom:var(--d-s8)}
