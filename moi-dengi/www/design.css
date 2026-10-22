@@ -214,3 +214,8 @@ b,strong,h1,h2,h3{font-weight:600}
 /* Монохромные значки категорий: без подложки и теней везде */
 .rico:has(>.pack-icon),.tx-ic:has(>.pack-icon),.cat-ico:has(>.pack-icon),.ci:has(>.pack-icon),.rw-ic:has(>.pack-icon),.pk-tile{background:none!important;border:0!important;box-shadow:none!important}
 #lyTx .cat-tile,#lyTx .cat-tile[aria-checked=true],#lyTx .cat-tile .ci,#lyTx .cat-tile[aria-checked=true] .ci{background:none!important;box-shadow:none!important;border:0!important}
+#s-stats #catList .cat-top .cat-ico:has(>.pack-icon),.cat-top .cat-ico:has(>.pack-icon),.cat-tile .ci:has(>.pack-icon),.cat-cur .ci:has(>.pack-icon){background:none!important;border:0!important;box-shadow:none!important;padding:0!important;width:36px;height:36px;color:inherit!important}
+.sheet .cat-tile .ci,.sheet .cat-cur .ci,.sheet .cat-tile[aria-checked=true] .ci,.layer .cat-grid .cat-tile .ci{background:none!important;border:0!important;box-shadow:none!important}
+#payCats .cat-tile .ci,#payCats .cat-tile[aria-checked=true] .ci,#bulkCats .cat-tile .ci,#bulkCats .cat-tile[aria-checked=true] .ci,#payCatCur .ci,.cat-cur .ci{background:none!important;border:0!important;box-shadow:none!important;color:var(--d-text2)!important}
+#payCats .cat-tile .ci,#bulkCats .cat-tile .ci{width:36px;height:36px;margin:0 auto var(--d-s4)}
+#payCats .cat-tile .ci .pack-icon,#bulkCats .cat-tile .ci .pack-icon{width:28px;height:28px}
