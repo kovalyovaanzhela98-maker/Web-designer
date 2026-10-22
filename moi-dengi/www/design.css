@@ -482,3 +482,5 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-pay{padding-bottom:calc(52px + var(--d-s20) + var(--d-s24) + env(safe-area-inset-bottom,0px))}
 body:has(#s-pay:not([hidden])) .toast{bottom:calc(52px + var(--d-s20) + var(--d-s16) + env(safe-area-inset-bottom,0px))}
 #s-pay{animation:none!important}
+/* Платежи: мягкая подложка под закреплённой кнопкой, тот же рецепт, что у размытия под нижним меню */
+#s-pay::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(52px + var(--d-s20) + 30px + env(safe-area-inset-bottom,0px));z-index:29;pointer-events:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);-webkit-mask-image:linear-gradient(to top,#000 62%,transparent);mask-image:linear-gradient(to top,#000 62%,transparent);background:linear-gradient(to top,rgba(11,11,26,.8),rgba(11,11,26,0))}
