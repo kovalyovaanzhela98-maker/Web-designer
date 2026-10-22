@@ -361,3 +361,7 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-stats #catList .cat-top .pc{flex:0 0 40px!important}
 #s-stats #catList .cat-top .pill{min-width:80px}
 @media(max-width:370px){#s-stats #catList .cat-top{gap:var(--d-s4)!important}#s-stats #catList .cat-top .pc{flex:0 0 34px!important;font-size:14px}#s-stats #catList .cat-top .pill{min-width:72px;font-size:16px}}
+/* Анализ: строка категории 64 px (значок 36, строка 14 сверху и снизу), полоса под названием внутри высоты значка */
+#s-stats #catList .cat-top{align-items:flex-start!important;min-height:36px}
+#s-stats #catList .cat-top .nm,#s-stats #catList .cat-top .pc,#s-stats #catList .cat-top .pill{line-height:24px;height:24px;display:block;overflow:hidden;white-space:nowrap}
+#s-stats #catList .bar{margin:-6px 0 0 48px!important}
