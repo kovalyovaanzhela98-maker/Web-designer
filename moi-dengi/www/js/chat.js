@@ -20,7 +20,7 @@
   const row = (r, extra = '') => `<div class="cc-row"><span class="l">${r.color ? `<i class="d" style="background:${r.color}"></i>` : ''}<span>${esc(r.l)}</span></span><b class="${r.cls || ''}">${esc(r.v)}</b></div>${r.pct != null && r.color ? `<div class="cc-bar"><i style="--c:${r.color};width:${Math.max(2, r.pct)}%"></i></div>` : ''}${extra}`;
   const MG = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
   const dayRu = d => `${+d.slice(8)} ${MG[+d.slice(5, 7) - 1]}`;
-  const actBtn = a => `<button class="btn ${a.danger ? 'danger' : a.primary ? 'primary' : 'soft'}" type="button" data-act="${esc(a.kind)}"${a.id ? ` data-id="${esc(a.id)}"` : ''}${a.amount != null ? ` data-amt="${esc(a.amount)}"` : ''}>${esc(a.label)}</button>`;
+  const actBtn = a => `<button class="btn ${a.danger || a.primary ? 'primary' : 'soft'}" type="button" data-act="${esc(a.kind)}"${a.id ? ` data-id="${esc(a.id)}"` : ''}${a.amount != null ? ` data-amt="${esc(a.amount)}"` : ''}>${esc(a.label)}</button>`;
   function draftRows(items) {
     const shown = items.slice(0, 6);
     const inc = items.filter(i => i.type === 'income').reduce((s, i) => s + i.amount, 0), exp = items.filter(i => i.type === 'expense').reduce((s, i) => s + i.amount, 0);
