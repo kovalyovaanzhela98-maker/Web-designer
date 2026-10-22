@@ -33,17 +33,17 @@
     if (m.k === 'typing') return `<div class="bm bot typing" aria-label="Фин печатает"><i></i><i></i><i></i></div>`;
     if (m.k === 'progress') return `<div class="bm bot">${esc(m.text)}</div>`;
     if (m.k === 'card') return `<div class="cc"><h4>${esc(m.title)}</h4>${m.sub ? `<p class="cc-s">${esc(m.sub)}</p>` : ''}${m.rows.map(r => row(r, r.sub ? `<div class="cc-s" style="margin:-4px 0 6px">${esc(r.sub)}</div>` : '')).join('')}</div>`;
-    if (m.k === 'action') return m.done ? '' : `<div class="cc-act"><button class="btn soft" type="button" data-act="${esc(m.kind)}"${m.id ? ` data-id="${esc(m.id)}"` : ''}${m.amount != null ? ` data-amt="${esc(m.amount)}"` : ''}>${esc(m.label)}</button></div>`;
+    if (m.k === 'action') return m.done ? '' : `<div class="cc-act cc-act-m"><button class="btn soft" type="button" data-act="${esc(m.kind)}"${m.kind === 'deltx' ? ' data-danger' : ''}${m.id ? ` data-id="${esc(m.id)}"` : ''}${m.amount != null ? ` data-amt="${esc(m.amount)}"` : ''}>${esc(m.label)}</button></div>`;
     if (m.k === 'draft') {
       if (m.done) return `<div class="cc done"><h4>${esc(m.intro)}</h4>${draftRows(m.items)}<p class="cc-s" style="margin:8px 0 0">${m.done === 'saved' ? 'Сохранено' : m.done === 'edit' ? 'Отправлено на правку' : 'Отменено'}</p></div>`;
-      return `<div class="cc" data-draft="${m.id}"><h4>${esc(m.intro)}</h4>${m.note ? `<p class="cc-s">${esc(m.note)}</p>` : ''}${draftRows(m.items)}<div class="cc-act"><button class="btn ghost" type="button" data-dr="edit">Изменить</button><button class="btn primary" type="button" data-dr="ok">Подтвердить</button></div></div>`;
+      return `<div class="cc" data-draft="${m.id}"><h4>${esc(m.intro)}</h4>${m.note ? `<p class="cc-s">${esc(m.note)}</p>` : ''}${draftRows(m.items)}<div class="cc-act"><button class="btn soft" type="button" data-dr="edit">Изменить</button><button class="btn primary" type="button" data-dr="ok">Подтвердить</button></div></div>`;
     }
     return '';
   }
 
   function render(noScroll) {
     const feed = $('#chatFeed'); if (!feed) return;
-    feed.innerHTML = msgs.map(html).join('');
+    feed.innerHTML = msgs.map(html).join('').replace(/<\/button><\/div><div class="cc-act cc-act-m">/g, '</button>');
     $('#chatQuick').innerHTML = quick.map(q => `<button class="cq" type="button" data-q="${esc(q)}">${esc(q)}</button>`).join('');
     if (!noScroll) setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 30);
   }

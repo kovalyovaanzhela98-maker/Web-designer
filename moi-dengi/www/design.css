@@ -263,3 +263,13 @@ body.kb .chat-dock{bottom:var(--d-s20)!important}
 #s-chat .chat-quick .cq{min-height:44px;height:44px;font-size:14px;font-weight:500}
 /* Чат: шапка не уезжает при прокрутке ленты */
 #s-chat .chat-hdr{position:sticky;top:0;z-index:20;background:var(--d-bg);padding-top:var(--d-s12)!important;padding-bottom:var(--d-s8)!important}
+
+/* Чат: пара кнопок одинаковая, без свечения; категории без цветных точек, прогресс одним акцентом */
+#s-chat .cc-act{display:flex;gap:var(--d-s8);margin-top:var(--d-s16)}
+#s-chat .cc-act .btn{flex:1;min-width:0;box-shadow:none!important;filter:none!important;margin:0}
+#s-chat .cc-act .btn::before,#s-chat .cc-act .btn::after{box-shadow:none!important;filter:none!important}
+#s-chat .cc-act .btn[data-danger]{color:var(--d-danger)}
+#s-chat .cc-row .d{display:none}
+#s-chat .cc-bar{height:6px;border-radius:3px}
+#s-chat .cc-bar i{background:var(--d-accent)!important;border-radius:3px}
+#s-chat .cc-act:empty{display:none}
