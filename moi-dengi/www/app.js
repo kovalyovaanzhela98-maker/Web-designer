@@ -324,7 +324,7 @@ function renderHomeCards(T, pi, soon) {
   if (pi) {
     const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
     $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
-  } else $('#payCard').innerHTML = `<button class="h-empty-card h-pay-empty" type="button" data-go-pay><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('repeat')}</span><span><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
+  } else $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Добавьте регулярный платёж</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
 /* Общий график: плавная линия и тонкие вертикальные полоски под ней (главная и статистика) */
@@ -2043,7 +2043,7 @@ function payRowHtml(r, mk) {
   const p = r.p, ci = catInfo('expense', p.cat), d = r.date, late = r.status === 'late';
   const st = r.status === 'paid' ? `<span class="st paid">${icon('check')}Оплачено</span>` : late ? `<span class="st late">Записать</span>` : '<span class="st">Ожидает</span>';
   return `<div class="pay-row${late ? ' late' : ''}"><button class="pr-main" type="button" data-payedit="${esc(p.id)}" aria-label="Изменить платёж ${esc(p.name)}"><span class="tx-ic" style="${cs(ci)}" aria-hidden="true">${cIcon(ci)}</span>
-    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(R.scheduleText(p, d))}</small></span>
+    <span class="pr-b"><b>${esc(cap(p.name))}</b><small>${esc(R.scheduleText(p, d, true))}</small></span>
     <span class="pr-r"><b>${esc(maskT(money(p.amount)))}</b>${st}</span></button>${late ? `<button class="late-act" type="button" data-paywrite="${esc(p.id)}|${mk}">Записать</button>` : ''}</div>`;
 }
 function renderPay() {
