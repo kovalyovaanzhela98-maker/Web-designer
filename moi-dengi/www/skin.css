@@ -36,7 +36,7 @@
 .sheet-head{position:relative;display:flex;justify-content:center;align-items:center;min-height:44px}
 .sheet-head .close{position:absolute;right:-6px;top:50%;transform:translateY(-50%)}
 .sheet-head h2,.sheet-head .sheet-title{margin:0}
-.g-h span,.goal-pct{color:var(--accent-t)!important}
+.g-h span,.goal-pct{color:var(--d-accent-text)!important}
 
 /* ритм отступов: между блоками 12–16, внутри строк 8–12 */
 #lyTx .tx-rest{display:flex;flex-direction:column;gap:14px}
@@ -75,7 +75,6 @@
 #evtCard>*,#goalCard>*,#payCard>*{margin-top:0!important}
 .h-top{min-height:52px}
 .h-greet{font-size:30px!important;font-weight:600!important}
-.bal{position:relative;overflow:hidden;border-radius:24px;padding:20px 20px 0;background:radial-gradient(120% 90% at 100% 0%,rgba(61,44,255,.28),transparent 60%),linear-gradient(160deg,#17173a 0%,#10101f 75%);border:1px solid rgba(143,164,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
 .bal-head{display:flex;align-items:center;gap:2px}
 .bal-head small{font-size:15px;color:rgba(244,246,255,.72)}
 .bal-info{display:grid;place-items:center;width:44px;height:44px;margin:-12px 0 -12px -4px;background:none;border:0;color:rgba(244,246,255,.6);cursor:pointer}
@@ -89,7 +88,6 @@
 /* копилка: один акцент, без кнопки */
 .h-goal{padding:16px 20px!important}
 .h-goal .g-h b{font-weight:500!important}
-.h-goal .g-h span{color:var(--accent-t)!important}
 .h-goal .goal-bar i{background:var(--accent)!important}
 .h-goal-title{font-size:13px;color:var(--muted);margin-bottom:6px}
 .h-goal p{margin:0!important}
@@ -113,7 +111,6 @@
 /* ============ Один акцент: градиент кнопки «+» ============ */
 :root{--grad-plus:linear-gradient(145deg,#3477ee 4%,#3159df 54%,#5947c9 100%)}
 .h-goal .goal-bar i,#catList .bar i,#catList li.on .bar i,.pcard .bar i,.goal-bar i{background:var(--grad-plus)!important}
-.h-goal .g-h span,.goal-pct,.g-h span{background:var(--grad-plus);-webkit-background-clip:text;background-clip:text;color:transparent!important;-webkit-text-fill-color:transparent}
 #catList .bar{height:6px;border-radius:3px;background:rgba(160,180,255,.14)}
 /* график статистики как на главной */
 .curve-box.flow{margin-top:8px}

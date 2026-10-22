@@ -70,3 +70,40 @@ b,strong,h1,h2,h3{font-weight:600}
 .sheet>.sheet-head .close,.sheet .close{right:0}
 .chat-hdr #chatClear,.chat-hdr .rnd,.chat-hdr .icon-btn{position:static;transform:none;margin:0;flex:none}
 .chat-hdr .chat-who>div{min-width:0}
+
+/* ===== Главная: правки по макету ===== */
+/* Кнопка «Чат с ИИ»: компактнее; зона касания 44 за счёт невидимых полей */
+.h-ai-chat.btn{min-height:36px;padding:0 var(--d-s12);gap:var(--d-s8);font-size:14px;font-weight:500;border-radius:var(--d-r12)}
+.h-ai-chat.btn svg,.h-ai-chat.btn .pack-icon,.h-ai-chat.btn img{width:16px;height:16px}
+.h-ai-chat.btn::after{content:"";position:absolute;inset:-4px -4px}
+/* Баланс: акцентный градиент «+», выделяется среди тёмных карточек */
+.bal{position:relative;overflow:visible;border-radius:var(--d-r24);padding:var(--d-s20) var(--d-s20) 0;border:1px solid var(--d-line);
+  background:radial-gradient(90% 120% at 100% 0%,rgba(255,255,255,.24),transparent 58%),var(--d-accent);color:var(--d-text)}
+.bal-head{display:flex;align-items:center;gap:var(--d-s8)}
+.bal-head small{color:rgba(244,246,255,.85);font-size:15px}
+.bal-info{margin:-12px -12px -12px auto;color:var(--d-text);opacity:.9}
+.bal-sum,.bal-sum small{color:var(--d-text)}
+.bal-sum small{opacity:.8}
+.bal-all{color:rgba(244,246,255,.85)}
+.bal-chart{border-radius:0 0 var(--d-r24) var(--d-r24);overflow:hidden}
+.bal-note{position:absolute;left:0;right:0;top:56px;z-index:6;padding:var(--d-s16);border-radius:var(--d-r20);background:var(--d-card);border:1px solid var(--d-line);color:var(--d-text);text-align:left}
+.bal-note[hidden]{display:none}
+.bal-note b{display:block;font-size:15px;font-weight:600;margin-bottom:var(--d-s12)}
+.bal-note dl{margin:0;display:flex;flex-direction:column;gap:var(--d-s8)}
+.bal-note dl>div{display:flex;justify-content:space-between;gap:var(--d-s12);font-size:14px;font-variant-numeric:tabular-nums}
+.bal-note dt{color:var(--d-text2)}.bal-note dd{margin:0;font-weight:500}
+.bal-note .eq{border-top:1px solid var(--d-line);padding-top:var(--d-s8);font-weight:500}
+.bal-note .eq dt{color:var(--d-text)}
+.bal-note p{margin:var(--d-s12) 0 0;font-size:13px;color:var(--d-muted)}
+/* Разделы главной: между разделами 24, заголовок → блок 8 */
+#homeMain>#goalCard,#homeMain>.block{margin-top:var(--d-s24)!important}
+#goalCard{display:flex;flex-direction:column;gap:var(--d-s8)}
+#goalCard>*{margin:0!important}
+.h-goal{display:block;width:100%;text-align:left;color:var(--d-text);font:inherit;cursor:pointer}
+.h-goal .g-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--d-s12);font-size:16px}
+.h-goal .g-h b{font-weight:500}
+.h-goal .g-pct,.goal-pct{background:none;-webkit-text-fill-color:currentColor;color:var(--d-accent-text);font-weight:500;font-variant-numeric:tabular-nums}
+.h-goal .goal-bar{display:block;margin:var(--d-s12) 0}
+.h-goal .g-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--d-s12);font-size:14px;color:var(--d-muted)}
+.h-goal .g-chev{display:grid;flex:none;color:var(--d-muted)}.h-goal .g-chev svg,.h-goal .g-chev img{width:18px;height:18px}
+.link,#homeMain .link,#homeMain .h2-row .link{color:var(--d-accent-text)!important}

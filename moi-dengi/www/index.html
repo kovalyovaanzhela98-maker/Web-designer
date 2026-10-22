@@ -54,10 +54,10 @@
       <header class="h-top"><span class="h-greet" id="greetTitle">Главная</span><span class="h-acts"><button class="h-ai-chat" type="button" data-go="chat"><i data-home-icon="message"></i><span>Чат с ИИ</span></button></span></header>
       <section class="bal" aria-labelledby="heroLabel">
         <div class="bal-head"><small id="heroLabel">Свободные деньги</small>
-          <button class="bal-info" id="balInfo" type="button" aria-label="Что такое свободные деньги" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
           <small class="h-period" id="homePeriod" hidden></small>
+          <button class="bal-info" id="balInfo" type="button" aria-label="Как считаются свободные деньги" aria-expanded="false" aria-controls="balNote"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
         </div>
-        <p class="bal-note" id="balNote" hidden>Сколько можно потратить прямо сейчас. Из денег на счетах уже вычтены обязательные платежи этого месяца и подарки на ближайшие 14 дней.</p>
+        <div class="bal-note" id="balNote" role="note" hidden></div>
         <button class="bal-sum" id="heroSum" type="button" data-go="stats" aria-label="Открыть статистику"></button>
         <em class="bal-all" id="heroAll"></em>
         <div class="bal-chart" id="balanceTrend" aria-hidden="true"></div>
@@ -203,7 +203,7 @@
   <button class="nav-item active" type="button" data-tab="home" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg><span>Главная</span></button>
   <button class="nav-item" type="button" data-tab="stats" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V12M10 19V5M15 19V9M20 19V3"/></svg><span>Анализ</span></button>
   <button class="add-button" id="fab" type="button" aria-label="Добавить запись" aria-pressed="false"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="add-label">Добавить</span></button>
-  <button class="nav-item" type="button" data-tab="ops" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>Операции</span></button>
+  <button class="nav-item" type="button" data-tab="ops" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4"/><path d="M20 16H6M10 12l-4 4 4 4"/></svg><span>Операции</span></button>
   <button class="nav-item" type="button" data-tab="acc" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2z"/></svg><span>Профиль</span></button>
 </nav>
 <aside class="first-tx-coach" id="firstTxCoach" role="status" aria-live="polite" hidden>

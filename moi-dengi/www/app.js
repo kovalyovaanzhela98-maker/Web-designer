@@ -314,9 +314,9 @@ function renderHomeCards(T, pi, soon) {
   const act = state.goals.filter(g => goalPct(g) < 100).sort((a, b) => String(a.deadline).localeCompare(String(b.deadline)))[0];
   if (act) {
     const per = G.perPeriodNow(act, T) || 0, r = range(per), unit = act.unit === 'week' ? 'в неделю' : 'в месяц';
-    $('#goalCard').innerHTML = `<div class="h-goal" role="button" tabindex="0" data-go="goals" aria-label="Открыть копилки"><div class="h-goal-title">Копилки</div><div class="g-h"><b>${esc(act.name)}</b><span>${goalPct(act)}%</span></div><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
-      ${per > 0 ? `<p>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</p>` : `<p>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</p>`}</div>`;
-  } else $('#goalCard').innerHTML = `<button class="h-empty-card h-goal-empty" type="button" data-go="goals"><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Создайте цель и следите за прогрессом</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
+    $('#goalCard').innerHTML = `<div class="h2-row"><h2 class="h2">Копилки</h2></div><button class="h-goal" type="button" data-go="goals" aria-label="Открыть копилки: ${esc(act.name)}, ${goalPct(act)}%"><span class="g-h"><b>${esc(act.name)}</b><span class="g-pct">${goalPct(act)}%</span></span><span class="goal-bar"><i style="width:${goalPct(act)}%"></i></span>
+      <span class="g-foot">${per > 0 ? `<span>Откладывать от ${esc(maskT(fmtS(r[0])))} до ${esc(maskT(fmtS(r[1]) + ' ' + sym(act.cur)))} ${unit}</span>` : `<span>${esc(maskT(gm(act, act.saved)))} из ${esc(maskT(gm(act, act.target)))}</span>`}<i class="g-chev" aria-hidden="true">${homeIcon('next')}</i></span></button>`;
+  } else $('#goalCard').innerHTML = `<div class="h2-row"><h2 class="h2">Копилки</h2></div><button class="h-empty-card h-goal-empty" type="button" data-go="goals"><span class="h-empty-head"><span class="h-empty-ico">${homeIcon('safe')}</span><span><b>Копилки</b><small>Создайте цель и следите за прогрессом</small></span><span class="rw-r">${homeIcon('next')}</span></span></button>`;
   if (pi) {
     const when = pi.next ? (pi.late ? 'пора оплатить' : pi.days === 0 ? 'сегодня' : 'через ' + dayWord(pi.days)) : '';
     $('#payCard').innerHTML = `<button class="grp h-pay" type="button" data-go-pay><span class="rw-t"><b>Обязательные платежи</b><small>Резерв ${rMoney(pi.reserve)}${when ? ` · <i class="${pi.late || (pi.days != null && pi.days <= 3) ? 'warn' : ''}">${esc(when)}</i>` : ''}</small></span><span class="rw-r">${homeIcon('next')}</span></button>`;
@@ -324,7 +324,7 @@ function renderHomeCards(T, pi, soon) {
 }
 const dayShort = s => { const d = parseYmd(s), diff = Math.round((parseYmd(today()) - d) / 864e5); return diff === 0 ? 'Сегодня' : diff === 1 ? 'Вчера' : `${d.getDate()} ${MONTHS_G[d.getMonth()]}`; };
 /* Общий график: плавная линия и тонкие вертикальные полоски под ней (главная и статистика) */
-function flowChart(vals, uid, W = 320, H = 84) {
+function flowChart(vals, uid, W = 320, H = 84, light = false) {
   const n = vals.length;
   if (n < 2) return `<svg viewBox="0 0 ${W} ${H}" focusable="false"></svg>`;
   const pts = vals.slice();
@@ -335,8 +335,8 @@ function flowChart(vals, uid, W = 320, H = 84) {
   for (let i = 1; i < n; i++) { const cx = (xs[i - 1] + xs[i]) / 2; d += ` C ${cx.toFixed(1)} ${ys[i - 1].toFixed(1)} ${cx.toFixed(1)} ${ys[i].toFixed(1)} ${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`; }
   const sw = n > 40 ? 1.6 : 2.2, stripes = xs.map((x, i) => `<rect x="${(x - sw / 2).toFixed(1)}" y="${ys[i].toFixed(1)}" width="${sw}" height="${(base - ys[i]).toFixed(1)}" rx="${sw / 2}" fill="url(#${uid}b)"/>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" focusable="false"><defs>
-    <linearGradient id="${uid}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C8CFF" stop-opacity=".38"/><stop offset="1" stop-color="#3D2CFF" stop-opacity="0"/></linearGradient>
-    <linearGradient id="${uid}l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3477EE"/><stop offset=".55" stop-color="#3159DF"/><stop offset="1" stop-color="#8E7BFF"/></linearGradient></defs>
+    <linearGradient id="${uid}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${light ? '#F4F6FF' : '#7C8CFF'}" stop-opacity="${light ? .34 : .38}"/><stop offset="1" stop-color="${light ? '#F4F6FF' : '#3D2CFF'}" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${uid}l" x1="0" y1="0" x2="1" y2="0">${light ? '<stop offset="0" stop-color="#F4F6FF" stop-opacity=".7"/><stop offset="1" stop-color="#F4F6FF"/>' : '<stop offset="0" stop-color="#3477EE"/><stop offset=".55" stop-color="#3159DF"/><stop offset="1" stop-color="#8E7BFF"/>'}</linearGradient></defs>
     ${stripes}<path d="${d}" fill="none" stroke="url(#${uid}l)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
     <circle cx="${xs[n - 1].toFixed(1)}" cy="${ys[n - 1].toFixed(1)}" r="4" fill="#fff"/></svg>`;
 }
@@ -347,7 +347,7 @@ function renderBalanceTrend(T) {
     const after = state.tx.reduce((sum, t) => t.date > day ? sum + (t.type === 'income' ? t.amount : -t.amount) : sum, 0);
     points.push(currentBalance - after);
   }
-  $('#balanceTrend').innerHTML = flowChart(points, 'bal');
+  $('#balanceTrend').innerHTML = flowChart(points, 'bal', 320, 84, true);
 }
 function renderHomeBriefing(T) {
   const start = mondayOf(T), elapsed = Math.min(6, Math.max(0, daysBetween(start, T))), previous = addD(start, -7);
@@ -372,6 +372,8 @@ function renderHome() {
   if (w) return;
   const pi = payInfo(T), soon = eventsSoon(T);
   setNum($('#heroSum'), moneyH, freeNow(T, pi, soon));
+  { const reserve = pi ? pi.reserve : 0, gifts = round2(soon.reduce((s2, x) => s2 + (MD.events.itemsTotal(x.e) || 0), 0)), m = n => hide ? MASK : money(n);
+    $('#balNote').innerHTML = `<b>Как считаются свободные деньги</b><dl><div><dt>На счетах</dt><dd>${esc(m(totalBalance()))}</dd></div><div><dt>Обязательные платежи месяца</dt><dd>${reserve > 0 ? '−' : ''}${esc(m(reserve))}</dd></div><div><dt>Подарки на 14 дней</dt><dd>${gifts > 0 ? '−' : ''}${esc(m(gifts))}</dd></div><div class="eq"><dt>Можно тратить</dt><dd>${esc(m(freeNow(T, pi, soon)))}</dd></div></dl><p>Платежи и подарки отложены заранее, чтобы вы не ушли в минус.</p>`; }
   $('#heroAll').textContent = hide ? `На счетах: ${MASK}` : `На счетах: ${money(totalBalance())}`;
   const monthList = monthTx(now0.getFullYear(), now0.getMonth());
   $('#homePeriod').textContent = MONTHS[now0.getMonth()];
@@ -2522,6 +2524,7 @@ if (cloud.enabled) cloud.onAuth(u => (u ? onSignedIn(u) : onSignedOut()));
 MD.notify.init(quickAdd);
 afterDataChange();
 if (history.state && (history.state.layer || history.state.tab)) history.replaceState(null, '');
-$('#balInfo').addEventListener('click', () => { const n = $('#balNote'), open = n.hidden; n.hidden = !open; $('#balInfo').setAttribute('aria-expanded', String(open)); });
+$('#balInfo').addEventListener('click', () => { const n = $('#balNote'), open = n.hidden; n.hidden = !open; $('#balInfo').setAttribute('aria-expanded', String(open)); buzz(6); });
+document.addEventListener('click', e => { const n = $('#balNote'); if (n && !n.hidden && !e.target.closest('#balNote,#balInfo')) { n.hidden = true; $('#balInfo').setAttribute('aria-expanded', 'false'); } });
 })();
 
