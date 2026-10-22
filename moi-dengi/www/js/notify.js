@@ -93,12 +93,12 @@
     } catch (e) { return { ok: false, reason: 'fail' }; }
   }
 
-  /* Обязательные платежи: уведомления с номерами 1000…1479. Только для платежей с включённым напоминанием, оплаченные месяцы пропускаем */
+  /* Обязательные платежи: уведомления с номерами 1000…1999. Только для платежей с включённым напоминанием, оплаченные месяцы пропускаем */
   async function applyPayments(list, money) {
     const L = plug('LocalNotifications'); if (!L) return { ok: false, reason: 'web' };
     try {
       const pend = await L.getPending();
-      const mine = (pend.notifications || []).filter(x => x.id >= 1000 && x.id < 1500);
+      const mine = (pend.notifications || []).filter(x => x.id >= 1000 && x.id < 2000);
       if (mine.length) await L.cancel({ notifications: mine.map(x => ({ id: x.id })) });
       const items = MD.rec.notifications(list || [], new Date(), money);
       if (!items.length) return { ok: true };

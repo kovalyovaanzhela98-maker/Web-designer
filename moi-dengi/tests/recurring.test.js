@@ -45,9 +45,17 @@ const now = new Date(2026, 9, 17, 12, 0);
 eq('напоминание выключено — уведомлений нет', R.notifications([mk()], now, money), []);
 const ns = R.notifications([mk({ remind: '1', days: [{ from: '0000-00', day: 20 }], paid: { '2026-10': 't' } })], now, money);
 eq('октябрь оплачен — первое на ноябрь, за день', [f(ns[0].at), ns[0].at.getHours(), ns[0].body, ns.length], ['2026-11-19', 10, 'Завтра аренда 500 Br, записать', 12 - 1]);
-eq('номера уведомлений в своём диапазоне', ns.every(n => n.id >= 1000 && n.id < 1480), true);
+eq('номера уведомлений в своём диапазоне', ns.every(n => n.id >= 1000 && n.id < 2000), true);
 eq('в день платежа и за 3 дня', [R.pushBody(mk(), 0, money), R.pushBody(mk(), 3, money)], ['Сегодня аренда 500 Br, записать', 'Через 3 дня аренда 500 Br, записать']);
 eq('Netflix не ломаем', R.pushBody(mk({ name: 'Netflix' }), 1, money), 'Завтра Netflix 500 Br, записать');
+
+// несколько напоминаний у одного платежа
+const nm = R.notifications([mk({ remind: ['0', '1', 'custom'], leadN: 5, days: [{ from: '0000-00', day: 28 }] })], now, money);
+eq('несколько напоминаний: три разных срока на октябрь', nm.filter(n => f(n.at).startsWith('2026-10')).map(n => f(n.at)).sort(), ['2026-10-23', '2026-10-27', '2026-10-28']);
+eq('несколько напоминаний: номера разные и в диапазоне', [new Set(nm.map(n => n.id)).size === nm.length, nm.every(n => n.id >= 1000 && n.id < 2000)], [true, true]);
+eq('санитайзер: массив чистится, дубли и «off» убираются', R.sanitize({ list: [{ name: 'А', amount: 5, cat: 'Другое', days: [{ from: '0000-00', day: 3 }], remind: ['1', '1', 'off', 'xx', '0'] }] }).list[0].remind, ['1', '0']);
+eq('санитайзер: один элемент массива становится строкой', R.sanitize({ list: [{ name: 'А', amount: 5, cat: 'Другое', days: [{ from: '0000-00', day: 3 }], remind: ['3'] }] }).list[0].remind, '3');
+eq('remindIds: строка и массив', [R.remindIds({ remind: 'off' }), R.remindIds({ remind: '1' }), R.remindIds({ remind: ['0', '3'] })], [[], ['1'], ['0', '3']]);
 
 // свой срок напоминания: за 10 дней
 const nc = R.notifications([mk({ remind: 'custom', leadN: 10, days: [{ from: '0000-00', day: 28 }] })], now, money);

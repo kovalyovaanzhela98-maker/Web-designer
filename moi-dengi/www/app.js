@@ -2070,8 +2070,8 @@ let pm = null;
 const payDefaultDay = () => new Date().getDate();
 function openPaySheet(id) {
   const p = id && payById(id);
-  pm = p ? { id: p.id, remind0: p.remind, name: p.name, amount: p.amount, day: R.curDay(p), mode: p.once ? 'once' : 'monthly', once: p.once || '', cat: p.cat, remind: p.remind, leadN: p.leadN == null ? 7 : p.leadN, time: p.time, catOpen: false }
-    : { id: null, name: '', amount: '', day: payDefaultDay(), mode: 'monthly', once: '', cat: '', remind: 'off', leadN: 7, time: '10:00' };
+  pm = p ? { id: p.id, remind0: R.remindIds(p), name: p.name, amount: p.amount, day: R.curDay(p), mode: p.once ? 'once' : 'monthly', once: p.once || '', cat: p.cat, remind: R.remindIds(p), leadN: p.leadN == null ? 7 : p.leadN, time: p.time, catOpen: false }
+    : { id: null, name: '', amount: '', day: payDefaultDay(), mode: 'monthly', once: '', cat: '', remind: [], leadN: 7, time: '10:00' };
   $('#payHead').textContent = p ? 'Платёж' : 'Новый платёж';
   $('#payName').value = pm.name; $('#payAmount').value = pm.amount ? String(pm.amount).replace('.', ',') : ''; $('#payDay').value = pm.day; $('#payTime').value = pm.time; $('#payOnce').value = pm.once || today();
   $('#payCur').textContent = sym();
@@ -2086,12 +2086,14 @@ function openPaySheet(id) {
   (p ? $('#payAmount') : $('#payName')).setAttribute('data-autofocus', '');
   openLayer($('#lyPay'));
 }
+const remindOut = a => !a.length ? 'off' : a.length === 1 ? a[0] : a.slice();
 function renderPaySheet() {
   $('#payPresets').innerHTML = R.PRESETS.map(x => `<button type="button" class="chip" data-pp="${esc(x[0])}" aria-checked="${pm.name === x[0]}">${esc(x[0])}</button>`).join('');
   const editing = !!pm.id;      // при правке: короче, без быстрых названий, категория одной строкой
   $('#payPresets').hidden = editing;
-  $('#payRemind').innerHTML = R.REMIND.filter(r => ['off', '0', '1', 'custom'].includes(r.id) || r.id === pm.remind || r.id === pm.remind0).map(r => `<button type="button" role="radio" class="chip" data-pr="${r.id}" aria-checked="${r.id === pm.remind}">${r.id === 'off' ? 'Нет' : r.id === '0' ? 'В день' : esc(r.label)}</button>`).join('');
-  $('#payTimeF').hidden = pm.remind === 'off'; $('#payLeadF').hidden = pm.remind !== 'custom'; $('#payLead').value = pm.leadN;
+  const rem = pm.remind, shown = r => ['0', '1', 'custom'].includes(r.id) || rem.includes(r.id) || (pm.remind0 || []).includes(r.id);
+  $('#payRemind').innerHTML = `<button type="button" class="chip" data-pr="off" aria-pressed="${!rem.length}">Нет</button>` + R.REMIND.filter(r => r.id !== 'off' && shown(r)).map(r => `<button type="button" class="chip" data-pr="${r.id}" aria-pressed="${rem.includes(r.id)}">${r.id === '0' ? 'В день' : esc(r.label)}</button>`).join('');
+  $('#payTimeF').hidden = !rem.length; $('#payLeadF').hidden = !rem.includes('custom'); $('#payLead').value = pm.leadN;
   $$('#payMode [data-pmode]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.pmode === pm.mode)));
   $('#payDayF').hidden = pm.mode === 'once'; $('#payOnceF').hidden = pm.mode !== 'once';
 }
@@ -2103,7 +2105,7 @@ $('#lyPay').addEventListener('click', e => {
     pm.name = pp.dataset.pp; $('#payName').value = pm.name;
     const pre = R.PRESETS.find(x => x[0] === pm.name); if (pre && !pm.cat) pm.cat = pre[1];
     renderPaySheet(); buzz(6); if (!$('#payAmount').value) setTimeout(() => $('#payAmount').focus(), 60);
-  } else if (pr) { pm.remind = pr.dataset.pr; renderPaySheet(); buzz(6); }
+  } else if (pr) { const id = pr.dataset.pr; pm.remind = id === 'off' ? [] : pm.remind.includes(id) ? pm.remind.filter(x => x !== id) : pm.remind.concat(id); renderPaySheet(); buzz(6); }
 });
 $('#payName').addEventListener('input', e => { pm.name = e.target.value; hideErr($('#payErr')); });
 $('#payAmount').addEventListener('input', e => {
@@ -2125,17 +2127,17 @@ $('#payForm').addEventListener('submit', async e => {
   const time = /^\d{2}:\d{2}$/.test($('#payTime').value) ? $('#payTime').value : '10:00', T = new Date();
   let p = pm.id && payById(pm.id);
   if (p) {
-    Object.assign(p, { name, amount: round2(amount), cat: pm.cat, remind: pm.remind, leadN: pm.leadN, time });
+    Object.assign(p, { name, amount: round2(amount), cat: pm.cat, remind: remindOut(pm.remind), leadN: pm.leadN, time });
     if (pm.mode === 'once') { p.once = once; p.days = [{ from: '0000-00', day: Number(once.slice(8)) }]; p.start = once.slice(0, 7); }
     else if (p.once) { p.once = ''; p.days = [{ from: '0000-00', day }]; p.start = R.startMonth(day, T); }
     else R.setDay(p, day, T);                          // новый день со следующего месяца, прошлые отметки остаются
   } else {
     p = pm.mode === 'once'
-      ? { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once, days: [{ from: '0000-00', day: Number(once.slice(8)) }], remind: pm.remind, leadN: pm.leadN, time, start: once.slice(0, 7), paid: {}, nid: R.freeNid(state.rec.list) }
-      : { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once: '', days: [{ from: '0000-00', day }], remind: pm.remind, leadN: pm.leadN, time, start: R.startMonth(day, T), paid: {}, nid: R.freeNid(state.rec.list) };
+      ? { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once, days: [{ from: '0000-00', day: Number(once.slice(8)) }], remind: remindOut(pm.remind), leadN: pm.leadN, time, start: once.slice(0, 7), paid: {}, nid: R.freeNid(state.rec.list) }
+      : { id: 'p' + uid().slice(0, 8), name, amount: round2(amount), cat: pm.cat, once: '', days: [{ from: '0000-00', day }], remind: remindOut(pm.remind), leadN: pm.leadN, time, start: R.startMonth(day, T), paid: {}, nid: R.freeNid(state.rec.list) };
     state.rec.list.push(p);
   }
-  const edit = !!pm.id, remind = pm.remind !== 'off';
+  const edit = !!pm.id, remind = pm.remind.length > 0;
   save(); closeLayer($('#lyPay')); buzz(15); render();
   const r = await afterDataChange();
   if (remind && r && r.reason === 'denied') toast('Платёж сохранён, но уведомления выключены. Включи их в настройках телефона.', null, null, 'oops');

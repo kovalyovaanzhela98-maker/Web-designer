@@ -103,7 +103,7 @@ const fabM = async pg => { if (await pg.isVisible('#auth [data-act=later]')) { a
   await sleep(200);
   await page.click('[data-pp="Аренда"]');                // тап 2
   await page.fill('#payAmount', '500');                  // ввод
-  ok('напоминание по умолчанию выключено', (await page.getAttribute('[data-pr="off"]', 'aria-checked')) === 'true');
+  ok('напоминание по умолчанию выключено', (await page.getAttribute('[data-pr="off"]', 'aria-pressed')) === 'true');
   const d = new Date(); d.setDate(d.getDate() + 2);
   await page.fill('#payDay', String(d.getDate()));
   await page.click('#paySave'); await sleep(300);        // тап 3

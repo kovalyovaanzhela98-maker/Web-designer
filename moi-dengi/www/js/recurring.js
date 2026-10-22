@@ -41,7 +41,9 @@
       let nid = Math.floor(Number(p.nid)); if (!(nid >= 0 && nid < MAX) || used.has(nid)) { nid = 0; while (used.has(nid)) nid++; } used.add(nid);
       const paid = {};
       Object.keys(p.paid && typeof p.paid === 'object' ? p.paid : {}).sort().slice(-36).forEach(k => { if (/^\d{4}-\d{2}$/.test(k)) paid[k] = str(p.paid[k], 60) || 'manual'; });
-      const remind = REMIND.some(r => r.id === p.remind) ? p.remind : 'off';
+      const okR = id => REMIND.some(r => r.id === id) && id !== 'off';
+      const rl = (Array.isArray(p.remind) ? p.remind : [p.remind]).filter((id, i, a) => okR(id) && a.indexOf(id) === i).slice(0, 4);
+      const remind = !rl.length ? 'off' : rl.length === 1 ? rl[0] : rl;        // одно значение остаётся строкой, несколько — массив
       rec.list.push({
         once,
         id: typeof p.id === 'string' && p.id ? p.id.slice(0, 40) : 'p' + nid + Date.now().toString(36),
@@ -164,20 +166,25 @@
     const w = lead === 0 ? 'Сегодня' : lead === 1 ? 'Завтра' : `Через ${lead} ${pl(lead, 'день', 'дня', 'дней')}`;
     return `${w} ${lowerFirst(p.name)} ${money(p.amount)}, записать`;
   }
-  /* Локальные уведомления на год вперёд: только для включённых напоминаний и неоплаченных месяцев. Номера 1000…1479 */
+  /* Набор включённых напоминаний платежа: строка (одно значение) или массив */
+  const remindIds = p => (Array.isArray(p.remind) ? p.remind : [p.remind]).filter(id => id && id !== 'off' && REMIND.some(r => r.id === id));
+  /* Локальные уведомления вперёд: только для включённых напоминаний и неоплаченных месяцев. Номера 1000…1999 */
   function notifications(list, now, money) {
     const out = [], cur = mkOfDate(now);
     for (const p of list) {
-      const r0 = REMIND.find(x => x.id === p.remind); if (!r0 || r0.lead === null) continue;
-      const r = r0.id === 'custom' ? { lead: Math.max(0, Math.min(60, Number(p.leadN) || 0)) } : r0;
-      const [h, mi] = p.time.split(':').map(Number);
-      for (let i = 0; i < 12; i++) {
-        const mk = shiftMk(cur, i);
-        if (!active(p, mk) || isPaid(p, mk)) continue;
-        const d = dateOf(p, mk), at = new Date(d.getFullYear(), d.getMonth(), d.getDate() - r.lead, h, mi, 0);
-        if (at <= now) continue;
-        out.push({ id: 1000 + p.nid * 12 + i, title: 'Фин', body: pushBody(p, r.lead, money), at, pid: p.id, mk });
-      }
+      const ids = remindIds(p), mpr = ids.length <= 2 ? 12 : 6;
+      ids.forEach((rid, k) => {
+        const r0 = REMIND.find(x => x.id === rid); if (!r0 || r0.lead === null) return;
+        const r = r0.id === 'custom' ? { lead: Math.max(0, Math.min(60, Number(p.leadN) || 0)) } : r0;
+        const [h, mi] = p.time.split(':').map(Number);
+        for (let i = 0; i < mpr; i++) {
+          const mk = shiftMk(cur, i);
+          if (!active(p, mk) || isPaid(p, mk)) continue;
+          const d = dateOf(p, mk), at = new Date(d.getFullYear(), d.getMonth(), d.getDate() - r.lead, h, mi, 0);
+          if (at <= now) continue;
+          out.push({ id: 1000 + p.nid * 24 + k * mpr + i, title: 'Фин', body: pushBody(p, r.lead, money), at, pid: p.id, mk });
+        }
+      });
     }
     return out;
   }
@@ -194,7 +201,7 @@
     return { n: rows.length, paid: paid.length, total: r2(rows.reduce((s, r) => s + r.p.amount, 0)), left: r2(rows.filter(r => r.status !== 'paid').reduce((s, r) => s + r.p.amount, 0)) };
   };
 
-  const api = { FREE_LIMIT, MAX, REMIND, PRESETS, defaultRec, sanitize, freeNid, dayFor, curDay, dateOf, isPaid, active, startMonth, setDay, statusOf, monthRows, nextDue, matchTx, scheduleText, similar, isLoan, earlier, dueOn, whenText, dueLine, pushBody, notifications, summary, mkOf, mkOfDate, shiftMk };
+  const api = { FREE_LIMIT, MAX, REMIND, remindIds, PRESETS, defaultRec, sanitize, freeNid, dayFor, curDay, dateOf, isPaid, active, startMonth, setDay, statusOf, monthRows, nextDue, matchTx, scheduleText, similar, isLoan, earlier, dueOn, whenText, dueLine, pushBody, notifications, summary, mkOf, mkOfDate, shiftMk };
   root.MD = root.MD || {};
   root.MD.rec = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
