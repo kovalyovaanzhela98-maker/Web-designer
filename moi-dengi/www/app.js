@@ -1690,8 +1690,8 @@ function renderDraft() {
     const ci = catInfo(d.type, d.cat);
     return `<div class="draft-row"><button class="dr" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}, ${esc(signed(d.amount, d.type))}"><div class="tx-ic" aria-hidden="true">${cIcon(ci)}</div>
       <div class="dr-b"><div class="dr-t">${esc(d.cat)}</div>${d.note ? `<div class="tx-n">${esc(d.note)}</div>` : ''}<div class="dr-s">${esc(dayTitle(d.date))}</div></div>
-      <div class="tx-a ${d.type === 'income' ? 'inc' : 'exp'}">${esc(signed(d.amount, d.type))}</div></button>
-      <span class="dr-acts"><button class="dr-ed" type="button" data-edit="${i}" aria-label="Изменить: ${esc(d.cat)}">${homeIcon('next')}</button><button class="dr-x" type="button" data-drop="${i}" aria-label="Убрать строку: ${esc(d.cat)}">${icon('close')}</button></span></div>`;
+      <div class="tx-a ${d.type === 'income' ? 'inc' : 'exp'}">${esc(signed(d.amount, d.type))}</div><span class="dr-chev" aria-hidden="true">${homeIcon('next')}</span></button>
+      <span class="dr-acts"><button class="dr-x" type="button" data-drop="${i}" aria-label="Убрать запись: ${esc(d.cat)}, ${esc(signed(d.amount, d.type))}">${icon('close')}</button></span></div>`;
   }).join('');
   $('#draftOk').disabled = !draft.length;
   $('#draftOk').textContent = draft.length > 1 ? `Добавить ${draft.length} ${pluralN(draft.length, 'запись', 'записи', 'записей')}` : 'Добавить запись';
