@@ -536,7 +536,7 @@ function dayTitle(s) {
 function txRow(t, useHomeIcon = false) {
   const ci = catInfo(t.type, t.cat), on = sel.on && sel.ids.has(t.id);
   const amt = hide ? MASK : `${t.type === 'income' ? '+' : '−'}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}`;
-  const title = t.cat === 'Другое' && t.note ? t.note : t.cat, sub = t.cat === 'Другое' && t.note ? 'Другое' : t.note || '';
+  const title = (t.note || '').trim() || t.cat, sub = '';
   return `<div class="swipe${sel.on ? ' selmode' : ''}${on ? ' picked' : ''}" data-id="${esc(t.id)}"><div class="plate" aria-hidden="true">Удалить</div>
     <div class="row tx" role="button" tabindex="0" data-tx="${esc(t.id)}" aria-label="${esc(t.cat)}${t.note ? ', ' + esc(t.note) : ''}, ${esc(t.type === 'income' ? '+' : '−')}${esc(fmt(t.orig ? t.orig.a : t.amount))} ${esc(sym(t.orig ? t.orig.cur : state.currency))}, ${esc(dayShort(t.date))}">
       ${sel.on ? `<span class="sel-box" aria-hidden="true">${on ? icon('check') : ''}</span>` : ''}<span class="rico" aria-hidden="true">${categoryIcon(ci)}</span>
@@ -552,7 +552,7 @@ function renderOps() {
   $$('#s-ops [data-ft]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.ft === opsType)));
   const q = opsQuery.trim().toLowerCase();
   const list = monthTx().filter(t => (opsType === 'all' || t.type === opsType) &&
-    (!q || t.cat.toLowerCase().includes(q) || t.note.toLowerCase().includes(q) || ((accById(t.acc) || {}).name || '').toLowerCase().includes(q)));
+    (!q || t.cat.toLowerCase().includes(q) || (t.note || '').toLowerCase().includes(q) || ((accById(t.acc) || {}).name || '').toLowerCase().includes(q)));
   const el = $('#opsList');
   if (!list.length) {
     el.innerHTML = q ? emptyBox('Ничего не нашлось', 'Попробуй другое слово или часть названия.') : `<div class="stats-empty-state"><b>Здесь пока пусто</b><span>Нажми +, чтобы добавить трату, или выбери другой период</span></div>`;
