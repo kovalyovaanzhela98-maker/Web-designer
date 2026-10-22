@@ -27,9 +27,13 @@ const HOME_CAT_SLUGS = {c_groceries:'bag',c_cafe:'cup',c_transport:'location',c_
 Object.assign(HOME_CAT_SLUGS,{c_bar:'cup',c_beauty:'heart',c_books:'document',c_charity:'heart',c_education:'document',c_fast_food:'bag',c_fuel:'location',c_games:'display',c_hobby:'display',c_hotel:'home',c_investments:'chart',c_kids:'heart',c_other:'category',c_pets:'heart',c_pharmacy:'heart',c_repair:'display',c_restaurant:'cup',c_savings:'wallet',c_sport:'heart',c_taxi:'location',c_travel:'location',c_utilities:'wifi'});
 const homeIcon = name => `<span class="pack-icon" aria-hidden="true"><img class="pack-icon-light" src="img/icons/pack/light/${name}.svg" alt=""><img class="pack-icon-dark" src="img/icons/pack/dark/${name}.svg" alt=""></span>`;
 const homeCategoryIcon = ci => homeIcon(HOME_CAT_ICONS[ci[0]] || HOME_CAT_SLUGS[ci[1]] || 'category');
+/* Значок плитки (имя из MD.TILES) → монохромный значок из пака */
+const TILE_PACK = {chat:'message',phone:'wifi',mail:'message',doc:'document',upload:'next',settings:'category',person:'profile',people:'profile',education:'document',briefcase:'work',chart:'chart',swap:'swap',download:'next',headphones:'headphones',camera:'display',tv:'display',music:'headphones',book:'document',leaf:'heart',paw:'heart',gamepad:'display',laptop:'display',mobile:'wifi',pizza:'cup',bag:'bag',shirt:'bag-alt',scissors:'heart',train:'location',plane:'location',restaurant:'cup',cafe:'cup',burger:'cup',gym:'heart',run:'location',bike:'location',car:'location',bus:'location',star:'gift',bookmark:'category',heart:'heart',medical:'heart',pill:'heart',receipt:'document',file:'document',calendar:'repeat',clock:'repeat',bell:'repeat',piggy:'wallet',diamond:'gift',gift:'gift',discount:'dollar',tag:'category',bank:'safe',wallet:'wallet',card:'card',coins:'dollar',cart:'bag',basket:'bag',home:'home',building:'home'};
 const categoryIcon = ci => {
-  const own = MD.TILES.includes(ci[1]) ? ci[1] : null, custom = ci[3] && ci[3].custom, t = own || (custom ? (ci[1] === 'grid' || !ci[1] ? 'tag' : null) : MD.TILE_BY_NAME[ci[0]] || MD.TILE_BY_SLUG[ci[1]]);
-  return t ? MD.tile(t) : custom ? lineIc(ci) : homeCategoryIcon(ci);
+  const custom = ci[3] && ci[3].custom;
+  if (MD.TILES.includes(ci[1])) return homeIcon(TILE_PACK[ci[1]] || 'category');
+  if (custom && ci[1] && ci[1] !== 'grid') return lineIc(ci);
+  return homeCategoryIcon(ci);
 };
 /* Цвет значка категории: свой цвет человека побеждает общий зелёный */
 const cs = ci => { const t = MD.toneOf(ci[2]), im = ci[3] && ci[3].custom ? '!important' : ''; return `--c:${t.solid}${im};--cbg:${t.bg};--ctx:${t.text};--ctd:${t.textDark}`; };
@@ -2295,7 +2299,7 @@ function renderPanel(err) {
     if (P.edit) {
       const E = P.edit;
       html = fld('pnCatName', 'Название', { max: 24, value: E.name }) + e +
-        `<div class="fl">Значок</div><div class="pick-grid" role="radiogroup" aria-label="Значок">${MD.CAT_ICONS.map(n => `<button type="button" role="radio" class="pk" data-pn="cat-icon:${n}" aria-checked="${E.icon === n}" aria-label="${n}"><span class="pk-tile">${MD.tile(n)}</span></button>`).join('')}</div>` +
+        `<div class="fl">Значок</div><div class="pick-grid" role="radiogroup" aria-label="Значок">${MD.CAT_ICONS.map(n => `<button type="button" role="radio" class="pk" data-pn="cat-icon:${n}" aria-checked="${E.icon === n}" aria-label="${n}"><span class="pk-tile">${homeIcon(TILE_PACK[n] || 'category')}</span></button>`).join('')}</div>` +
         `<div class="fl">Цвет</div><div class="pick-grid pal" role="radiogroup" aria-label="Цвет">${MD.CAT_PALETTE.map(c => `<button type="button" role="radio" class="pk sw" data-pn="cat-col:${c}" aria-checked="${E.color === c}" aria-label="${c}"><i style="background:${c}"></i></button>`).join('')}</div>` +
         pnBtn('cat-save', 'Сохранить') + (E.custom ? pnBtn('cat-del', 'Удалить категорию', 'danger') : E.changed ? pnBtn('cat-reset', 'Вернуть как было', 'ghost') : '') + pnBtn('cat-back', 'Назад', 'ghost');
     } else {
