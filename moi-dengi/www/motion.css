@@ -5,9 +5,8 @@ html{overscroll-behavior-y:none}
 button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulation}
 
 /* Нажатие: элемент «проседает» сразу (0 мс), возвращается плавно; свойство scale не конфликтует с transform */
-:where(button):not(.btn):not(.fab):active,:where([role=button]):active{scale:.96}
+:where(button):not(.btn):not(.add-button):active,:where([role=button]):active{scale:.96}
 :where(.h-goal,.h-pay,.pay-tile,.row,.grp>button,.pay-row .pr-main,.dr,.old-tx,.tx):active{scale:.985}
-:where(button):not(.btn){transition:scale var(--m-fast) var(--ease)}
 .nav-item:active svg,.nav-item:active .pack-icon{scale:.9}
 .pay-tile{transition:scale var(--m-fast) var(--ease)}
 
@@ -24,7 +23,7 @@ button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulatio
 @keyframes m-fade{from{opacity:0}}
 .layer:not([hidden]) .scrim{animation:m-fade var(--m-fast) ease-out}
 
-/* Каскад: на входе в экран первые элементы списков вылетают снизу по очереди (шаг 25 мс); класс .m-enter держится 450 мс */
+/* Каскад: на входе в экран первые элементы списков вылетают снизу по очереди (шаг 25 мс); класс .m-enter держится 400 мс */
 @keyframes m-rise{from{opacity:0;transform:translateY(12px)}}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#payBody .block,#goalsBody,#eventsBody,#accountsBody)>*,.m-enter .pay-tiles>*{animation:m-rise var(--m-base) var(--ease) both}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(2),.m-enter .pay-tiles>:nth-child(2){animation-delay:25ms}
@@ -33,7 +32,8 @@ button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulatio
 .m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(5){animation-delay:100ms}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(6){animation-delay:125ms}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(7){animation-delay:150ms}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(n+8){animation-delay:175ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(8){animation-delay:175ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(n+9){animation:none}
 
 /* График «рисуется» слева направо за 300 мс (обрезка по ширине, без перерисовки линии) */
 @keyframes m-reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}

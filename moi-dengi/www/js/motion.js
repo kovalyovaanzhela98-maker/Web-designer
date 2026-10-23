@@ -1,16 +1,16 @@
 /* Движение: каскад и рисование графиков на входе в экран, общий переход «баланс → анализ», отклик на касание на iOS.
-   Ничего не считает и не перерисовывает: только добавляет класс на 450 мс и вызывает системный View Transition, если он есть. */
+   Ничего не считает и не перерисовывает: только добавляет класс на 400 мс и вызывает системный View Transition, если он есть. */
 (function () {
   'use strict';
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const timers = new WeakMap();
 
-  /* Экран стал видимым: на 450 мс включается каскад списков и рисование графика */
+  /* Экран стал видимым: на 400 мс включается каскад списков и рисование графика */
   function enter(s) {
     if (reduced()) return;
     s.classList.remove('m-enter'); void s.offsetWidth; s.classList.add('m-enter');
     clearTimeout(timers.get(s));
-    timers.set(s, setTimeout(() => s.classList.remove("m-enter"), 450));
+    timers.set(s, setTimeout(() => s.classList.remove("m-enter"), 400));
   }
   new MutationObserver(list => {
     for (const m of list) { const s = m.target; if (s.classList && s.classList.contains('screen') && !s.hidden) enter(s); }
