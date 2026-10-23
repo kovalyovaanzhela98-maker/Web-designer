@@ -17,16 +17,20 @@ def mask(round_=False,radius=0.235):
 def legacy(round_):
     im=img.convert('RGBA'); im.putalpha(mask(round_)); return im
 def scaled(share):
-    """Картинка по центру на холсте цвета фона; share — доля холста (адаптивная маска обрезает края)."""
-    c=Image.new('RGB',(S,S),BG); k=int(S*share); f=img.resize((k,k),Image.LANCZOS); c.paste(f,((S-k)//2,(S-k)//2)); return c
+    """Картинка по центру на холсте цвета фона; share — доля холста (адаптивная маска обрезает края).
+    Края картинки растушёваны в фон: иначе яркие «ушки», упирающиеся в край кадра, дают резкий шов на чёрном."""
+    c=Image.new('RGB',(S,S),BG); k=int(S*share); f=img.resize((k,k),Image.LANCZOS)
+    m=Image.new('L',(k,k),0); ImageDraw.Draw(m).rectangle([int(k*.09),int(k*.09),k-int(k*.09),k-int(k*.09)],fill=255)
+    m=m.filter(ImageFilter.GaussianBlur(k*.045))
+    c.paste(f,((S-k)//2,(S-k)//2),m); return c
 fg=scaled(0.74).convert('RGBA')                       # передний план адаптивной иконки
 bg=Image.new('RGB',(S,S),BG)                          # фон адаптивной иконки
 def mono():
     f=scaled(0.74); px=f.load(); out=Image.new('RGBA',(S,S),(255,255,255,0)); po=out.load()
     for y in range(S):
         for x in range(S):
-            r,g,b=px[x,y]; d=abs(r-BG[0])+abs(g-BG[1])+abs(b-BG[2])
-            a=max(0,min(255,(d-40)*3)); po[x,y]=(255,255,255,a)
+            r,g,b=px[x,y]; L=max(r,g,b)                       # яркость: светлыми остаются глаз, штрихи, контуры; синяя заливка полупрозрачная
+            a=max(0,min(255,int((L-110)*2.2))); po[x,y]=(255,255,255,a)
     return out
 MO=mono()
 dens={'mdpi':(48,108),'hdpi':(72,162),'xhdpi':(96,216),'xxhdpi':(144,324),'xxxhdpi':(192,432)}
