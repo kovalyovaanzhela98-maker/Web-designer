@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="freelance-sky" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B9DEFF"/><stop offset="1" stop-color="#4F8CF5"/></linearGradient><linearGradient id="freelance-slate" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#E4E9F2"/><stop offset="1" stop-color="#8C99B0"/></linearGradient></defs>
+<rect x="24" y="22" width="80" height="60" rx="9" fill="url(#freelance-slate)"/>
+<rect x="31" y="29" width="66" height="46" rx="5" fill="url(#freelance-sky)"/>
+<path d="M50 48l-8 6 8 6M78 48l8 6-8 6M68 44l-8 20" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8 86h112l-6 14a8 8 0 0 1-8 6H22a8 8 0 0 1-8-6z" fill="url(#freelance-slate)"/></svg>

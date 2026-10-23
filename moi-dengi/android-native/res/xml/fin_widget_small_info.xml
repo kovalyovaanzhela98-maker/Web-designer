@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/fin_widget_desc_s"
+    android:initialLayout="@layout/fin_widget_small"
+    android:minWidth="110dp"
+    android:minHeight="56dp"
+    android:previewLayout="@layout/fin_widget_small"
+    android:resizeMode="none"
+    android:targetCellHeight="1"
+    android:targetCellWidth="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen|keyguard" />

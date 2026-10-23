@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="restaurant-coral" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFB0B0"/><stop offset="1" stop-color="#F25C6E"/></linearGradient><linearGradient id="restaurant-green" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#CDF2A8"/><stop offset="1" stop-color="#58BB3C"/></linearGradient><linearGradient id="restaurant-slate" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#E4E9F2"/><stop offset="1" stop-color="#8C99B0"/></linearGradient></defs>
+<circle cx="64" cy="66" r="36" fill="url(#restaurant-slate)"/>
+<circle cx="64" cy="66" r="24" fill="#fff" fill-opacity=".7"/>
+<circle cx="58" cy="62" r="9" fill="url(#restaurant-coral)"/><path d="M66 68c4-10 14-12 18-6-5 5-11 7-18 6z" fill="url(#restaurant-green)"/>
+<path d="M12 20v22c0 6 4 9 8 9s8-3 8-9V20M20 22v24" stroke="#A9B4C7" stroke-width="5" fill="none" stroke-linecap="round"/>
+<rect x="16" y="48" width="8" height="62" rx="4" fill="url(#restaurant-slate)"/>
+<path d="M112 16c-11 6-13 28-9 40h9z" fill="url(#restaurant-slate)"/><rect x="104" y="52" width="8" height="58" rx="4" fill="url(#restaurant-slate)"/></svg>

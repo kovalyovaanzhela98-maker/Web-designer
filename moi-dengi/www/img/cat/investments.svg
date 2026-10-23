@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="investments-mint" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B6F2D8"/><stop offset="1" stop-color="#2EC496"/></linearGradient></defs>
+<rect x="16" y="74" width="20" height="38" rx="6" fill="url(#investments-mint)"/>
+<rect x="44" y="58" width="20" height="54" rx="6" fill="url(#investments-mint)"/>
+<rect x="72" y="42" width="20" height="70" rx="6" fill="url(#investments-mint)"/>
+<path d="M16 56l30-22 20 12 42-30" stroke="#FF9466" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M92 14h18v18" stroke="#FF9466" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>

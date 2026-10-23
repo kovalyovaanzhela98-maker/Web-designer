@@ -1,0 +1,131 @@
+@font-face{font-family:Inter;src:url("fonts/inter-latin-wght-normal.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0000-024F}
+@font-face{font-family:Inter;src:url("fonts/inter-cyrillic-wght-normal.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:Geist;src:url("fonts/geist-variable.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}
+/* ============================================================
+   «Фин» — токены дизайн-системы (единственный источник правды).
+   Меняешь значение здесь — меняется всё приложение и брендбук.
+   ============================================================ */
+
+
+:root{
+  /* Human Interface Guidelines: системные цвета, системный шрифт, семантика, отступы 8pt */
+  --brand-primary:#248A3D;--brand-primary-2:#1E7A34;--brand-accent:#34C759;--brand-warm:#FFF4E5;
+  --positive:#34C759;--positive-t:#1F7A35;--negative:#FF3B30;--negative-t:#D70015;--warning:#FF9500;--warning-t:#B25000;--neutral:#8E8E93;
+  --bg:#F2F2F7;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#F2F2F7;--field:#F2F2F7;--toast:#2C2C2E;
+  --text:#000000;--muted:#7C7C84;--ph:#8A8A8E;
+  --line:rgba(60,60,67,.14);--outline:1px solid rgba(60,60,67,.14);--card-b:1px solid transparent;
+  --accent:var(--brand-primary);--accent-d:#1E7A34;--accent-t:#1E7A34;--on-accent:#FFFFFF;--lime:var(--brand-accent);--on-lime:#000000;
+  --btn:var(--brand-primary);--on-btn:#FFFFFF;--cream:#FFFFFF;--accent-bg:#E6F2E9;
+  --tone-mint:#E6F2E9;--tone-lime:#F2F2F7;--tone-peach:#FFF1E6;--tone-sky:#E8F1FF;--tone-lilac:#F0ECFF;--tone-sun:#FFF6E0;--on-tone:#000000;
+  --inc:var(--positive);--inc-bg:color-mix(in srgb,var(--positive) 14%,var(--bg));--inc-t:var(--positive-t);
+  --exp:var(--negative);--exp-bg:color-mix(in srgb,var(--negative) 12%,var(--bg));--exp-t:var(--negative-t);
+  --r1:#34C759;--r2:#FF9500;--r3:#007AFF;--r4:#FF3B30;--r5:#5856D6;--r6:#8E8E93;
+  --c-pay:var(--cat-lilac-solid);--c-save:var(--cat-sky-solid);--c-gift:var(--cat-coral-solid);--c-stat:var(--cat-lilac-solid);
+  --focus:var(--brand-primary);--scrim:rgba(0,0,0,.4);
+  --ci-a:16%;--ci-text-key:text;
+  --grad-hero:linear-gradient(135deg,#4F9A63 0%,#2C6B45 100%);--grad-fab:linear-gradient(135deg,#6CB67A 0%,#3A8A57 100%);
+  --hero-shadow:none;
+  --font-display:Geist,Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,Roboto,"Segoe UI",sans-serif;
+  --font-text:Inter,Geist,-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,Roboto,"Segoe UI",sans-serif;
+  --font-num:var(--font-text);
+  /* Dynamic Type: Large Title 34, Title 1 28, Title 2 22, Title 3 20, Headline/Body 17, Callout 16, Subhead 15, Footnote 13, Caption 12 */
+  --fs-big:34px;--fs-34:34px;--fs-title:34px;--fs-22:22px;--fs-card:17px;--fs-15:15px;--fs-cap:13px;--fs-11:12px;
+  --w-body:400;--w-cap:400;--w-label:500;--w-strong:600;
+  --r-hero:20px;--r-lg:16px;--r-md:12px;--r-sm:8px;--r-pill:999px;--r-card:18px;
+  --gap:16px;--pad:20px;
+  --shadow:none;--shadow-2:none;
+  --ease:cubic-bezier(.2,.8,.2,1);--dur:.25s;
+  --nav-h:80px;
+  --sat:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));
+  --sab:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));
+  --cat-peach-solid:#FF9466;--cat-peach-bg:#FFF0EA;--cat-peach-text:#99593D;--cat-peach-text-dark:#FF9466;
+  --cat-coral-solid:#F25C6E;--cat-coral-bg:#FDE8EB;--cat-coral-text:#B24451;--cat-coral-text-dark:#F47887;
+  --cat-butter-solid:#F5B82E;--cat-butter-bg:#FEF5E2;--cat-butter-text:#8B691A;--cat-butter-text-dark:#F5B82E;
+  --cat-mint-solid:#2EC496;--cat-mint-bg:#E2F7F0;--cat-mint-text:#1D7C5F;--cat-mint-text-dark:#2EC496;
+  --cat-sky-solid:#4F8CF5;--cat-sky-bg:#E6EFFE;--cat-sky-text:#3A67B4;--cat-sky-text-dark:#6D9FF7;
+  --cat-lilac-solid:#8A6BEF;--cat-lilac-bg:#EFEAFD;--cat-lilac-text:#7057C3;--cat-lilac-text-dark:#A48BF3;
+  --cat-pink-solid:#EE6CAF;--cat-pink-bg:#FDEAF4;--cat-pink-text:#A64B7A;--cat-pink-text-dark:#F07DB8;
+  --cat-sand-solid:#CC9C63;--cat-sand-bg:#F8F1E9;--cat-sand-text:#876742;--cat-sand-text-dark:#CC9C63;
+  --cat-slate-solid:#8C99B0;--cat-slate-bg:#EFF1F4;--cat-slate-text:#626B7B;--cat-slate-text-dark:#99A5B9;
+  --cat-green-solid:#58BB3C;--cat-green-bg:#E8F5E4;--cat-green-text:#377626;--cat-green-text-dark:#58BB3C;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --brand-primary:#94A78C;--brand-primary-2:#819779;--brand-accent:#AFC0A7;--brand-warm:#28302D;
+    --positive:#42D6A0;--positive-t:#6AE2B4;--negative:#F47783;--negative-t:#FF8B95;--warning:#EAB86E;--warning-t:#F4C984;--neutral:#91A3B2;
+    --bg:#07111D;--surface:#111E2B;--float:#192735;--sheet:#0A1622;--field:#172633;--toast:#1C2D3C;
+    --text:#EDF2F4;--muted:#99A7B0;--ph:#788A91;
+    --line:rgba(143,166,174,.16);--outline:1px solid rgba(143,166,174,.2);--card-b:1px solid rgba(143,166,174,.1);
+    --accent:var(--brand-primary);--accent-d:#819779;--accent-t:#AFC0A7;--on-accent:#0A1420;--lime:#AFC0A7;--on-lime:#0A1420;
+    --btn:#94A78C;--on-btn:#0C1723;--cream:#F1F4F1;--accent-bg:#1C2E30;
+    --tone-mint:#173337;--tone-lime:#202D32;--tone-peach:#382D2A;--tone-sky:#1B3043;--tone-lilac:#292B43;--tone-sun:#382F22;--on-tone:#F1F4F1;
+    --r1:#42D6A0;--r2:#EAB86E;--r3:#8CB9EC;--r4:#F47783;--r5:#A998E8;--r6:#91A3B2;
+    --scrim:rgba(0,0,0,.55);
+    --ci-a:22%;--ci-text-key:text-dark;
+    --grad-hero:linear-gradient(135deg,#142D45 0%,#182D31 100%);--grad-fab:linear-gradient(135deg,#AFC0A7 0%,#819779 100%);
+    --hero-shadow:none;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+    --brand-primary:#94A78C;--brand-primary-2:#819779;--brand-accent:#AFC0A7;--brand-warm:#28302D;
+    --positive:#42D6A0;--positive-t:#6AE2B4;--negative:#F47783;--negative-t:#FF8B95;--warning:#EAB86E;--warning-t:#F4C984;--neutral:#91A3B2;
+    --bg:#07111D;--surface:#111E2B;--float:#192735;--sheet:#0A1622;--field:#172633;--toast:#1C2D3C;
+    --text:#EDF2F4;--muted:#99A7B0;--ph:#788A91;
+    --line:rgba(143,166,174,.16);--outline:1px solid rgba(143,166,174,.2);--card-b:1px solid rgba(143,166,174,.1);
+    --accent:var(--brand-primary);--accent-d:#819779;--accent-t:#AFC0A7;--on-accent:#0A1420;--lime:#AFC0A7;--on-lime:#0A1420;
+    --btn:#94A78C;--on-btn:#0C1723;--cream:#F1F4F1;--accent-bg:#1C2E30;
+    --tone-mint:#173337;--tone-lime:#202D32;--tone-peach:#382D2A;--tone-sky:#1B3043;--tone-lilac:#292B43;--tone-sun:#382F22;--on-tone:#F1F4F1;
+    --r1:#42D6A0;--r2:#EAB86E;--r3:#8CB9EC;--r4:#F47783;--r5:#A998E8;--r6:#91A3B2;
+    --scrim:rgba(0,0,0,.55);
+    --ci-a:22%;--ci-text-key:text-dark;
+    --grad-hero:linear-gradient(135deg,#142D45 0%,#182D31 100%);--grad-fab:linear-gradient(135deg,#AFC0A7 0%,#819779 100%);
+    --hero-shadow:none;
+    color-scheme:dark;
+}
+
+/* Electric Indigo + Lime fintech palette */
+:root:not([data-theme="light"]){
+  --cyan:#00E5FF;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#C6FF3D;--brand-warm:#24213C;
+  --positive:#C6FF3D;--positive-t:#D4FF70;--negative:#FF7185;--negative-t:#FF8B9D;--warning:#FFCC66;--warning-t:#FFD685;--neutral:#9AA0B8;
+  --bg:#0B0B1A;--surface:#121222;--float:#19192B;--sheet:#10101F;--field:#19192B;--toast:#202035;
+  --text:#F4F4FA;--muted:#A2A4B8;--ph:#777A94;
+  --line:rgba(196,203,255,.13);--outline:1px solid rgba(196,203,255,.16);--card-b:1px solid rgba(196,203,255,.1);
+  --accent:#C6FF3D;--accent-d:#B1ED25;--accent-t:#D7FF85;--on-accent:#171729;--lime:#C6FF3D;--on-lime:#171729;
+  --btn:#C6FF3D;--on-btn:#171729;--cream:#F4F4FA;--accent-bg:rgba(61,44,255,.2);
+  --positive:#C6FF3D;--inc:var(--positive);--inc-t:#D7FF85;--inc-bg:rgba(198,255,61,.1);
+  --tone-mint:#202A24;--tone-lime:#25263A;--tone-peach:#34242C;--tone-sky:#1A2438;--tone-lilac:#26213E;--tone-sun:#302A1B;--on-tone:#F4F4FA;
+  --scrim:rgba(4,4,15,.62);--grad-hero:linear-gradient(135deg,#3022C8 0%,#17172C 100%);--grad-fab:linear-gradient(145deg,#D6FF72 0%,#B9F42F 100%);
+  color-scheme:dark;
+}
+:root[data-theme="dark"]{
+  --cyan:#00E5FF;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#C6FF3D;--brand-warm:#24213C;
+  --positive:#C6FF3D;--positive-t:#D4FF70;--negative:#FF7185;--negative-t:#FF8B9D;--warning:#FFCC66;--warning-t:#FFD685;--neutral:#9AA0B8;
+  --bg:#0B0B1A;--surface:#121222;--float:#19192B;--sheet:#10101F;--field:#19192B;--toast:#202035;
+  --text:#F4F4FA;--muted:#A2A4B8;--ph:#777A94;--line:rgba(196,203,255,.13);--outline:1px solid rgba(196,203,255,.16);--card-b:1px solid rgba(196,203,255,.1);
+  --accent:#C6FF3D;--accent-d:#B1ED25;--accent-t:#D7FF85;--on-accent:#171729;--lime:#C6FF3D;--on-lime:#171729;--btn:#C6FF3D;--on-btn:#171729;--cream:#F4F4FA;--accent-bg:rgba(61,44,255,.2);
+  --inc:#C6FF3D;--inc-t:#D7FF85;--inc-bg:rgba(198,255,61,.1);--tone-mint:#202A24;--tone-lime:#25263A;--tone-peach:#34242C;--tone-sky:#1A2438;--tone-lilac:#26213E;--tone-sun:#302A1B;--on-tone:#F4F4FA;
+  --scrim:rgba(4,4,15,.62);--grad-hero:linear-gradient(135deg,#3022C8 0%,#17172C 100%);--grad-fab:linear-gradient(145deg,#D6FF72 0%,#B9F42F 100%);color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --cyan:#00AFC4;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#B2E62E;--brand-warm:#F2F0FF;
+  --bg:#F7F7FC;--surface:#FFFFFF;--float:#FFFFFF;--sheet:#F7F7FC;--field:#F0F0F7;--toast:#25243A;
+  --text:#141422;--muted:#6D6D80;--ph:#85859A;--line:rgba(35,34,76,.12);--outline:1px solid rgba(35,34,76,.12);--card-b:1px solid rgba(35,34,76,.08);
+  --accent:#A8D923;--accent-d:#97C51C;--accent-t:#426000;--on-accent:#151523;--lime:#A8D923;--on-lime:#151523;--btn:#B7E638;--on-btn:#171729;--accent-bg:#F0F8D9;
+  --positive:#78A900;--positive-t:#527500;--inc:var(--positive);--inc-t:var(--positive-t);--inc-bg:rgba(168,217,35,.14);--scrim:rgba(18,17,38,.4);--grad-hero:linear-gradient(135deg,#5144FF 0%,#3022C8 100%);--grad-fab:linear-gradient(145deg,#D6FF72 0%,#B9F42F 100%);color-scheme:light;
+}
+
+/* Indigo is the sole interface accent in both themes. */
+:root,:root:not([data-theme="light"]),:root[data-theme="dark"],:root[data-theme="light"]{
+  --accent:#3D2CFF;--accent-d:#3022D6;--accent-t:#9A93FF;--btn:#3D2CFF;--on-btn:#FFFFFF;
+  --on-accent:#FFFFFF;--focus:#3D2CFF;--lime:#3D2CFF;--on-lime:#FFFFFF;
+  --brand-primary:#3D2CFF;--brand-primary-2:#5144FF;--brand-accent:#3D2CFF;
+  --grad-hero:radial-gradient(ellipse at 84% 12%,rgba(61,44,255,.38),transparent 60%),linear-gradient(145deg,#17162D,#111120);
+  --grad-fab:linear-gradient(145deg,#5144FF,#3022D6);
+}
+
+:root[data-theme="light"]{--accent-t:#3D2CFF}

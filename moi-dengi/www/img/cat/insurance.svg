@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="insurance-mint" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B6F2D8"/><stop offset="1" stop-color="#2EC496"/></linearGradient></defs>
+<path d="M64 10L20 26v34c0 28 18 48 44 58 26-10 44-30 44-58V26z" fill="url(#insurance-mint)"/>
+<path d="M44 62l14 14 28-28" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>

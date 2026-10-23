@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0B0B1A">
+<title>Фин</title>
+<link rel="icon" href="icon.png">
+<script>document.documentElement.setAttribute("data-theme","dark");try{localStorage.removeItem("fin_theme")}catch(e){}</script>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="buttons.css">
+<link rel="stylesheet" href="skin.css">
+<link rel="stylesheet" href="nav.css">
+<link rel="stylesheet" href="design.css">
+<link rel="stylesheet" href="motion.css">
+</head>
+<body>
+<div class="splash" id="splash" role="status" aria-label="Загрузка приложения">
+  <div class="splash-blob" aria-hidden="true"><i></i><i></i></div>
+  <div class="splash-brand">
+    <img class="splash-logo" src="img/fin/fin-mark.svg" alt="">
+    <b>Фин</b>
+    <span>Умные деньги для спокойного завтра</span>
+  </div>
+  <span class="splash-loader" aria-hidden="true"></span>
+</div>
+<div id="auth" class="auth" hidden></div>
+
+<div id="app">
+
+  <!-- ГЛАВНАЯ: баланс с итогами месяца, избранные обязательные платежи, «пора отложить», одно наблюдение, быстрая запись, последние пять -->
+  <section class="screen" id="s-home" data-screen="home" aria-label="Главная">
+    <div id="welcome" hidden>
+      <header class="setup-head">
+        <h1>Давайте начнём</h1>
+        <p>Чтобы рассчитать ваши свободные деньги, нам нужно знать, сколько у вас есть. Это займёт минуту.</p>
+      </header>
+      <div class="setup-options" aria-label="Добавить счёт">
+        <button class="setup-card setup-card-primary" type="button" data-wl="acc">
+          <span class="setup-ico" aria-hidden="true"><i data-home-icon="wallet"></i></span>
+          <span class="setup-copy"><b>Добавить вручную</b><small>Наличные, карта, вклад</small></span>
+          <span class="setup-chevron" aria-hidden="true"><i data-home-icon="next"></i></span>
+        </button>
+        <div class="setup-card setup-card-soon" role="note" aria-label="Подключить банк — скоро">
+          <span class="setup-ico" aria-hidden="true"><i data-home-icon="safe"></i></span>
+          <span class="setup-copy"><b>Подключить банк</b><small>Автоматическая загрузка операций</small></span>
+          <span class="setup-soon">Скоро</span>
+        </div>
+      </div>
+      <div class="setup-trust"><i data-ic="lock" aria-hidden="true"></i><span>Номер карты и доступ к банку не нужны. Данные счёта сохраняются в приложении.</span></div>
+    </div>
+    <div id="homeMain">
+      <header class="h-top"><span class="h-greet" id="greetTitle">Главная</span><span class="h-acts"><button class="h-ai-chat" type="button" data-go="chat"><i data-home-icon="message"></i><span>Чат с ИИ</span></button></span></header>
+      <section class="bal" aria-labelledby="heroLabel">
+        <div class="bal-head"><small id="heroLabel">Свободные деньги<i class="bal-chev" data-home-icon="next" aria-hidden="true"></i></small>
+          <small class="h-period" id="homePeriod" hidden></small>
+          <button class="bal-info" id="balInfo" type="button" aria-label="Как считаются свободные деньги" aria-expanded="false" aria-controls="balNote"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v6M12 7.5h.01"/></svg></button>
+          <div class="bal-note" id="balNote" role="note" hidden></div>
+        </div>
+        <button class="bal-sum" id="heroSum" type="button" data-go="stats" aria-label="Открыть статистику"></button>
+        <em class="bal-all" id="heroAll"></em>
+        <div class="bal-chart" id="balanceTrend" aria-hidden="true"></div>
+      </section>
+      <div id="payCard"></div>
+      <div id="evtCard"></div>
+      <div id="goalCard"></div>
+      <section class="block" aria-labelledby="hRecent">
+        <div class="h2-row"><h2 class="h2" id="hRecent">Последние операции</h2><button class="link" data-go="ops" aria-label="Вся история">Все</button></div>
+        <div id="recentList"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ОПЕРАЦИИ -->
+  <section class="screen" id="s-ops" data-screen="ops" aria-label="Операции" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Операции</h1><button class="pill-btn" id="opsSel" type="button"><i data-ic="check"></i><span>Выбрать</span></button></header>
+    <div class="monthbar-slot"></div>
+    <div class="search"><i data-ic="search"></i><input id="opsSearch" type="search" placeholder="Поиск по заметке или категории" aria-label="Поиск по записям" autocomplete="off"></div>
+    <div class="seg ops-seg" role="radiogroup" aria-label="Тип записей">
+      <button type="button" role="radio" class="seg-b" data-ft="all" aria-checked="true">Все</button>
+      <button type="button" role="radio" class="seg-b" data-ft="expense" aria-checked="false">Расходы</button>
+      <button type="button" role="radio" class="seg-b" data-ft="income" aria-checked="false">Доходы</button>
+    </div>
+    <div id="opsFilterChip"></div>
+    <section class="home-briefing" id="homeBriefing" aria-labelledby="homeBriefingTitle"></section>
+    <div id="nudgeBox"></div>
+    <div id="opsList"></div>
+  </section>
+
+  <!-- АНАЛИТИКА -->
+  <section class="screen" id="s-stats" data-screen="stats" aria-label="Анализ" hidden>
+    <header class="hdr"><h1 class="title">Анализ</h1></header>
+    <div id="statsAlt" hidden></div>
+    <div id="statsAccountView">
+    <div id="periodBar"></div>
+    <div class="seg stats-seg" role="radiogroup" aria-label="Что показать">
+      <button type="button" role="radio" class="seg-b" data-st="expense" aria-checked="true">Расходы</button>
+      <button type="button" role="radio" class="seg-b" data-st="income" aria-checked="false">Доходы</button>
+    </div>
+    <div class="card" id="catCard"></div>
+    <div id="insights"></div>
+    <div class="say-wrap" id="statSay"></div>
+    <div class="card" id="catList"></div>
+    <div class="card" id="dayCard"></div>
+    </div>
+  </section>
+
+  <!-- ПОМОЩНИК -->
+  <section class="screen chat" id="s-chat" data-screen="chat" aria-label="Помощник" hidden>
+    <header class="hdr chat-hdr">
+      <button class="icon-btn" data-back aria-label="Назад"><i data-home-icon="next" class="flip-x"></i><span>Назад</span></button>
+      <div class="chat-who"><div><h1 class="title">Помощник</h1></div></div>
+    </header>
+    <div class="chat-feed" id="chatFeed" role="log" aria-live="polite"></div>
+    <div class="chat-dock" id="chatDock">
+      <div class="chat-quick" id="chatQuick"></div>
+      <form class="chat-bar" id="chatForm" autocomplete="off">
+        <div class="cfield">
+          <button type="button" class="cb-btn" id="chatAttach" aria-label="Прикрепить чек или выписку"><i data-home-icon="document"></i></button>
+          <textarea id="chatInput" rows="1" maxlength="600" placeholder="Спроси Фина" aria-label="Сообщение помощнику"></textarea>
+          <button type="button" class="cb-mic" id="chatMic" aria-label="Сказать голосом"><i data-ic="mic"></i></button>
+          <button type="submit" class="cb-send" id="chatSend" aria-label="Отправить" hidden><i data-ic="send"></i></button>
+        </div>
+      </form>
+      <div class="chat-rec" id="chatRec" hidden>
+        <span class="vl-orb" aria-hidden="true"><span class="pulse"></span></span>
+        <div class="vl-t"><b>Слушаю</b><small id="chatRecText">Говори, я записываю</small></div>
+        <button type="button" class="vl-stop" id="chatRecStop" aria-label="Остановить запись"><i data-ic="stop"></i><span>Стоп</span></button>
+      </div>
+    </div>
+    <input id="fileCamera" type="file" accept="image/*" capture="environment" hidden>
+    <input id="fileGallery" type="file" accept="image/*" multiple hidden>
+    <input id="fileStmt" type="file" accept=".csv,.txt,.pdf,image/*,text/csv,text/plain,application/pdf" multiple hidden>
+  </section>
+
+  <!-- ЦЕЛИ -->
+  <section class="screen" id="s-goals" data-screen="goals" aria-label="Копилки" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Копилки</h1><button class="pill-btn" id="goalNew"><i data-ic="plus"></i><span>Новая</span></button></header>
+    <div id="goalsBody"></div>
+  </section>
+
+  <!-- ОБЯЗАТЕЛЬНЫЕ ПЛАТЕЖИ: отдельный экран, открывается из Профиля и с плашки на Главной -->
+  <section class="screen" id="s-pay" data-screen="pay" aria-label="Обязательные платежи" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Платежи</h1></header>
+    <div id="payBody"></div>
+  </section>
+
+  <!-- СОБЫТИЯ: дни рождения и праздники -->
+  <section class="screen" id="s-events" data-screen="events" aria-label="События" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">События</h1><button class="pill-btn" type="button" data-ev=""><i data-ic="plus"></i><span>Новое</span></button></header>
+    <div id="eventsBody"></div>
+  </section>
+
+  <!-- СЧЕТА -->
+  <section class="screen" id="s-accounts" data-screen="accounts" aria-label="Счета" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Счета</h1></header>
+    <div id="accountsBody"></div>
+  </section>
+
+  <!-- ПРОФИЛЬ -->
+  <section class="screen" id="s-acc" data-screen="acc" aria-label="Профиль" hidden>
+    <header class="hdr"><button class="icon-btn" data-back aria-label="Назад"><i data-ic="left"></i></button><h1 class="title">Профиль</h1></header>
+    <button class="acct" id="acctBox" type="button" data-plate="profile" aria-label="Изменить профиль">
+      <div class="acct-m" id="acctMascot" aria-hidden="true"></div>
+      <div class="acct-t"><b id="acctName">Профиль</b><span id="acctSub"></span></div>
+      <span class="acct-edit" aria-hidden="true"><i data-ic="right"></i></span>
+    </button>
+    <button class="ban" id="loginCard" type="button" hidden aria-label="Не потеряй свои данные. Привяжи номер телефона, чтобы сохранить прогресс при смене устройства">
+      <img class="ban-l" src="img/banner-light.jpg" alt="" width="1200" height="600" decoding="async">
+      <img class="ban-d" src="img/banner-dark.jpg" alt="" width="1200" height="600" decoding="async">
+    </button>
+
+    <div class="grp-t">Помощник</div>
+    <div class="grp">
+      <button class="row" type="button" data-plate="ai" id="plAi"><span class="rw-ic" aria-hidden="true"><i data-ic="chat"></i></span><span class="rw-t"><b>Фин-ИИ</b><small id="plAiS">Понимает любые фото и вопросы</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+
+    <div class="grp-t">Деньги</div>
+    <div class="grp">
+      <button class="row" type="button" data-go="accounts" id="plAccounts"><span class="rw-ic" aria-hidden="true"><i data-ic="wallet"></i></span><span class="rw-t"><b>Счета</b><small>Карты и наличные</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-plate="cats" id="plCats"><span class="rw-ic" aria-hidden="true"><i data-ic="grid"></i></span><span class="rw-t"><b>Категории</b><small>Названия, значки и цвета</small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-plate="currency" id="plCurrency"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Валюта</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+
+    <div class="grp-t">Удобство</div>
+    <div class="grp">
+      <button class="row" type="button" data-plate="remind" id="plRemind"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напоминания</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" data-plate="quick" id="plQuick"><span class="rw-ic" aria-hidden="true"><i data-ic="bolt"></i></span><span class="rw-t"><b>Виджеты и экран блокировки</b><small></small></span><span class="rw-r"><i data-ic="right"></i></span></button>
+      <button class="row" type="button" id="plNudge" data-plate="nudge-on" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-home-icon="gift"></i></span><span class="rw-t"><b>Подсказки о привычках</b></span><span class="sw-t" aria-checked="true"></span></button>
+    </div>
+
+    <div class="grp export-row">
+      <button class="row" type="button" data-plate="data" id="plData"><span class="rw-ic" aria-hidden="true"><i data-ic="file"></i></span><span class="rw-t"><b>Экспорт</b></span><span class="rw-r"><i data-ic="right"></i></span></button>
+    </div>
+
+    <button class="btn ghost wide out" id="btnSignOut" type="button">Выйти</button>
+    <div class="note ctr" id="setFoot"></div>
+  </section>
+</div>
+
+<div class="nav-blur" aria-hidden="true"></div>
+<nav class="bottom-nav" aria-label="Разделы">
+  <button class="nav-item active" type="button" data-tab="home" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 22.4063C16.9153 22.2955 17.606 22.0834 18.2094 21.678C18.3108 21.6098 18.4098 21.5379 18.506 21.4625C19.7051 20.5222 20.2144 18.9547 21.2331 15.8197C22.2517 12.6846 22.761 11.1171 22.3436 9.65157C22.3101 9.534 22.2723 9.41771 22.2303 9.30291C21.7066 7.87189 20.3732 6.90311 17.7063 4.96556C15.0395 3.028 13.7061 2.05923 12.1833 2.00336C12.0611 1.99888 11.9389 1.99888 11.8167 2.00336C10.2939 2.05923 8.96048 3.028 6.29367 4.96556C3.62685 6.90311 2.29344 7.87189 1.76974 9.30291C1.72773 9.41771 1.68994 9.534 1.65645 9.65157C1.23901 11.1171 1.74832 12.6846 2.76696 15.8197C3.78559 18.9547 4.2949 20.5222 5.49405 21.4625C5.59025 21.5379 5.68918 21.6098 5.79064 21.678C6.39406 22.0834 7.08473 22.2955 8.00001 22.4063C9.00322 22.5279 10.2763 22.5279 12 22.5279C13.7237 22.5279 14.9968 22.5279 16 22.4063ZM8.00001 22.4063V22.3197V18.8197C8.00001 16.6105 9.79087 14.8197 12 14.8197C14.2091 14.8197 16 16.6105 16 18.8197V22.3197V22.4063" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Главная</span></button>
+  <button class="nav-item" type="button" data-tab="stats" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11V17M12 7V17M8 13V17M12 21C8.25027 21 6.3754 21 5.06107 20.0451C4.6366 19.7367 4.26331 19.3634 3.95491 18.9389C3 17.6246 3 15.7497 3 12C3 8.25027 3 6.3754 3.95491 5.06107C4.26331 4.6366 4.6366 4.26331 5.06107 3.95491C6.3754 3 8.25027 3 12 3C15.7497 3 17.6246 3 18.9389 3.95491C19.3634 4.26331 19.7367 4.6366 20.0451 5.06107C21 6.3754 21 8.25027 21 12C21 15.7497 21 17.6246 20.0451 18.9389C19.7367 19.3634 19.3634 19.7367 18.9389 20.0451C17.6246 21 15.7497 21 12 21Z" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Анализ</span></button>
+  <button class="add-button" id="fab" type="button" aria-label="Добавить запись" aria-pressed="false"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="add-label">Добавить</span></button>
+  <button class="nav-item" type="button" data-tab="ops" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8H5.25133C5.11253 8 4.99826 7.88703 5.01581 7.74933C5.10241 7.06998 5.66478 6.5126 6.78953 5.39785L8.1999 4M16.0003 20L17.4107 18.6022C18.5355 17.4874 19.0978 16.93 19.1844 16.2507C19.1866 16.2338 19.1885 16.2169 19.1902 16.2C19.2014 16.0899 19.1106 16 19 16H5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Операции</span></button>
+  <button class="nav-item" type="button" data-tab="acc" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 6C16 8.20914 14.2091 10 12 10C9.79086 10 8 8.20914 8 6C8 3.79086 9.79086 2 12 2C14.2091 2 16 3.79086 16 6ZM9 21H15C17.2091 21 19 19.2091 19 17C19 14.7909 17.2091 13 15 13H9C6.79086 13 5 14.7909 5 17C5 19.2091 6.79086 21 9 21Z" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Профиль</span></button>
+</nav>
+<aside class="first-tx-coach" id="firstTxCoach" role="status" aria-live="polite" hidden>
+  <span class="first-tx-coach-ico" aria-hidden="true"><i data-home-icon="document"></i></span>
+  <span><b>Отлично, счёт готов</b><small>Нажмите «+», чтобы записать первую трату</small></span>
+</aside>
+<div class="bulkbar" id="bulkBar" hidden>
+  <b id="bulkCount">0</b>
+  <button type="button" data-bulk="date">Дата</button>
+  <button type="button" data-bulk="cat">Категория</button>
+  <button type="button" data-bulk="note">Заметка</button>
+  <button type="button" data-bulk="del" class="del">Удалить</button>
+</div>
+<div class="layer" id="lyBulk" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="bulkTitle">Изменить выбранные</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="bulkBody"></div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- Запись: тип, дата, сумма с микрофоном, категории, сохранить -->
+<div class="layer" id="lyTx" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="txTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="txTitle" class="sr">Новая запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <form id="txForm" novalidate>
+      <div class="tx-rest">
+        <section class="tx-sec">
+        <div class="amt-line">
+          <label class="amt-in"><input id="txAmount" data-autofocus type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Сумма" aria-describedby="txAmountErr"><span class="amt-cur" id="txCur">Br</span></label>
+        </div>
+        <div class="tx-utilities"><button type="button" class="voice-btn cam-btn" id="txCam" aria-label="Сфотографировать чек"><i data-ic="camera"></i><span>Чек</span></button><button type="button" class="voice-btn" id="txVoice" aria-label="Надиктовать голосом"><i data-ic="mic"></i><span>Голосом</span></button></div>
+                <div class="seg" role="radiogroup" aria-label="Тип записи">
+        <button type="button" role="radio" class="seg-b" data-type="expense" aria-checked="true">Расход</button>
+        <button type="button" role="radio" class="seg-b" data-type="income" aria-checked="false">Доход</button>
+      </div>
+        <div class="chips cur-row" id="txCurRow" role="radiogroup" aria-label="Валюта операции"></div>
+        <div class="note cur-note" id="txCurNote" hidden></div>
+        <div class="msg err" id="txAmountErr" hidden></div>
+        </section>
+        <section class="tx-sec" aria-labelledby="txS2">
+        <div class="fl" id="txS2">Категория</div>
+        <div class="msg err" id="txCatErr" hidden></div>
+        <button type="button" class="cat-cur" id="txCatCur" hidden></button>
+        <div class="cat-grid" id="txCats" role="radiogroup" aria-label="Категория"></div>
+        </section>
+        <section class="tx-sec" aria-labelledby="txS3">
+        <div class="fl" id="txS3">Когда</div>
+        <div class="grp tx-grp">
+          <div class="tt-row" id="txAccRow" hidden><span>Счёт</span><select id="txAcc" aria-label="Счёт"></select></div>
+          <div class="tt-row tt-dates">
+            <div class="date-row date-chips">
+              <span id="dQuick" class="dq-wrap"></span>
+              <button type="button" class="chip" id="dToday">Сегодня</button>
+              <button type="button" class="chip" id="dYest">Вчера</button>
+              <button type="button" class="chip" id="dOther">Другая дата</button>
+              <input id="txDate" class="pick-hidden" type="date" aria-label="Другая дата" tabindex="-1">
+            </div>
+          </div>
+        </div>
+        </section>
+        <section class="tx-sec">
+        <button type="button" class="tt-row note-row" id="txNoteBtn"><span class="pack-icon" aria-hidden="true"><img class="pack-icon-light" src="img/icons/pack/light/document.svg" alt=""><img class="pack-icon-dark" src="img/icons/pack/dark/document.svg" alt=""></span><span>Добавить заметку</span></button>
+        <label class="field" id="txNoteF" hidden><input id="txNote" type="text" maxlength="120" placeholder="Заметка (необязательно)" autocomplete="off" aria-label="Заметка (необязательно)"><span id="txNoteL">Заметка (необязательно)</span><button type="button" class="clear-x" id="txNoteX" aria-label="Очистить заметку" hidden><i data-ic="close"></i></button></label>
+        <div class="msg err" id="txNoteErr" hidden></div>
+        </section>
+        <div class="save-bar"><button class="btn primary wide save" type="submit" id="txSave"><span id="txSaveT">Сохранить</span></button></div>
+        <button class="btn danger wide" type="button" id="txDelete" hidden>Удалить запись</button>
+      </div>
+      <div class="voice-live" id="txVoiceLive" hidden>
+        <span class="vl-orb big" aria-hidden="true"><span class="pulse"></span><i data-ic="mic"></i></span>
+        <b class="vl-h" id="txVoiceH">Слушаю</b>
+        <p class="vl-x" id="txVoiceText">Скажи, например: «вчера такси 12»</p>
+        <button type="button" class="btn stop wide" id="txVoiceStop"><i data-ic="stop"></i><span>Остановить</span></button>
+        <button type="button" class="btn ghost wide" id="txVoiceCancel">Отмена</button>
+      </div>
+    </form>
+    <div class="tx-done" id="txDone" hidden>
+      <span class="td-ic" aria-hidden="true"><i data-ic="check"></i></span>
+      <b id="txDoneT">Записано</b>
+      <small id="txDoneD"></small>
+      <button class="btn primary wide" type="button" id="txDoneOk">Готово</button>
+      <div class="tx-done-more"><button class="btn soft wide" type="button" data-more="expense" id="moreExp">Ещё расход</button><button class="btn soft wide" type="button" data-more="income" id="moreInc">Ещё доход</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Всё верно? Черновик после голоса или быстрой записи, любую строку можно изменить -->
+<div class="layer" id="lyDraft" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="draftTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="draftTitle">Всё верно?</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <p class="note top0">Карандаш меняет запись, крестик убирает лишнее.</p>
+    <div id="draftList"></div>
+    <button class="btn primary wide" id="draftOk">Всё верно</button>
+    <button class="btn ghost wide" id="draftCancel" type="button">Отмена</button>
+  </div>
+</div>
+
+<!-- Копилка: подробности -->
+<div class="layer" id="lyGoal" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="goalTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="goalTitle">Копилка</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="goalDetail"></div>
+  </div>
+</div>
+
+<!-- Новая цель: разговор с Фином -->
+<div class="layer" id="lyQuiz" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="quizTitle">Новая копилка</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="quiz-bar" aria-hidden="true"><i id="quizBar"></i></div>
+    <div id="quizBody"></div>
+  </div>
+</div>
+
+<!-- Просмотр операции: редактирование доступно отдельным действием -->
+<div class="layer" id="lyTxDetail" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet tx-detail-sheet" role="dialog" aria-modal="true" aria-labelledby="txDetailTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="txDetailTitle">Операция</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="txDetailBody"></div>
+  </div>
+</div>
+
+<!-- Профиль: шторка для привязки, напоминаний и прочего -->
+<div class="layer" id="lyLink" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="linkTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="linkTitle">Привязать</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="linkBody"></div>
+  </div>
+</div>
+
+<!-- Фин заметил: разговор -->
+<div class="layer" id="lyNudge" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="nudgeTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="nudgeTitle">Фин заметил</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="nudgeBody"></div>
+  </div>
+</div>
+
+<!-- Праздник: название, имя, дата и напоминание -->
+<div class="layer" id="lyEvent" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="evHead">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="evHead">Новый праздник</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <form id="evForm" novalidate>
+      <div class="chips scroll" id="evPresets" role="group" aria-label="Быстрый выбор названия"></div>
+      <label class="field"><input id="evTitle" type="text" maxlength="40" placeholder=" " autocomplete="off"><span>Название праздника</span></label>
+      <label class="field" id="evPersonF"><input id="evPerson" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Чей праздник, имя</span></label>
+      <div id="evItemsBox" hidden>
+        <div class="fl" id="evItemsT"></div>
+        <div class="ev-items" id="evItems"></div>
+        <button class="btn soft wide" type="button" id="evItemAdd"></button>
+        <p class="note" id="evItemsSum"></p>
+      </div>
+      <label class="field t"><input id="evDate" type="date"><span>Дата праздника</span></label>
+      <div class="grp flat">
+        <button class="row" type="button" id="evYearly" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="repeat"></i></span><span class="rw-t"><b>Каждый год</b><small>Повторять в эту же дату</small></span><span class="sw-t" aria-checked="true"></span></button>
+        <button class="row" type="button" id="evRemind" role="switch" aria-checked="true"><span class="rw-ic" aria-hidden="true"><i data-ic="bell"></i></span><span class="rw-t"><b>Напомнить отложить деньги</b><small>Заранее, чтобы не тратить в последний момент</small></span><span class="sw-t" aria-checked="true"></span></button>
+      </div>
+      <div id="evLeadBox">
+        <div class="fl">Когда напомнить</div>
+        <div class="chips" id="evLeads" role="radiogroup" aria-label="Когда напомнить"></div>
+        <label class="field t" id="evCustomF" hidden><input id="evCustom" type="date"><span>Дата напоминания</span></label>
+        <p class="note" id="evHint"></p>
+      </div>
+      <div class="msg err" id="evErr" role="alert" hidden></div>
+      <button class="btn primary wide" type="submit" id="evSave">Сохранить</button>
+      <button class="btn danger wide" type="button" id="evDelete" hidden>Удалить праздник</button>
+    </form>
+  </div>
+</div>
+
+<!-- Прикрепить в чате -->
+<div class="layer" id="lyAttach" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="attachTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="attachTitle">Прикрепить</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="add-opts">
+      <button class="row" type="button" data-attach="camera"><span class="rw-ic" aria-hidden="true"><i data-home-icon="document"></i></span><span class="rw-t"><b>Сфотографировать чек</b><small>Найду сумму, дату и магазин</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+      <button class="row" type="button" data-attach="gallery"><span class="rw-ic" aria-hidden="true"><i data-home-icon="display"></i></span><span class="rw-t"><b>Фото чека из галереи</b><small>Выбери снимок</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+      <button class="row" type="button" data-attach="stmt"><span class="rw-ic" aria-hidden="true"><i data-home-icon="safe"></i></span><span class="rw-t"><b>Выписка из банка</b><small>Файл CSV, TXT или PDF</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Счёт: создание и правка -->
+<div class="layer" id="lyAccount" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="accTitle">Новый счёт</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <form id="accForm" novalidate autocomplete="off">
+      <label class="field"><input id="accName" type="text" maxlength="24" placeholder=" " data-autofocus><span>Название, например «Карта»</span></label>
+      <label class="field unit" id="accStartBalanceRow"><input id="accStartBalance" type="text" inputmode="decimal" placeholder=" " autocomplete="off"><span>Баланс сейчас</span><span class="u" id="accBalanceUnit">Br</span></label>
+      <label class="field t setup-currency" id="accCurrencyRow"><select id="accCurrency" aria-label="Валюта счёта"><option value="BYN">BYN · белорусский рубль</option><option value="RUB">RUB · российский рубль</option><option value="USD">USD · доллар США</option><option value="EUR">EUR · евро</option></select><span>Валюта</span></label>
+      <div class="msg err" id="accErr" hidden></div>
+      <div class="seg" role="radiogroup" aria-label="Тип счёта" id="accKind">
+        <button type="button" role="radio" class="seg-b" data-akind="card" aria-checked="true">Карта</button>
+        <button type="button" role="radio" class="seg-b" data-akind="cash" aria-checked="false">Наличные</button>
+        <button type="button" role="radio" class="seg-b" data-akind="other" aria-checked="false">Другое</button>
+      </div>
+      <button class="btn primary wide" type="submit" id="accSave">Сохранить</button>
+      <button class="btn danger wide" type="button" id="accDel" hidden>Удалить счёт</button>
+    </form>
+  </div>
+</div>
+
+<!-- Добавить запись: выбор способа, клавиатура не открывается сразу -->
+<div class="layer" id="lyAdd" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet add-sheet" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="addTitle">Добавить запись</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div class="add-opts" id="addOpts">
+      <button class="row" type="button" data-addway="photo"><span class="rw-ic" aria-hidden="true"><i data-home-icon="document"></i></span><span class="rw-t"><b>По фото чека</b><small>Сфотографируй чек</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+      <button class="row" type="button" data-addway="text"><span class="rw-ic" aria-hidden="true"><i data-home-icon="message"></i></span><span class="rw-t"><b>Текстом<span class="tag">Быстрее</span></b><small>Например: «сегодня кофе 8»</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+      <button class="row" type="button" data-addway="manual"><span class="rw-ic" aria-hidden="true"><i data-home-icon="wallet"></i></span><span class="rw-t"><b>Вручную</b><small>Сумма, категория, счёт</small></span><span class="rw-r"><i data-home-icon="next"></i></span></button>
+    </div>
+    <form id="addTextForm" hidden autocomplete="off">
+      <label class="field area"><textarea id="addTextIn" rows="1" maxlength="2000" placeholder=" " enterkeyhint="enter"></textarea><span>Например: сегодня кофе 8</span></label>
+      <div class="area-count" id="addTextCount" aria-live="polite" hidden></div>
+      <button class="btn primary wide" type="submit">Понять</button><button class="btn ghost wide" type="button" id="addTextBack">Назад</button></form>
+    <input id="addPhoto" type="file" accept="image/*" capture="environment" hidden>
+  </div>
+</div>
+
+<!-- Фин Плюс -->
+<div class="layer" id="lyPlus" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet tall plus-sheet" role="dialog" aria-modal="true" aria-labelledby="plusSheetTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="plusSheetTitle">Фин Навсегда</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="plusBody"></div>
+  </div>
+</div>
+
+<!-- Обязательный платёж: создание и правка (одно окно) -->
+<div class="layer" id="lyPay" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="payHead">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="payHead">Новый платёж</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <form id="payForm" novalidate>
+      <section class="pay-sec" aria-labelledby="payS1">
+      <div class="fl" id="payS1">Что оплатить</div>
+      <div class="chips scroll" id="payPresets" role="group" aria-label="Быстрый выбор названия"></div>
+      <label class="field"><input id="payName" type="text" maxlength="30" placeholder=" " autocomplete="off"><span>Название</span></label>
+      <div class="bal-row">
+        <label class="field unit"><input id="payAmount" type="text" inputmode="decimal" placeholder=" " autocomplete="off"><span>Сумма</span><span class="u" id="payCur"></span></label>
+      </div>
+      </section>
+      <section class="pay-sec" aria-labelledby="payS2">
+      <div class="fl" id="payS2">Когда платить</div>
+      <div class="seg pay-mode" id="payMode" role="radiogroup" aria-label="Как повторяется">
+        <button type="button" role="radio" class="seg-b" data-pmode="monthly" aria-checked="true">Каждый месяц</button>
+        <button type="button" role="radio" class="seg-b" data-pmode="once" aria-checked="false">Один раз</button>
+      </div>
+      <label class="field" id="payDayF"><input id="payDay" type="text" inputmode="numeric" maxlength="2" placeholder=" " autocomplete="off"><span>Число месяца</span></label>
+      <label class="field t" id="payOnceF" hidden><input id="payOnce" type="date"><span>Дата</span></label>
+      </section>
+      <section class="pay-sec" aria-labelledby="payS3">
+      <div class="fl" id="payS3">Когда напомнить (можно несколько)</div>
+      <div class="chips" id="payRemind" role="group" aria-label="Напоминание"></div>
+      <label class="field t" id="payLeadF" hidden><input id="payLead" type="text" inputmode="numeric" maxlength="2" value="7" autocomplete="off"><span>За сколько дней</span></label>
+      <label class="field t" id="payTimeF" hidden><input id="payTime" type="time" value="10:00"><span>Во сколько</span></label>
+      </section>
+      <div class="msg err" id="payErr" role="alert" hidden></div>
+      <button class="btn primary wide" type="submit" id="paySave">Сохранить</button>
+      <button class="btn soft wide" type="button" id="payMark" hidden>Отметить оплаченным</button>
+      <button class="btn danger wide" type="button" id="payDelete" hidden>Удалить платёж</button>
+    </form>
+  </div>
+</div>
+
+<!-- Подтверждение -->
+<!-- Совпадение дат: Фин спрашивает, не забыл ли ты внести платёж -->
+<!-- Выписка: проверить, изменить категории, убрать лишнее и подтвердить -->
+<div class="layer" id="lyImport" hidden>
+  <div class="scrim" data-close></div>
+  <div class="sheet tall" role="dialog" aria-modal="true" aria-labelledby="impTitle">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><h2 id="impTitle">Всё верно?</h2><button class="icon-btn sm" data-close aria-label="Закрыть"><i data-ic="close"></i></button></div>
+    <div id="impBody"></div>
+  </div>
+</div>
+
+<div class="layer dlg" id="lyClash" hidden>
+  <div class="scrim" data-close></div>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="clTitle">
+    <div id="clSay"></div>
+    <div class="dlg-col">
+      <button class="btn primary" type="button" data-cl="now">Внесу сейчас</button>
+      <button class="btn soft" type="button" data-cl="details">Посмотреть детали</button>
+      <button class="btn ghost" type="button" data-cl="later">В другой раз</button>
+      <button class="btn ghost" type="button" data-cl="mute">Не напоминай мне про это</button>
+    </div>
+  </div>
+</div>
+
+<div class="layer dlg" id="lyConfirm" hidden>
+  <div class="scrim" data-close></div>
+  <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="cfTitle" aria-describedby="cfText">
+    <h2 id="cfTitle"></h2>
+    <p id="cfText"></p>
+    <div class="dlg-btns">
+      <button class="btn ghost" id="cfNo" type="button">Отмена</button>
+      <button class="btn danger-solid" id="cfYes" type="button">Удалить</button>
+    </div>
+    <button class="link cf-extra" id="cfExtra" type="button" hidden></button>
+  </div>
+</div>
+
+<script src="capacitor.js"></script>
+<script src="cloud-config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/skin.js"></script>
+<script src="js/mascot.js"></script>
+<script src="js/tiles.js"></script>
+<script src="js/categories.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/goals.js"></script>
+<script src="js/nudges.js"></script>
+<script src="js/events.js"></script>
+<script src="js/insights.js"></script>
+<script src="js/recurring.js"></script>
+<script src="js/rates.js"></script>
+<script src="js/statement.js"></script>
+<script src="js/importers.js"></script>
+<script src="js/brain.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/auth-ui.js"></script>
+<script src="js/splash.js"></script>
+<script src="js/intro.js"></script>
+<script src="js/tour.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/sub.js"></script>
+<script src="js/notify.js"></script>
+<script src="app.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/motion.js"></script>
+</body>
+</html>

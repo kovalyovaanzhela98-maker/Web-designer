@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="gifts-butter" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFEA9C"/><stop offset="1" stop-color="#F5B82E"/></linearGradient><linearGradient id="gifts-coral" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFB0B0"/><stop offset="1" stop-color="#F25C6E"/></linearGradient><linearGradient id="gifts-pink" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFCDE6"/><stop offset="1" stop-color="#EE6CAF"/></linearGradient></defs>
+<rect x="20" y="58" width="88" height="54" rx="8" fill="url(#gifts-coral)"/>
+<rect x="12" y="42" width="104" height="22" rx="7" fill="url(#gifts-pink)"/>
+<rect x="56" y="42" width="16" height="70" fill="url(#gifts-butter)"/>
+<path d="M64 42C52 20 28 22 33 35c3 8 19 7 31 7zM64 42c12-22 36-20 31-7-3 8-19 7-31 7z" fill="url(#gifts-butter)"/></svg>

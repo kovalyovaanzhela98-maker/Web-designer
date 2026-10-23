@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fin_w_bg">#FFFFFF</color>
+    <color name="fin_w_stroke">#E3E7E1</color>
+    <color name="fin_w_text">#16241A</color>
+    <color name="fin_w_muted">#566659</color>
+    <color name="fin_btn_primary">#3A6428</color>
+    <color name="fin_btn_on">#FFFFFF</color>
+    <color name="fin_btn_soft">#EAF0DF</color>
+    <color name="fin_btn_soft_text">#34581F</color>
+    <color name="fin_w_inc">#34581F</color>
+    <color name="fin_w_exp">#B3302A</color>
+</resources>

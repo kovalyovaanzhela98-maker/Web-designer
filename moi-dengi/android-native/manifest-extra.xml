@@ -1,0 +1,54 @@
+        <receiver
+            android:name=".FinWidgetProvider"
+            android:exported="true"
+            android:label="Фин: средний">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fin_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".FinTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile"
+            android:label="@string/fin_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".FinWidgetSmall"
+            android:exported="true"
+            android:label="Фин: малый">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fin_widget_small_info" />
+        </receiver>
+
+        <receiver
+            android:name=".FinWidgetLarge"
+            android:exported="true"
+            android:label="Фин: большой">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/fin_widget_large_info" />
+        </receiver>

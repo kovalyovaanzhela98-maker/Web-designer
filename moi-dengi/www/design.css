@@ -1,0 +1,504 @@
+/* Система дизайна «Фина» (утверждена). Подключается последней и перекрывает старые значения.
+   Менять только по согласованию с владельцем. */
+:root{
+  --d-bg:#0B0B1A; --d-card:#121222; --d-row:#181C3A; --d-text:#F4F6FF; --d-text2:#B9C0DA; --d-muted:#8A93B5;
+  --d-accent:linear-gradient(145deg,#3477EE 4%,#3159DF 54%,#5947C9 100%); --d-accent-text:#8FA4FF;
+  --d-income:#C6FF3D; --d-danger:#FF6B7A; --d-danger-fill:#E5384D; --d-warn:#FFCC66; --d-line:rgba(196,203,255,.12);
+  --d-s4:4px; --d-s8:8px; --d-s12:12px; --d-s16:16px; --d-s20:20px; --d-s24:24px; --d-s32:32px;
+  --d-r28:28px; --d-r24:24px; --d-r20:20px; --d-r16:16px; --d-r12:12px; --d-r10:10px;
+  --grad-plus:var(--d-accent);
+}
+html,body{background:var(--d-bg)}
+/* Экран: поля 20, между блоками 16 */
+#app{padding-left:var(--d-s20);padding-right:var(--d-s20)}
+.screen{gap:0;padding-bottom:calc(124px + env(safe-area-inset-bottom,0px))}
+.screen>*+*{margin-top:var(--d-s16)}
+.screen>.hdr+*{margin-top:var(--d-s12)}
+.screen>.hdr{margin-bottom:0}
+/* Карточки и списки: 20, внутри 16, без теней */
+.card,.grp,.list,.panel,.h-goal,.h-pay,.h-empty-card,.home-briefing,.pay-sum,.nudge,.ins>div{border-radius:var(--d-r20);box-shadow:none;background:var(--d-card);border:1px solid var(--d-line)}
+.card,.h-goal,.h-pay,.h-empty-card,.home-briefing,.pay-sum,.nudge{padding:var(--d-s16)}
+.bal{border-radius:var(--d-r24);padding:var(--d-s20) var(--d-s20) 0}
+/* Строки: 20, внутри 14, иконка 36, зазор 12 */
+.row,.swipe .row{padding:14px;gap:var(--d-s12);border-radius:var(--d-r20);min-height:64px}
+.swipe{border-radius:var(--d-r20)}
+.swipe+.swipe,.day .swipe+.swipe,.recent .swipe+.swipe{margin-top:var(--d-s8)}
+.list .row{border-radius:0}
+.list .row:first-child{border-radius:var(--d-r20) var(--d-r20) 0 0}.list .row:last-child{border-radius:0 0 var(--d-r20) var(--d-r20)}.list .row:only-child{border-radius:var(--d-r20)}
+.rico,.tx-ic,.cat-ico,.row .ic{width:36px;height:36px;flex:0 0 36px;border-radius:var(--d-r10)}
+.ctile{border-radius:var(--d-r10)}
+.cat-tile .ci{width:44px;height:44px;border-radius:var(--d-r12)}
+/* Заголовки и текст: 400 / 500 / 600 */
+.hdr .ttl,.hdr--main .ttl,.h-greet{font-size:28px;font-weight:600}
+.h2,#homeMain .h2-row .h2{font-size:20px;font-weight:600}
+.row .t1,.tx-t,.rw-t b,.pc-n{font-size:16px;font-weight:500}
+.t2,.rw-t small,.tx-n,.pc-s,.day-h,.grp-t{font-size:13px;font-weight:400;color:var(--d-muted)}
+.bal .bal-sum{font-size:44px;font-weight:600}
+b,strong,h1,h2,h3{font-weight:600}
+.tx-a,.amt{font-weight:500;color:var(--d-text)}
+.tx-a.inc,.amt.inc,.pos{color:var(--d-income)}
+/* Блоки и заголовки разделов */
+.grp-t{margin:var(--d-s24) 0 var(--d-s8)}
+.block{display:flex;flex-direction:column;gap:var(--d-s8)}
+/* Один акцент */
+.bar i,.goal-bar i,.h-goal .goal-bar i{background:var(--d-accent)!important}
+.bar,.goal-bar{height:6px;border-radius:3px}
+.g-h span,.goal-pct,.pc{background:none}
+/* Шторки */
+.sheet{border-radius:var(--d-r28) var(--d-r28) 0 0;padding-left:var(--d-s20);padding-right:var(--d-s20)}
+/* Поля и табы */
+.seg,.field input,.search input{border-radius:var(--d-r16)}
+.chip{border-radius:var(--d-r12)}
+/* Меню: радиус 28, 16 снизу и по бокам (nav.css) */
+.bottom-nav{border-radius:var(--d-r28)}
+.toast{border-radius:var(--d-r16)}
+
+/* Исключения из общих правил карточек */
+#catList{background:none;border:0;padding:0}
+#catList .cats{background:var(--d-card);border:1px solid var(--d-line);border-radius:var(--d-r20)}
+#catList h3{margin:0 0 var(--d-s8);font-size:13px;font-weight:400;color:var(--d-muted)}
+/* Чат: шапка в один ряд, быстрые вопросы в прокрутке */
+.chat-hdr{display:flex!important;align-items:center;gap:var(--d-s12);min-height:52px}
+.chat-hdr .back{flex:none}
+.chat-hdr .chat-who{flex:1;min-width:0;display:flex;align-items:center;gap:var(--d-s12)}
+.chat-hdr .chat-who .title,.chat-hdr .chat-who h1{font-size:20px;font-weight:600;margin:0;text-align:left;flex:none}
+.chat-hdr .chat-who small{display:block;font-size:13px;color:var(--d-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-hdr .chat-av{width:36px;height:36px;flex:0 0 36px}
+.chat-hdr .rnd{flex:none}
+.chat-quick{display:flex;gap:var(--d-s8);overflow-x:auto;scrollbar-width:none;margin:0 calc(-1*var(--d-s20));padding:0 var(--d-s20)}
+.chat-dock{left:var(--d-s20);right:var(--d-s20);bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.chat-hdr #chatClear,.chat-hdr .rnd,.chat-hdr .icon-btn{position:static;transform:none;margin:0;flex:none}
+.chat-hdr .chat-who>div{min-width:0}
+
+/* ===== Главная: правки по макету ===== */
+/* Кнопка «Чат с ИИ»: компактнее; зона касания 44 за счёт невидимых полей */
+.h-ai-chat.btn{min-height:36px;padding:0 var(--d-s12);gap:var(--d-s8);font-size:14px;font-weight:500;border-radius:var(--d-r12)}
+.h-ai-chat.btn svg,.h-ai-chat.btn .pack-icon,.h-ai-chat.btn img{width:16px;height:16px}
+.h-ai-chat.btn::after{content:"";position:absolute;inset:-4px -4px}
+/* Баланс: акцентный градиент «+», выделяется среди тёмных карточек */
+.bal{position:relative;overflow:visible;border-radius:var(--d-r24);padding:var(--d-s20) var(--d-s20) 0;border:1px solid var(--d-line);
+  background:radial-gradient(90% 120% at 100% 0%,rgba(255,255,255,.24),transparent 58%),var(--d-accent);color:var(--d-text)}
+.bal-head{display:flex;align-items:center;gap:var(--d-s8)}
+.bal-head small{color:rgba(244,246,255,.85);font-size:15px}
+.bal-sum,.bal-sum small{color:var(--d-text)}
+.bal-sum small{opacity:.8}
+.bal-all{color:rgba(244,246,255,.85)}
+.bal-chart{border-radius:0 0 var(--d-r24) var(--d-r24);overflow:hidden}
+.bal-note{position:absolute;left:0;right:0;top:56px;z-index:6;padding:var(--d-s16);border-radius:var(--d-r20);background:var(--d-card);border:1px solid var(--d-line);color:var(--d-text);text-align:left}
+.bal-note[hidden]{display:none}
+.bal-note b{display:block;font-size:15px;font-weight:600;margin-bottom:var(--d-s12)}
+.bal-note dl{margin:0;display:flex;flex-direction:column;gap:var(--d-s8)}
+.bal-note dl>div{display:flex;justify-content:space-between;gap:var(--d-s12);font-size:14px;font-variant-numeric:tabular-nums}
+.bal-note dt{color:var(--d-text2)}.bal-note dd{margin:0;font-weight:500}
+.bal-note .eq{border-top:1px solid var(--d-line);padding-top:var(--d-s8);font-weight:500}
+.bal-note .eq dt{color:var(--d-text)}
+.bal-note p{margin:var(--d-s12) 0 0;font-size:13px;color:var(--d-muted)}
+/* Разделы главной: между разделами 24, заголовок → блок 8 */
+#homeMain>#goalCard,#homeMain>.block{margin-top:var(--d-s24)!important}
+#goalCard{display:flex;flex-direction:column;gap:var(--d-s8)}
+#goalCard>*{margin:0!important}
+.h-goal{display:block;width:100%;text-align:left;color:var(--d-text);font:inherit;cursor:pointer}
+.h-goal .g-h{display:flex;justify-content:space-between;align-items:baseline;gap:var(--d-s12);font-size:16px}
+.h-goal .g-h b{font-weight:500}
+.h-goal .g-pct,.goal-pct{background:none;-webkit-text-fill-color:currentColor;color:var(--d-accent-text);font-weight:500;font-variant-numeric:tabular-nums}
+.h-goal .goal-bar{display:block;margin:var(--d-s12) 0}
+.h-goal .g-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--d-s12);font-size:14px;color:var(--d-muted)}
+.h-goal .g-chev{display:grid;flex:none;color:var(--d-muted)}.h-goal .g-chev svg,.h-goal .g-chev img{width:18px;height:18px}
+.link,#homeMain .link,#homeMain .h2-row .link{color:var(--d-accent-text)!important}
+
+/* Значок «i»: кружок 32 нарисован самой кнопкой (иконка строго по центру), зона нажатия 44 даёт невидимое поле вокруг */
+.bal-head{position:relative;min-height:32px}
+.bal-info{position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:32px;height:32px;margin:0 0 0 auto;padding:0;border-radius:50%;
+  background:rgba(244,246,255,.2);border:1px solid rgba(244,246,255,.28);color:var(--d-text);opacity:1;
+  -webkit-tap-highlight-color:transparent;outline:none;touch-action:manipulation}
+.bal-info::before{content:none}
+.bal-info::after{content:"";position:absolute;left:-6px;right:-6px;top:-6px;bottom:-6px}
+.bal-info svg{display:block;width:20px;height:20px;margin:0;flex:none}
+.bal-info[aria-expanded=true],.bal-info:active{background:rgba(244,246,255,.34)}
+.bal-info:focus,.bal-info:focus-visible{outline:none}
+.bal-info:focus-visible{box-shadow:0 0 0 2px var(--d-text)}
+/* Подсказка: прямоугольная стеклянная панель, на 16 ниже значка */
+.bal-note{position:static;order:9;flex:1 0 100%;margin-top:var(--d-s8);padding:var(--d-s12) var(--d-s16);border-radius:var(--d-r16);font-size:14px;line-height:1.4;font-weight:400;color:var(--d-text);
+  background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.06)),rgba(11,11,26,.95);border:1px solid rgba(255,255,255,.3);
+  -webkit-backdrop-filter:blur(40px) saturate(150%);backdrop-filter:blur(40px) saturate(150%)}
+.bal-note::before,.bal-note::after{content:none}
+.bal-info svg{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.bal-head{flex-wrap:wrap;row-gap:0}
+.bal-note{margin-top:var(--d-s8);margin-bottom:var(--d-s8)}
+/* Подсказка лежит ПОВЕРХ карточки, не сдвигая содержимое; до значка 8 */
+.bal-note{position:absolute;left:0;right:0;top:calc(100% + 8px);margin:0;z-index:6;flex:none}
+
+/* Добавление записи: две отдельные плашки, акцентное слово «Быстрее» */
+.add-opts{display:flex;flex-direction:column;gap:var(--d-s8)}
+.add-opts .row{border:1px solid var(--d-line);background:var(--d-card);border-radius:var(--d-r20);padding:14px}
+.add-opts .row::before{content:none}
+.add-opts .tag{margin-left:var(--d-s8);font-size:13px;font-weight:500;color:var(--d-accent-text)}
+/* Текст: многострочное поле до 2000 символов */
+.field.area{display:block}
+.field.area textarea{display:block;width:100%;min-height:56px;max-height:240px;resize:none;overflow-y:auto;padding:var(--d-s20) var(--d-s16) var(--d-s8);border-radius:var(--d-r16);background:var(--d-card);border:1px solid var(--d-line);color:var(--d-text);font:inherit;line-height:1.4;box-sizing:border-box}
+.area-count{margin:var(--d-s8) var(--d-s4) 0;text-align:right;font-size:13px;color:var(--d-muted);font-variant-numeric:tabular-nums}
+.area-count[hidden]{display:none}
+.field.area{position:relative}
+.field.area textarea::placeholder{color:transparent}
+.field.area textarea:focus + span,.field.area textarea:not(:placeholder-shown) + span{top:7px;font-size:13px;font-weight:500;color:var(--d-muted)}
+.field.area textarea{padding-top:24px}
+
+/* Закрытие шторки: во всех шторках одинаково, только значок крестика без фона и эффектов; значок 32, зона 48, правый край значка на поле 20 */
+.sheet .sheet-head .close,.sheet>.sheet-head .icon-btn{position:absolute;right:0;top:50%;transform:translateY(-50%);width:48px;height:48px;display:grid;place-items:center;
+  background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;color:var(--d-text2);-webkit-tap-highlight-color:transparent}
+.sheet .sheet-head .close i,.sheet>.sheet-head .icon-btn i{width:auto;height:auto;display:grid;place-items:center;background:none!important;border:0!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;color:inherit}
+.sheet .sheet-head .close svg,.sheet>.sheet-head .icon-btn svg{width:32px;height:32px}
+.sheet .sheet-head .close:active{color:var(--d-text)}
+.sheet .sheet-head .close::after,.sheet>.sheet-head .icon-btn::after{content:none}
+/* Поля ввода: в покое чуть светлее фона шторки, чтобы было видно */
+.sheet .field input,.sheet .field textarea,.sheet .field select,.field.area textarea{background:var(--d-row);border:1px solid rgba(196,203,255,.2)}
+.sheet .field input:focus,.sheet .field textarea:focus,.field.area textarea:focus{border-color:var(--d-accent-text)}
+
+/* ===== Шторки добавления: кнопки, сверка, ручной ввод, тост ===== */
+:root{--d-accent-solid:#3159DF;--d-success:#34C759}
+/* Главная кнопка в этих шторках: сплошной акцент со стеклом, без градиента */
+#lyAdd .btn--primary,#lyTx .btn--primary,#lyDraft .btn--primary,#lyPay .btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#lyAdd .btn--primary:hover,#lyTx .btn--primary:hover,#lyDraft .btn--primary:hover,#lyPay .btn--primary:hover{filter:none;background:rgba(49,89,223,.86)}
+#lyAdd .btn--primary:active,#lyTx .btn--primary:active,#lyDraft .btn--primary:active,#lyPay .btn--primary:active{filter:none;background:rgba(49,89,223,.94);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+#lyAdd .btn--primary:disabled,#lyTx .btn--primary:disabled,#lyDraft .btn--primary:disabled,#lyPay .btn--primary:disabled{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);box-shadow:none}
+/* Сверка: строки с отдельными действиями, значок по верхнему краю, еле видные линии */
+#draftList{display:flex;flex-direction:column;margin:0 0 var(--d-s16)}
+.draft-row{display:flex;align-items:flex-start;gap:var(--d-s8);padding:var(--d-s12) 0;border-top:1px solid rgba(196,203,255,.08)}
+.draft-row:first-child{border-top:0}
+.draft-row .dr{flex:1;min-width:0;display:flex;align-items:flex-start;gap:var(--d-s12);padding:0;text-align:left;background:none;border:0;color:var(--d-text)}
+.draft-row .tx-ic{width:36px;height:36px;flex:0 0 36px;border-radius:var(--d-r10);background:none!important}
+.draft-row .dr-b{flex:1;min-width:0}
+.draft-row .dr-t{font-size:16px;font-weight:500;line-height:1.3}
+.draft-row .tx-n,.draft-row .dr-s{font-size:13px;color:var(--d-muted);line-height:1.3}
+.draft-row .tx-a{flex:none;font-size:16px;font-weight:500;white-space:nowrap;line-height:1.3}
+.dr-acts{display:flex;flex:none;margin:-4px -12px -4px 0}
+.dr-ed,.dr-x{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;background:none;border:0;color:var(--d-muted);-webkit-tap-highlight-color:transparent}
+.dr-ed svg,.dr-x svg{width:20px;height:20px}
+.dr-ed:active,.dr-x:active{color:var(--d-text)}
+/* Ручной ввод */
+#lyTx .tx-rest{gap:var(--d-s16)}
+#lyTx .tx-rest>*{margin-top:0!important;margin-bottom:0!important}
+#txAmount::placeholder{color:var(--d-muted);opacity:.45}
+#lyTx .seg,#lyTx .cur-row.seg{background:rgba(255,255,255,.06);box-shadow:none;border:0;border-radius:var(--d-r16);padding:var(--d-s4)}
+#lyTx .seg button{box-shadow:none!important;background:transparent;border:0;border-radius:var(--d-r12);color:var(--d-text2)}
+#lyTx .seg button[aria-pressed=true]{background:rgba(255,255,255,.16);color:var(--d-text)}
+#lyTx .seg:not(.seg--sm) button{font-size:17px;font-weight:600}
+#lyTx .seg button[data-type][aria-pressed=true]{background:rgba(49,89,223,.85);color:#fff}
+#lyTx .tx-grp{display:flex;flex-direction:column;gap:var(--d-s16);background:none;border:0;border-radius:0;padding:0;overflow:visible}
+#lyTx .tt-dates{padding:0;border:0;background:none;min-height:0}
+#lyTx .tt-dates .date-row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--d-s8);width:100%}
+#lyTx .tt-dates .chip{width:100%;min-height:44px;padding:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);box-shadow:none;color:var(--d-text);border-radius:var(--d-r12);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#lyTx .tt-dates .chip[aria-pressed=true]{background:rgba(49,89,223,.85);border-color:rgba(255,255,255,.3);color:#fff;box-shadow:none}
+#lyTx .note-row{border:1px solid var(--d-line);border-radius:var(--d-r16);background:var(--d-card);padding:0 var(--d-s16)}
+/* Категории: минималистичные плитки 36, невыбранные приглушены, выбранная 100% */
+#lyTx .cat-grid{gap:var(--d-s8);padding:0 var(--d-s20);margin:0 calc(-1*var(--d-s20))}
+#lyTx .cat-tile{width:64px;opacity:.5;transition:opacity .15s ease}
+#lyTx .cat-tile .ci{width:36px;height:36px;margin:0 auto var(--d-s8);border-radius:var(--d-r10);box-shadow:none!important}
+#lyTx .cat-tile[aria-checked=true]{opacity:1;color:var(--d-text)}
+/* Записано: две вторичные кнопки друг под другом */
+.tx-done-more{display:flex;flex-direction:column;gap:var(--d-s8)}
+/* Уведомление: отступ 16 со всех сторон, зелёный кружок с галочкой */
+.toast{padding:var(--d-s16);gap:var(--d-s12);align-items:center}
+.toast-ic{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;color:#fff}
+.toast-ic.ok{background:var(--d-success)}.toast-ic.bad{background:var(--d-danger)}
+.toast-ic svg{width:14px;height:14px}
+
+/* Значок и подпись категории в шторке: одна плашка, значок без подложки */
+#lyTx .cat-tile .ci{background:none!important;border:0!important;margin-bottom:var(--d-s4)}
+#lyTx .cat-tile .ci .pack-icon{width:28px;height:28px}
+/* «Записано»: кнопки без свечения, зазор меньше */
+#txDone .btn,#txDone .btn:hover,#txDone .btn:active,#txDone .btn:focus-visible{box-shadow:none!important;filter:none!important}
+#txDone .btn::before,#txDone .btn::after{box-shadow:none!important;filter:none!important}
+.tx-done-more{gap:var(--d-s4)}
+/* Монохромные значки категорий: без подложки и теней везде */
+.rico:has(>.pack-icon),.tx-ic:has(>.pack-icon),.cat-ico:has(>.pack-icon),.ci:has(>.pack-icon),.rw-ic:has(>.pack-icon),.pk-tile{background:none!important;border:0!important;box-shadow:none!important}
+#lyTx .cat-tile,#lyTx .cat-tile[aria-checked=true],#lyTx .cat-tile .ci,#lyTx .cat-tile[aria-checked=true] .ci{background:none!important;box-shadow:none!important;border:0!important}
+#s-stats #catList .cat-top .cat-ico:has(>.pack-icon),.cat-top .cat-ico:has(>.pack-icon),.cat-tile .ci:has(>.pack-icon),.cat-cur .ci:has(>.pack-icon){background:none!important;border:0!important;box-shadow:none!important;padding:0!important;width:36px;height:36px;color:inherit!important}
+.sheet .cat-tile .ci,.sheet .cat-cur .ci,.sheet .cat-tile[aria-checked=true] .ci,.layer .cat-grid .cat-tile .ci{background:none!important;border:0!important;box-shadow:none!important}
+#payCats .cat-tile .ci,#payCats .cat-tile[aria-checked=true] .ci,#bulkCats .cat-tile .ci,#bulkCats .cat-tile[aria-checked=true] .ci,#payCatCur .ci,.cat-cur .ci{background:none!important;border:0!important;box-shadow:none!important;color:var(--d-text2)!important}
+#payCats .cat-tile .ci,#bulkCats .cat-tile .ci{width:36px;height:36px;margin:0 auto var(--d-s4)}
+#payCats .cat-tile .ci .pack-icon,#bulkCats .cat-tile .ci .pack-icon{width:28px;height:28px}
+
+/* Чат с ИИ: плоские стеклянные плашки и поле ввода */
+.chat-hdr .chat-who>div{display:block}
+.chat-quick .cq,.chat-quick .chip{flex:none;background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important;color:var(--d-text);border-radius:var(--d-r12)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.chat-bar,.chat-rec{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;gap:var(--d-s8);align-items:center}
+.chat-bar .cfield{min-height:48px;border-radius:var(--d-r16);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);box-shadow:none;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);padding:0 var(--d-s4);gap:var(--d-s4)}
+.chat-bar .cfield textarea{padding:var(--d-s12) var(--d-s8);min-height:48px;box-sizing:border-box}
+.chat-bar .cb-btn,.chat-bar .cb-mic,.chat-bar .cb-send{flex:0 0 44px;width:44px;height:44px;border-radius:var(--d-r12);background:none!important;border:0!important;box-shadow:none!important;color:var(--d-text2)}
+.chat-bar .cb-send{color:var(--d-accent-text)}
+.chat-feed .bm{border-radius:var(--d-r20);padding:var(--d-s12) var(--d-s16)}
+.chat-bar .cfield textarea:focus{outline:0;box-shadow:none!important}
+.flip-x .pack-icon{transform:scaleX(-1)}
+.chat-hdr .back .pack-icon,.chat-hdr .icon-btn .pack-icon,.chat-bar .pack-icon{width:24px;height:24px}
+
+/* Чат: шапка по центру, поле ввода у низа с отступом 20, подсказки отличаются от поля */
+.chat-hdr{position:relative;justify-content:flex-start}
+.chat-hdr .back{padding-left:0;margin-left:0;color:var(--d-text)}
+.chat-hdr .back span{color:var(--d-text)}
+.chat-hdr .chat-who{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.chat-hdr .chat-who .title,.chat-hdr .chat-who h1{text-align:center}
+.chat-dock{bottom:calc(var(--d-s20) + env(safe-area-inset-bottom,0px))!important}
+body.kb .chat-dock{bottom:var(--d-s20)!important}
+.chat-quick .cq,.chat-quick .chip{background:var(--d-row)!important;border:0!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+.chat-hdr{padding:0!important}
+.chat-hdr .chat-who>div{margin:0!important;padding:0!important;flex:none}
+.chat-hdr .chat-who .title,.chat-hdr .chat-who h1{margin:0!important;padding:0!important;position:static!important;transform:none!important;flex:none;width:auto}
+.chat-hdr .back{margin-left:-8px!important}
+/* Чат: «Назад» как на остальных экранах (акцент), стрелка из пака красится цветом текста */
+.chat-hdr .back,.chat-hdr .back span{color:var(--d-accent-text)!important}
+.chat-hdr .back .pack-icon img{display:none!important}
+.chat-hdr .back .pack-icon{background:currentColor;-webkit-mask:url(img/icons/pack/dark/next.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/next.svg) center/contain no-repeat;color:var(--d-accent-text)}
+
+/* Чат: пузыри и карточки по системе */
+#s-chat .bm{font-size:15px;font-weight:400;line-height:1.4}
+#s-chat .bm.bot{background:var(--d-row);color:var(--d-text)}
+#s-chat .bm.me{background:var(--d-accent);color:#fff}
+#s-chat .bm em,#s-chat .cc em{color:var(--d-accent-text);font-weight:600}
+#s-chat .bm.me em{color:#fff}
+#s-chat .cc{border-radius:var(--d-r20);padding:var(--d-s16);border:1px solid var(--d-line);background:var(--d-card);box-shadow:none}
+#s-chat .cc h4{font-size:16px;font-weight:600;color:var(--d-text)}
+#s-chat .cc-row b.e,#s-chat .cc-row .e{color:var(--d-text)}
+#s-chat .chat-quick .cq{min-height:44px;height:44px;font-size:14px;font-weight:500}
+/* Чат: шапка не уезжает при прокрутке ленты */
+#s-chat .chat-hdr{position:sticky;top:0;z-index:20;background:var(--d-bg);padding-top:var(--d-s12)!important;padding-bottom:var(--d-s8)!important}
+
+/* Чат: пара кнопок одинаковая, без свечения; категории без цветных точек, прогресс одним акцентом */
+#s-chat .cc-act{display:flex;gap:var(--d-s8);margin-top:var(--d-s16)}
+#s-chat .cc-act .btn{flex:1;min-width:0;box-shadow:none!important;filter:none!important;margin:0}
+#s-chat .cc-act .btn::before,#s-chat .cc-act .btn::after{box-shadow:none!important;filter:none!important}
+#s-chat .cc-act .btn[data-danger]{color:var(--d-danger)}
+#s-chat .cc-row .d{display:none}
+#s-chat .cc-bar{height:6px;border-radius:3px}
+#s-chat .cc-bar i{background:var(--d-accent)!important;border-radius:3px}
+#s-chat .cc-act:empty{display:none}
+
+/* Чат: цвета текста по палитре, шапка без прыжка, мягкая граница ленты, одиночная кнопка */
+#s-chat{padding-top:0!important}
+#s-chat .chat-hdr{padding-top:calc(var(--d-s16) + env(safe-area-inset-top,0px))!important}
+#s-chat .chat-hdr::after{content:"";position:absolute;left:0;right:0;top:100%;height:var(--d-s16);background:linear-gradient(var(--d-bg),rgba(11,11,26,0));pointer-events:none}
+#s-chat .bm small,#s-chat .cc-s,#s-chat .cc small{color:var(--d-muted)}
+#s-chat .bm,#s-chat .cc-row,#s-chat .cc-row span,#s-chat .cc-row b:not(.e):not(.i){color:var(--d-text)}
+#s-chat .cc-row b.i{color:var(--d-income)}
+#s-chat .cc-bar{background:var(--d-line)}
+#s-chat .cc-act .btn:only-child{flex:0 0 auto;padding-left:var(--d-s24);padding-right:var(--d-s24)}
+#chatInput::placeholder{color:var(--d-muted);opacity:1}
+/* Чат: текст кнопок не крупнее текста сообщений */
+#s-chat .cc-act .btn{font-size:15px;font-weight:500;min-height:44px;height:44px;padding-top:0;padding-bottom:0}
+#s-chat .cc-row,#s-chat .cc-row span,#s-chat .cc-row b{font-size:15px}
+#s-chat .cc h4{font-size:16px}
+/* Чат: в карточке только две роли кнопок: главная и вторичная, обе на равной ширине; одиночная на всю ширину */
+#s-chat .cc-act .btn,#s-chat .cc-act .btn:only-child{flex:1 1 0;min-width:0;padding-left:var(--d-s16);padding-right:var(--d-s16)}
+#s-chat .cc.done{opacity:1}
+#s-chat .cc.done h4,#s-chat .cc.done .cc-row,#s-chat .cc.done .cc-row span,#s-chat .cc.done .cc-row b{color:var(--d-text2)}
+#s-chat .cc-act .btn[data-danger]{color:var(--d-danger)}
+
+/* Иконки шторок и поля ввода: без подложек, один размер на роль */
+#lyAdd .rw-ic,#lyAttach .rw-ic{background:none!important;box-shadow:none!important;border:0!important}
+#lyAdd .rw-ic .pack-icon,#lyAttach .rw-ic .pack-icon,#lyAdd .rw-ic svg,#lyAttach .rw-ic svg{width:24px;height:24px}
+#lyAdd .rw-r .pack-icon,#lyAttach .rw-r .pack-icon,#lyAttach .rw-r svg{width:18px;height:18px;color:var(--d-muted)}
+.chat-bar .cb-mic svg,.chat-bar .cb-send svg{width:24px;height:24px}
+#chatAttach .pack-icon img{display:none!important}
+#chatAttach .pack-icon{background:currentColor;-webkit-mask:url(img/icons/pack/dark/document.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/document.svg) center/contain no-repeat;color:var(--d-text2)}
+
+/* ===== Анализ: приведён к системе (по отчётам агентов) ===== */
+#s-stats{--muted:#8A93B5;--text:#F4F6FF}
+#s-stats>header+*{margin-top:var(--d-s12)!important}
+#s-stats #catCard,#s-stats .stat-insight,#s-stats .ins>div,#s-stats #catList .cats{border-radius:var(--d-r20)!important;border:1px solid var(--d-line)!important;background:var(--d-card)!important}
+#s-stats #catCard{padding:var(--d-s16)!important}
+#s-stats .stat-insight{padding:var(--d-s16);align-items:center}
+#s-stats .stat-insight p{font:400 15px/1.4 var(--font-text,inherit);color:var(--d-text)}
+#s-stats .stat-insight em{color:var(--d-accent-text)}
+#s-stats .stat-insight-ico{background:none!important;width:24px;height:24px;color:inherit}
+#s-stats .stat-insight-ico .pack-icon{width:24px;height:24px}
+#s-stats .ins>div{padding:var(--d-s16)}
+#s-stats .ins{gap:var(--d-s8)}
+#s-stats #catList{padding:0!important;border:0!important;background:none!important;border-radius:0!important;overflow:visible}
+#s-stats #catList h3{margin:0 0 var(--d-s8)!important;padding:0;color:var(--d-muted);font:400 14px/1.3 var(--font-text,inherit)}
+#s-stats #catList .cats{padding:0 var(--d-s16)!important;margin:0;overflow:hidden}
+#s-stats #catList .cat-ico,#s-stats #catList .cat-ico.ci{width:36px;height:36px;flex:0 0 36px;background:none!important;border-radius:0!important;box-shadow:none!important}
+#s-stats #catList .cat-ico .pack-icon{width:24px;height:24px}
+#s-stats #catList .cat-ico img{filter:none!important;opacity:1!important;width:100%;height:100%}
+#s-stats #catList .bar{height:6px;border-radius:3px;margin:var(--d-s8) 0 0 48px;background:var(--d-line)}
+#s-stats #catList .bar i{background:var(--d-accent)!important;border-radius:3px}
+#s-stats #catCard .flow-svg path[stroke]{stroke:url(#stl)!important}
+#s-stats #catCard .curve-sum{color:var(--d-text)!important}
+#s-stats .scrub-tip{position:absolute;top:calc(-1*var(--d-s8));transform:translateX(-50%);background:var(--d-row);border:1px solid var(--d-line);border-radius:var(--d-r12);padding:var(--d-s4) var(--d-s8);font-weight:500;font-size:13px;line-height:1.3;color:var(--d-text);pointer-events:none;white-space:nowrap;z-index:2}
+#s-stats .scrub-tip[hidden]{display:none!important}
+.period-bar button.mb,.monthbar .mb{background:none!important;box-shadow:none!important;border-radius:var(--d-r12)!important;color:var(--d-accent-text)!important}
+#s-ops .ops-seg,#s-stats .stats-seg{border-radius:var(--d-r16)!important;padding:var(--d-s4)!important}
+
+/* Анализ: шапка к строке месяца как на «Операциях»; блоки итогов сразу под графиком */
+#s-stats{gap:0!important}
+#s-stats>#statsAccountView{margin-top:var(--d-s8)!important;display:flex;flex-direction:column;gap:var(--d-s16)}
+#s-stats>#statsAccountView>*{margin-top:0!important}
+#s-stats .scrub-mark{position:absolute;width:1px;background:var(--d-accent-text);opacity:.7;pointer-events:none;transform:translateX(-.5px);z-index:2}
+#s-stats .scrub-mark[hidden]{display:none!important}
+#s-home .bal{cursor:pointer}
+/* Анализ: строки списка категорий по системе (карточка 16 от края, строка 14, зазор 12, полоса по левому краю названия) */
+#s-stats #catList .cats li{padding:14px 0!important;margin:0!important}
+#s-stats #catList .cat-top{gap:var(--d-s12)!important}
+#s-stats #catList .bar{margin:var(--d-s8) 0 0 48px!important}
+#s-stats #catList .cats li+li{border-top:1px solid var(--d-line)}
+#s-stats #catList .cats li{border:0!important}
+#s-stats #catList .cats li+li{border-top:1px solid var(--d-line)!important}
+#s-stats #catList .cats li::before,#s-stats #catList .cats li+li::before{display:none!important;content:none!important}
+
+/* Анализ: переключатель как на «Операциях», колонка процентов, подписи, цвет дохода */
+#s-ops .ops-seg,#s-stats .stats-seg{display:grid!important;gap:var(--d-s4)!important;padding:var(--d-s4)!important;border:1px solid var(--d-line)!important;border-radius:var(--d-r16)!important;background:rgba(255,255,255,.06)!important;box-shadow:none!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#s-stats .stats-seg{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#s-ops .ops-seg>*,#s-stats .stats-seg>*{height:44px!important;min-height:44px!important;border-radius:var(--d-r12)!important;font-weight:600!important;font-size:14px!important;line-height:1!important;color:var(--d-muted)!important;background:none!important;box-shadow:none!important;border:0!important}
+#s-ops .ops-seg>[aria-checked=true],#s-stats .stats-seg>[aria-checked=true]{background:rgba(255,255,255,.1)!important;color:var(--d-text)!important;box-shadow:inset 0 0 0 1px var(--d-line)!important}
+#s-stats #catList .cat-top .pc{flex:0 0 44px!important;text-align:right}
+#s-stats #catList .cat-top .pill{min-width:92px;text-align:right;justify-content:flex-end}
+#s-stats .ins small,#s-stats .curve-h small{font-weight:500;font-size:13px;line-height:1.3;color:var(--d-muted)}
+/* Плашка баланса: шеврон показывает, что она открывает «Анализ» */
+.bal-chev{display:inline-grid;vertical-align:-5px;margin-left:var(--d-s4);width:20px;height:20px}
+.bal-chev .pack-icon{width:20px;height:20px}
+#s-stats #catList .cat-top{gap:var(--d-s8)!important}
+#s-stats #catList .cat-top .nm{margin-left:var(--d-s4)}
+#s-stats #catList .cat-top .pc{flex:0 0 40px!important}
+#s-stats #catList .cat-top .pill{min-width:80px}
+@media(max-width:370px){#s-stats #catList .cat-top{gap:var(--d-s4)!important}#s-stats #catList .cat-top .pc{flex:0 0 34px!important;font-size:14px}#s-stats #catList .cat-top .pill{min-width:72px;font-size:16px}}
+/* Анализ: строка категории 64 px (значок 36, строка 14 сверху и снизу), полоса под названием внутри высоты значка */
+#s-stats #catList .cat-top{align-items:flex-start!important;min-height:36px}
+#s-stats #catList .cat-top .nm,#s-stats #catList .cat-top .pc,#s-stats #catList .cat-top .pill{line-height:24px;height:24px;display:block;overflow:hidden;white-space:nowrap}
+#s-stats #catList .bar{margin:-6px 0 0 48px!important}
+/* Стрелки месяца: видимая граница кнопки (рамка и стеклянный фон как у переключателя ниже), 44×44, по краям контента */
+.period-bar button.mb,.monthbar .mb{width:44px!important;height:44px!important;background:rgba(255,255,255,.06)!important;border:1px solid var(--d-line)!important;border-radius:var(--d-r12)!important;box-shadow:none!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:var(--d-accent-text)!important}
+
+/* ===== По отчётам агентов: список «По категориям» как соседняя плашка (видимый отступ 16), шевроны и значки одной роли ===== */
+#s-stats #catList .cats li{padding:12px 0!important}
+#s-stats #catList .cat-ico,#s-stats #catList .cat-ico.ci{width:24px!important;height:24px!important;flex:0 0 24px!important;margin-top:6px}
+#s-stats #catList .cat-top .nm{margin-left:0;font-weight:500;font-size:16px;line-height:24px}
+#s-stats #catList .cat-top .pill{font-size:16px}
+#s-stats #catList .bar{margin:-6px 0 0 36px!important}
+.setup-chevron .pack-icon,.ev-a .pack-icon,.rw-r .pack-icon,.g-chev .pack-icon,.rw-r svg{width:20px;height:20px}
+#homeBriefing .briefing-mark{background:none!important;box-shadow:none!important}
+#homeBriefing .briefing-mark .pack-icon,.briefing-mark .pack-icon{width:24px;height:24px}
+.period-bar .mb svg,.monthbar .mb svg{color:var(--d-accent-text)!important;width:20px;height:20px}
+#plNudge .rw-ic .pack-icon img{display:none!important}
+#plNudge .rw-ic .pack-icon{width:20px;height:20px;background:var(--d-accent-text);-webkit-mask:url(img/icons/pack/dark/gift.svg) center/contain no-repeat;mask:url(img/icons/pack/dark/gift.svg) center/contain no-repeat}
+/* Анализ: названия категорий и суммы того же размера, что текст в плашке «Больше всего ушло…» (15) */
+#s-stats #catList .cat-top .nm{font-weight:400!important;font-size:15px!important;line-height:24px!important}
+#s-stats #catList .cat-top .pill,#s-stats #catList .cat-top .pill b,#s-stats #catList .cat-top .pill b *{font-size:15px!important}
+#s-stats #catList .cat-top .pc{font-size:14px}
+/* Анализ: зазор значок → текст 12 в обеих плашках; значок Фина чуть крупнее (28) для равного визуального веса */
+#s-stats #catList .cat-top .nm{margin-left:var(--d-s4)}
+#s-stats .stat-insight{gap:var(--d-s12)}
+#s-stats .stat-insight-ico,#s-stats .stat-insight-ico .pack-icon{width:28px;height:28px}
+/* Значок и зазор: одинаково в «Больше всего» и в списке (значок 28, зазор 12, текст на одной вертикали) */
+#s-stats #catList .cat-ico,#s-stats #catList .cat-ico.ci{width:28px!important;height:28px!important;flex:0 0 28px!important;margin-top:4px}
+#s-stats #catList .cat-ico .pack-icon{width:28px;height:28px}
+#s-stats #catList .bar{margin:-6px 0 0 40px!important}
+
+/* Платежи: строки как в остальных списках (значок 36, зазор 12, строка 14, без подсветки и переносов) */
+#s-pay .pay-sum{display:flex;align-items:center;justify-content:space-between;gap:var(--d-s12);font-size:15px}
+#s-pay .pay-sum span{color:var(--d-text2)}
+#s-pay .pay-sum b{font-weight:500;color:var(--d-text)}
+#s-pay .card:has(.pay-row){padding:0 var(--d-s16)!important}
+#s-pay .pay-row{display:flex;align-items:center;gap:var(--d-s8);margin:0!important;padding:0!important;background:none!important;border-radius:0!important;border-top:1px solid var(--d-line)!important}
+#s-pay .pay-row:first-child{border-top:0!important}
+#s-pay .pay-row .pr-main{gap:var(--d-s12);padding:14px 0!important;min-height:64px}
+#s-pay .pay-row .tx-ic{width:36px;height:36px;flex:0 0 36px;background:none!important;color:var(--d-text2)!important}
+#s-pay .pay-row .pr-b b,#s-pay .pay-row .pr-r b{font-size:16px;font-weight:500;color:var(--d-text)}
+#s-pay .pay-row .pr-b small,#s-pay .pay-row.late .pr-b small{font-size:13px;font-weight:400;color:var(--d-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#s-pay .pay-row .pr-r .st{font-size:13px;font-weight:400;color:var(--d-muted)}
+#s-pay .pay-row .pr-r .st.paid{color:var(--d-muted)}
+#s-pay .pay-row.late .pr-main{padding:14px 0!important}
+#s-pay .pay-row+.pay-row,#s-pay .pay-row.late+.pay-row{border-top:1px solid var(--d-line)!important}
+#s-pay .pay-row::before,#s-pay .pay-row::after{content:none!important}
+
+/* Шторка «Новый платёж»: чипы, переключатель и плитки категорий как в шторке записи */
+#lyPay .seg{background:rgba(255,255,255,.06);box-shadow:none;border:0;border-radius:var(--d-r16);padding:var(--d-s4)}
+#lyPay .seg button{box-shadow:none!important;background:transparent;border:0;border-radius:var(--d-r12);color:var(--d-text2);font-size:15px;font-weight:500}
+#lyPay .seg button[aria-checked=true]{background:rgba(49,89,223,.85);color:#fff}
+#lyPay .chips .chip{min-height:44px;padding:0 var(--d-s16);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);box-shadow:none;color:var(--d-text);border-radius:var(--d-r12);font-size:15px;font-weight:500;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#lyPay .chips .chip[aria-pressed=true],#lyPay .chips .chip[aria-checked=true]{background:rgba(49,89,223,.85);border-color:rgba(255,255,255,.3);color:#fff;box-shadow:none}
+#lyPay .cat-tile{width:64px;opacity:.5;transition:opacity .15s ease}
+#lyPay .cat-tile[aria-checked=true]{opacity:1;color:var(--d-text)}
+#lyPay .cat-tile,#lyPay .cat-tile[aria-checked=true]{background:none!important;box-shadow:none!important;border:0!important}
+#lyPay .field{border-radius:var(--d-r16)}
+#lyPay .chips .chip{font-size:15px!important;font-weight:500!important;padding:0 var(--d-s12)!important;flex:none}
+#lyPay .seg button{font-size:15px!important}
+#lyPay .cat-tile{font-size:13px}
+#lyPay #payPresets{gap:var(--d-s8)}#lyPay #payPresets .chip{padding:0 var(--d-s8)!important}
+/* Платежи: «Записать» стоит под суммой в той же колонке, что «Ожидает» */
+#s-pay .pay-row{position:relative}
+#s-pay .pay-row.late .pr-r::after{content:"";display:block;height:20px}
+#s-pay .pay-row .tx-ic .pack-icon{width:24px;height:24px}
+#homeMain .h-pay .rw-r{color:var(--d-muted)}
+#homeMain .h-pay .rw-r .pack-icon,#homeMain .h-pay .rw-r svg{width:18px;height:18px;color:var(--d-muted)}
+#homeMain .h-pay{padding-left:var(--d-s20);padding-right:var(--d-s20)}
+
+/* Главная: квадратные плитки обязательных платежей, ряд прокручивается; две плитки видны целиком */
+#homeMain .pay-tiles{display:flex;gap:var(--d-s12);overflow-x:auto;margin:0 calc(-1*var(--d-s20));padding:0 var(--d-s20);scroll-snap-type:x proximity;scrollbar-width:none}
+#homeMain .pay-tiles::-webkit-scrollbar{display:none}
+#homeMain .pay-tile{flex:0 0 calc((100% - var(--d-s20)*2 - var(--d-s12))/2);aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;padding:var(--d-s16);background:var(--d-card);border:1px solid var(--d-line);border-radius:var(--d-r20);scroll-snap-align:start;color:var(--d-text)}
+#homeMain .pay-tile b{font-size:16px;font-weight:500;line-height:1.25;overflow-wrap:anywhere}
+#homeMain .pay-tile .pt-s{display:flex;flex-direction:column;gap:var(--d-s4)}
+#homeMain .pay-tile .pt-a{font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}
+#homeMain .pay-tile small{font-size:13px;font-weight:400;color:var(--d-muted)}
+#homeMain .pay-tile small.warn{color:var(--d-warn)}
+/* Платежи: «Записать» — вторичная кнопка на всю ширину под строкой; «Добавить платёж» — главная внизу списка */
+#s-pay .pay-row{flex-wrap:wrap}
+#s-pay .pay-row .pr-main{flex:1 1 100%}
+#s-pay .pay-row .pay-write{flex:1 1 100%;margin:0 0 var(--d-s16);box-shadow:none}
+#s-pay .pay-row.late .pr-r::after{content:none}
+#s-pay #payBody>.btn{margin-top:var(--d-s24)}
+#s-pay .pay-empty-state .btn{margin-top:var(--d-s24)}
+#homeMain .pay-tiles{scroll-padding-left:var(--d-s20)}
+#homeMain .pay-tile{flex-basis:calc((100% - var(--d-s12))/2)}
+#s-pay #payBody>.btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+#s-pay .pay-empty-state .btn--primary{background:rgba(49,89,223,.78);border:1px solid rgba(255,255,255,.3);color:#fff;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+#homeMain .pay-tile{padding:var(--d-s20)}
+
+/* Шторка «Новый платёж»: три смысловых блока (что, когда, напомнить): между блоками 24, подпись → поля 8, между полями 8 */
+#lyPay .pay-sec{display:flex;flex-direction:column;gap:var(--d-s8);margin:0 0 var(--d-s24)}
+#lyPay .pay-sec>*{margin-top:0!important;margin-bottom:0!important}
+#lyPay .pay-sec .fl{margin:0!important;font-size:13px;font-weight:500;color:var(--d-muted)}
+#lyPay .pay-sec .bal-row{margin:0!important}
+#lyPay #payErr{margin-bottom:var(--d-s16)}
+#lyPay #payRemind{display:flex;flex-wrap:wrap;overflow:visible;gap:var(--d-s8)}
+#s-pay #payBody{gap:0}
+#s-pay .pay-sum{padding:var(--d-s16)!important}
+#s-pay #payBody>.block{margin-top:var(--d-s24)}
+
+/* Шторка записи: блоки (сумма, категория, когда, заметка): между блоками 24, подпись → содержимое 8, внутри 16 */
+#lyTx .tx-rest{gap:var(--d-s24)}
+#lyTx .tx-sec{display:flex;flex-direction:column;gap:var(--d-s16);margin:0!important}
+#lyTx .tx-sec>*{margin-top:0!important;margin-bottom:0!important}
+#lyTx .tx-sec .fl{margin:0!important;font-size:13px;font-weight:500;color:var(--d-muted)}
+#lyTx .tx-sec[aria-labelledby]{gap:var(--d-s8)}
+#lyTx .tx-utilities{display:none!important}
+#lyTx .note-row .pack-icon,.dr-ed .pack-icon{width:20px;height:20px;flex:none}
+.dr .dr-chev{flex:none;display:inline-flex;margin-left:var(--d-s8)}.dr .dr-chev .pack-icon{width:18px;height:18px}
+#lyTx .note-row{gap:var(--d-s12);font-size:15px}
+#lyLink .rw-r .pack-icon{width:18px;height:18px}
+
+/* Платежи: «Добавить платёж» закреплена внизу экрана (нижнего меню на этом экране нет), поле снизу 20, как по бокам */
+#s-pay [data-newpay]{position:fixed;left:var(--d-s20);right:var(--d-s20);bottom:max(var(--d-s20),env(safe-area-inset-bottom,0px));width:auto;margin:0!important;z-index:30}
+#s-pay{padding-bottom:calc(52px + var(--d-s20) + var(--d-s24) + env(safe-area-inset-bottom,0px))}
+body:has(#s-pay:not([hidden])) .toast{bottom:calc(52px + var(--d-s20) + var(--d-s16) + env(safe-area-inset-bottom,0px))}
+#s-pay{animation:none!important}
+/* Платежи: мягкая подложка под закреплённой кнопкой, тот же рецепт, что у размытия под нижним меню */
+#s-pay::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(52px + var(--d-s20) + 30px + env(safe-area-inset-bottom,0px));z-index:29;pointer-events:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);-webkit-mask-image:linear-gradient(to top,#000 62%,transparent);mask-image:linear-gradient(to top,#000 62%,transparent);background:linear-gradient(to top,rgba(11,11,26,.8),rgba(11,11,26,0))}
+/* Платежи: шапка («Назад») остаётся на месте при прокрутке; «Записать оплату» 15/500, не крупнее названия платежа (16) */
+#s-pay>.hdr{position:sticky;top:var(--sat,0px);z-index:20;background:var(--d-bg)}
+#s-pay>.hdr::before{content:"";position:absolute;left:calc(-1*var(--d-s20));right:calc(-1*var(--d-s20));top:calc(-1*var(--sat,0px));height:var(--sat,0px);background:var(--d-bg)}
+#s-pay .pay-write{font-size:15px;font-weight:500}
+#lyPay #payRemind{flex-wrap:nowrap}
+#lyPay #payRemind .chip{flex:1 1 auto;padding:0 var(--d-s8)!important;justify-content:center}
+
+/* Кнопка «Назад»: видимый левый край стрелки на поле экрана (20), как у карточек; зона касания остаётся 44 */
+.hdr:not(.chat-hdr) .back{margin-left:calc(-1*var(--d-s16));padding-left:var(--d-s4)}
+/* Шапки: видимые края на поле экрана (20): заголовок слева у экранов без «Назад», рамка кнопки действия справа (правило 19) */
+.hdr,.hdr--main{padding-right:0}
+.hdr--main{padding-left:0}
+#s-ops .hdr,#s-acc .hdr{padding-left:0}
+/* Кнопка действия в шапке («Выбрать», «Новая», «Добавить») везде одинаковая: плашка с видимой рамкой, как «Чат с ИИ» (правила 1, 13, 16) */
+.screen>.hdr .pill-btn.act{position:relative;min-height:36px;height:36px;padding:0 var(--d-s12);gap:var(--d-s8);font-size:14px;font-weight:500;border-radius:var(--d-r12);background:rgba(18,18,34,.6);border:1px solid rgba(160,180,255,.35);color:var(--d-accent-text);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.screen>.hdr .pill-btn.act::after{content:"";position:absolute;inset:-4px}
+.screen>.hdr .pill-btn.act svg,.screen>.hdr .pill-btn.act .pack-icon,.screen>.hdr .pill-btn.act img{width:16px;height:16px}
+#s-ops #opsSel.pill-btn.act{min-height:36px!important;height:36px!important;padding:0 var(--d-s12)!important;gap:var(--d-s8)!important;font-size:14px!important;font-weight:500!important;border-radius:var(--d-r12)!important;background:rgba(18,18,34,.6)!important;border:1px solid rgba(160,180,255,.35)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}

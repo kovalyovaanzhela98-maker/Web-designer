@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Брендбук Фин</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="../www/tokens.css">
+<link rel="stylesheet" href="../www/app.css">
+<link rel="stylesheet" href="brandbook.css">
+</head>
+<body class="bb">
+<div class="bb-band" aria-hidden="true"></div>
+
+<header class="bb-hero">
+  <div class="bb-in">
+    <div class="bb-hero-row">
+      <div class="bb-hero-m" id="heroMascot"></div>
+      <div>
+        <p class="bb-eyebrow">Брендбук · версия 2.0</p>
+        <h1>Фин</h1>
+        <p class="bb-lead">Правила, по которым выглядит и звучит приложение. Белый фон, мягкие тени, зелёный лист и крем только там, где это нужно. Здесь всё нарисовано теми же файлами, что и сам продукт: поменял токен или иконку в приложении, и брендбук обновился.</p>
+      </div>
+    </div>
+    <div class="bb-tools">
+      <button type="button" class="chip" id="thLight" aria-checked="false" role="radio">Светлая</button>
+      <button type="button" class="chip" id="thDark" aria-checked="false" role="radio">Тёмная</button>
+      <button type="button" class="chip" id="thAuto" aria-checked="true" role="radio">Как у телефона</button>
+    </div>
+  </div>
+</header>
+
+<nav class="bb-nav" aria-label="Разделы брендбука"><div class="bb-nav-in" id="bbNav"></div></nav>
+
+<main class="bb-main" id="bb"></main>
+
+<footer class="bb-foot"><div class="bb-in"><p>Фин · брендбук 2.0 · шрифты Wix Madefor Display и Golos Text. Файл собирается командой <code>npm run brandbook</code>.</p></div></footer>
+
+<script>window.FIN_BASE="../www/img/fin/";</script>
+<script src="../www/js/icons.js"></script>
+<script src="../www/js/mascot.js"></script>
+<script src="../www/js/categories.js"></script>
+<script src="brandbook.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="repair-slate" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#E4E9F2"/><stop offset="1" stop-color="#8C99B0"/></linearGradient></defs>
+<g transform="rotate(45 64 64)">
+<path d="M52 10A22 22 0 1 0 76 10" stroke="#9AA6BC" stroke-width="16" fill="none" stroke-linecap="round"/>
+<rect x="57" y="44" width="14" height="74" rx="7" fill="url(#repair-slate)"/>
+<circle cx="64" cy="106" r="3" fill="#2B2346" fill-opacity=".3"/></g></svg>

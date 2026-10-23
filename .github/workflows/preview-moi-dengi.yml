@@ -1,0 +1,52 @@
+name: Preview «Фин»
+
+# Запуск вручную (Actions → Preview «Фин» → Run workflow). Чтобы он работал, один раз включи:
+#   1) Settings → Pages → Source: GitHub Actions
+#   2) Settings → Environments → github-pages → Deployment branches: All branches
+# Пока этого нет, задача падает за пару секунд ещё до первого шага, поэтому на каждый push он не запускается.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check that GitHub Pages is enabled
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Pages включается один раз владельцем: Settings → Pages → Source: GitHub Actions.
+          # Пока он не включён, шаг деплоя падает; тогда пропускаем его и оставляем подсказку.
+          if gh api "repos/${{ github.repository }}/pages" --jq '.build_type' 2>/dev/null | grep -q workflow; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pages выключены::Включи Settings → Pages → Source: GitHub Actions, и превью заработает. Готовое приложение собирается в «Сборка APK»."
+          fi
+
+      - name: Upload web app
+        if: steps.pages.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: moi-dengi/www
+
+      - name: Deploy preview
+        if: steps.pages.outputs.enabled == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4

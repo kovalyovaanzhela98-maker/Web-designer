@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="hotel-lilac" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#DDCBFF"/><stop offset="1" stop-color="#8A6BEF"/></linearGradient><linearGradient id="hotel-sky" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B9DEFF"/><stop offset="1" stop-color="#4F8CF5"/></linearGradient></defs>
+<rect x="10" y="34" width="14" height="70" rx="6" fill="url(#hotel-lilac)"/>
+<rect x="10" y="66" width="108" height="26" rx="8" fill="url(#hotel-lilac)"/>
+<rect x="28" y="48" width="28" height="20" rx="9" fill="#fff"/>
+<rect x="54" y="50" width="64" height="24" rx="9" fill="url(#hotel-sky)"/>
+<rect x="14" y="90" width="8" height="18" rx="3" fill="#2B2346"/><rect x="106" y="90" width="8" height="18" rx="3" fill="#2B2346"/></svg>

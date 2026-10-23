@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="entertainment-butter" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFEA9C"/><stop offset="1" stop-color="#F5B82E"/></linearGradient></defs>
+<g transform="rotate(-12 64 64)">
+<path d="M14 36h100v18a10 10 0 0 0 0 20v18H14V74a10 10 0 0 0 0-20z" fill="url(#entertainment-butter)"/>
+<path d="M86 42v44" stroke="#fff" stroke-width="4" stroke-dasharray="6 6" stroke-linecap="round"/>
+<path d="M50.0,49.0L54.1,59.3L65.2,60.1L56.7,67.2L59.4,77.9L50.0,72.0L40.6,77.9L43.3,67.2L34.8,60.1L45.9,59.3Z" fill="#fff"/></g></svg>

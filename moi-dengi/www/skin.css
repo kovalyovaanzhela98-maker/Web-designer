@@ -1,0 +1,141 @@
+/* Раскладка приложения вокруг кнопок из buttons.css (сами значения кнопок не менялись) */
+.row .txt{flex:1;min-width:0}
+.hdr--main{padding:0 6px;height:auto;min-height:52px}
+.hdr .ttl{flex:1;text-align:center}
+.hdr--main .ttl{font-size:28px;font-weight:600;flex:none;text-align:left}
+#s-acc .hdr .back,#s-ops .hdr .back{display:none}
+.hdr:has(.back):not(:has(.act)) .ttl{margin-right:76px}
+.screen>.hdr{margin-bottom:8px}
+.list+.list,.grp-t+.list{margin-top:0}
+.grp-t{margin:20px 16px 8px}
+.row .chev svg,.row .val svg{width:18px;height:18px}
+.tt-dates .date-row{display:grid}
+#s-acc .hdr .ttl,#s-ops .hdr .ttl{text-align:left;flex:none;font-size:28px;font-weight:600;margin:0}
+.bottom-nav{z-index:30}
+.cfield textarea{flex:1;width:100%;background:transparent;border:0;outline:0;color:var(--b-c-text);font:inherit;resize:none;padding:12px 0;max-height:120px}
+.swipe .row.tx{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.swipe .row .t1,.swipe .row .t2{display:block}
+.row .tx-a.inc{color:var(--positive)}
+.sel-box{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--b-muted);flex:none;display:grid;place-items:center;color:#fff}
+.swipe.picked .sel-box{background:#3D2CFF;border-color:#3D2CFF}
+.sel-box svg{width:14px;height:14px}
+
+.date-row .pick-hidden{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.stats-view-tabs button{font-size:13px;padding:0 4px}
+.swipe .plate{opacity:0;transition:opacity .12s ease-out}
+.swipe.dragging .plate{opacity:1}
+.day,.recent{background:none;border:0;box-shadow:none;padding:0}
+.day-h{padding:12px 4px 6px}
+#accountsBody{display:flex;flex-direction:column;gap:12px}
+#s-accounts .hdr,#s-acc .hdr{margin-bottom:12px}
+#goalsBody,#payBody,#eventsBody{display:flex;flex-direction:column;gap:12px}
+.chat-quick{display:flex;gap:8px;overflow-x:auto}
+.chat-quick .chip{flex:none}
+.tour-btns .btn{min-height:44px}
+.btn.wide{width:100%}
+.sheet-head{position:relative;display:flex;justify-content:center;align-items:center;min-height:44px}
+.sheet-head .close{position:absolute;right:-6px;top:50%;transform:translateY(-50%)}
+.sheet-head h2,.sheet-head .sheet-title{margin:0}
+.g-h span,.goal-pct{color:var(--d-accent-text)!important}
+
+/* ритм отступов: между блоками 12–16, внутри строк 8–12 */
+#lyTx .tx-rest{display:flex;flex-direction:column;gap:14px}
+#lyTx .tx-rest>*{margin-top:0!important;margin-bottom:0!important}
+#lyTx .tt-dates .date-row.chips{display:grid!important;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;width:100%}
+#lyTx .tt-dates{padding:12px 16px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.empty .btn{margin-top:12px;width:auto;min-width:200px}
+.empty b{margin:0}
+.sheet .btn+.btn,.sheet form>.btn,.sheet .save-bar .btn{margin-top:12px}
+.sheet .save-bar .btn{margin-top:0}
+#opsList .day,#recentList .recent,#opsList .day:first-child{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 8px!important}
+#opsList{display:flex;flex-direction:column;gap:12px}
+.day .swipe+.swipe,.recent .swipe+.swipe{margin-top:8px}
+.day-h{padding:4px 4px 8px!important}
+
+/* Иконки категорий: цветные плитки; подложки у контейнеров не нужны */
+.ctile{display:block;width:100%;height:100%;object-fit:contain;border-radius:28%;pointer-events:none;filter:none!important;opacity:1!important}
+.rico:has(>.ctile),.tx-ic:has(>.ctile),.ci:has(>.ctile),.cat-ico:has(>.ctile),.rw-ic:has(>.ctile),.pk-tile{background:none!important;box-shadow:none!important;border:0!important;padding:0!important}
+.cat-tile .ci:has(>.ctile){width:52px;height:52px;border-radius:28%}
+.cat-tile[aria-checked=true] .ci:has(>.ctile){box-shadow:0 0 0 2px #8FA4FF,0 0 14px rgba(110,130,255,.45)!important}
+.cat-tile .ci .tick{display:none!important}
+.row .rico:has(>.ctile){width:44px;height:44px}
+.pk-tile{display:grid;width:44px;height:44px}
+.pick-grid .pk{padding:0;background:none;border:0;border-radius:var(--d-r12)}
+.pick-grid .pk[aria-checked=true]{box-shadow:0 0 0 2px #8FA4FF;border-radius:var(--d-r12)}
+.cat-top .cat-ico:has(>.ctile){width:40px;height:40px;background:none}
+.tx-ic:has(>.ctile){flex:0 0 40px;width:40px;height:40px}
+.late-act,.ev-gift,.ev-a{color:var(--b-accent-text)!important}
+.pay-row .pr-b small{font-size:13px}
+
+/* ============ Главная v2 ============ */
+#homeMain>*{margin:0!important}
+#homeMain>*+*{margin-top:16px!important}
+#homeMain>:empty{display:none}
+#evtCard>*,#goalCard>*,#payCard>*{margin-top:0!important}
+.h-top{min-height:52px}
+.h-greet{font-size:30px!important;font-weight:600!important}
+.bal-head{display:flex;align-items:center;gap:2px}
+.bal-head small{font-size:15px;color:rgba(244,246,255,.72)}
+.bal-note{margin:8px 0 0;font-size:14px;line-height:1.4;color:rgba(244,246,255,.78)}
+.bal-sum{display:block;text-align:left;margin-top:4px;padding:0;background:none;border:0;color:#fff;font-size:44px;line-height:1.1;font-weight:600;letter-spacing:-.6px;font-variant-numeric:tabular-nums;cursor:pointer}
+.bal-sum small{font-size:24px;font-weight:500;color:rgba(244,246,255,.7);letter-spacing:0}
+.bal-all{display:block;margin-top:8px;font-style:normal;font-size:15px;color:rgba(244,246,255,.72)}
+.bal-chart{height:84px;margin:14px -20px 0}
+.bal-chart svg{display:block;width:100%;height:100%}
+/* копилка: один акцент, без кнопки */
+.h-goal{padding:16px 20px!important}
+.h-goal .g-h b{font-weight:500!important}
+.h-goal .goal-bar i{background:var(--accent)!important}
+.h-goal-title{font-size:13px;color:var(--muted);margin-bottom:6px}
+.h-goal p{margin:0!important}
+/* заголовки тоньше */
+#homeMain .h2-row .h2{font-size:20px!important;font-weight:600!important}
+.h-pay .rw-t b,.h-empty-card b{font-weight:500!important}
+.hdr--main .ttl,#s-acc .hdr .ttl,#s-ops .hdr .ttl{font-weight:600!important}
+.row .t1{font-weight:500}
+.home-briefing h2{font-weight:600}
+/* строки: иконка меньше, отступы одинаковые со всех сторон */
+.list .row,.swipe .row{padding:14px;min-height:64px;gap:12px}
+.row .rico,.row .rico:has(>.ctile){width:36px;height:36px}
+.tx-ic:has(>.ctile),.cat-top .cat-ico:has(>.ctile){width:36px;height:36px;flex-basis:36px}
+.cat-tile .ci:has(>.ctile){width:44px;height:44px}
+.pk-tile{width:40px;height:40px}
+.screen{padding-bottom:calc(124px + env(safe-area-inset-bottom,0px))}
+.h-goal-title{text-transform:none!important;letter-spacing:0!important}
+.day-h,#recentList .day-h{padding:16px 4px 8px!important}
+#recentList .day-h:first-child{padding-top:4px!important}
+
+/* ============ Один акцент: градиент кнопки «+» ============ */
+:root{--grad-plus:linear-gradient(145deg,#3477ee 4%,#3159df 54%,#5947c9 100%)}
+.h-goal .goal-bar i,#catList .bar i,#catList li.on .bar i,.pcard .bar i,.goal-bar i{background:var(--grad-plus)!important}
+#catList .bar{height:6px;border-radius:3px;background:rgba(160,180,255,.14)}
+/* график статистики как на главной */
+.curve-box.flow{margin-top:8px}
+.flow-svg{height:100px}.flow-svg svg{display:block;width:100%;height:100%}
+.flow-labels{position:relative;height:20px;margin-top:6px;font-size:12px;color:var(--b-muted)}
+.flow-labels span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.flow-labels span:first-child{transform:none}.flow-labels span:last-child{transform:translateX(-100%)}
+#catCard{overflow:hidden}
+/* блок «По категориям»: ширина, иконки, отступы */
+#catList .cats{width:100%;overflow:hidden}
+#catList .cats li{padding:14px!important;min-height:0}
+#catList .cats li+li::before{left:62px;right:14px}
+#catList .cat-top{display:flex;align-items:center;gap:12px;font-size:16px}
+#catList .cat-top .nm{flex:1;min-width:0;font-weight:500}
+#catList .cat-top .pc{flex:none;font-size:14px}
+#catList .cat-top .pill,#catList .cat-top .pill.cat{flex:none;font-size:16px;padding:0}
+#catList .bar{margin:12px 0 0 48px!important;width:auto}
+/* стрелки и подпись периода по центру */
+.period{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;min-height:44px}
+.period b{display:flex;align-items:center;justify-content:center;min-height:44px;line-height:1;font-size:16px;font-weight:600}
+.period button{display:grid;place-items:center;padding:0}
+.period button svg{display:block;margin:0}
+#s-ops #homeBriefing,#s-ops #nudgeBox:not(:empty){margin-top:16px}
+#s-ops>*+*{margin-top:12px}
+#s-ops>.hdr+*{margin-top:8px}
+#s-stats #catList .cats .bar i,#s-stats #catList .cats li.on .bar i{background:var(--grad-plus)!important}
+#s-stats #catList .cat-top .cat-ico:has(>.ctile){background:none!important;border:0!important;box-shadow:none!important;width:36px!important;height:36px!important;flex:0 0 36px!important;padding:0!important;border-radius:10px}
+#s-stats #catList .cats li{padding:14px!important}
+#s-stats #catList .cats li{border:0!important;border-top:0!important;box-shadow:none!important}
+#s-stats #catList .cats li+li::before{content:"";position:absolute;top:0;left:62px;right:14px;border-top:1px solid rgba(255,255,255,.07)}

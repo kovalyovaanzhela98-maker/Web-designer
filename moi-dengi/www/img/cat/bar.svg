@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="bar-green" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#CDF2A8"/><stop offset="1" stop-color="#58BB3C"/></linearGradient><linearGradient id="bar-pink" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#FFCDE6"/><stop offset="1" stop-color="#EE6CAF"/></linearGradient><linearGradient id="bar-sky" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#B9DEFF"/><stop offset="1" stop-color="#4F8CF5"/></linearGradient><linearGradient id="bar-slate" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#E4E9F2"/><stop offset="1" stop-color="#8C99B0"/></linearGradient></defs>
+<path d="M84 26L100 6" stroke="#2B2346" stroke-width="4" stroke-linecap="round"/><circle cx="86" cy="24" r="8" fill="url(#bar-green)"/>
+<path d="M16 26h96L64 76z" fill="url(#bar-sky)" fill-opacity=".55"/>
+<path d="M28 36h72L64 70z" fill="url(#bar-pink)"/>
+<rect x="60" y="72" width="8" height="32" rx="3" fill="url(#bar-slate)"/>
+<ellipse cx="64" cy="108" rx="26" ry="7" fill="url(#bar-slate)"/></svg>
