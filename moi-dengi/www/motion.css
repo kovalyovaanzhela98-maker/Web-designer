@@ -24,7 +24,7 @@ button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulatio
 @keyframes m-fade{from{opacity:0}}
 .layer:not([hidden]) .scrim{animation:m-fade var(--m-fast) ease-out}
 
-/* Каскад: на входе в экран первые элементы списков вылетают снизу по очереди (шаг 25 мс); класс .m-enter держится 700 мс */
+/* Каскад: на входе в экран первые элементы списков вылетают снизу по очереди (шаг 25 мс); класс .m-enter держится 450 мс */
 @keyframes m-rise{from{opacity:0;transform:translateY(12px)}}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#payBody .block,#goalsBody,#eventsBody,#accountsBody)>*,.m-enter .pay-tiles>*{animation:m-rise var(--m-base) var(--ease) both}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(2),.m-enter .pay-tiles>:nth-child(2){animation-delay:25ms}
@@ -41,7 +41,7 @@ button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulatio
 
 /* Значки категорий: нажатие увеличивает, выбранная «щёлкает» */
 .cat-tile .ci .pack-icon,.cat-tile .ci>svg{transition:scale var(--m-fast) var(--m-spring)}
-.cat-tile:active .ci .pack-icon,.cat-tile:active .ci>svg{scale:1.15}
+.cat-tile:active .ci .pack-icon,.cat-tile:active .ci>svg{scale:1.08}
 @keyframes m-icon{0%{scale:.85}60%{scale:1.12}100%{scale:1}}
 .cat-tile[aria-checked=true] .ci .pack-icon,.cat-tile[aria-checked=true] .ci>svg{animation:m-icon 220ms var(--ease)}
 
@@ -52,5 +52,5 @@ button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulatio
 .bm.typing i:nth-child(3){animation-delay:240ms}
 
 /* Общий переход «баланс → анализ» (View Transitions): 240 мс */
-::view-transition-group(m-bal){animation-duration:240ms;animation-timing-function:var(--ease)}
+::view-transition-group(m-bal){animation-duration:200ms;animation-timing-function:var(--ease)}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
