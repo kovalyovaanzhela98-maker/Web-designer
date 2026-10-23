@@ -1,6 +1,6 @@
 /* Движение и отклик. Только transform и opacity (без теней и фильтров): работает на GPU и не тормозит списки.
-   Тайминги: нажатие 0 мс, переходы 150–250 мс. При «уменьшить движение» всё отключает общее правило в app.css. */
-:root{--m-fast:150ms;--m-base:200ms;--m-slow:250ms;--m-spring:cubic-bezier(.34,1.4,.64,1)}
+   Тайминги: нажатие 0 мс, переходы 300–500 мс (по просьбе владельца вдвое дольше, чтобы плавность была видна). При «уменьшить движение» всё отключает общее правило в app.css. */
+:root{--m-fast:300ms;--m-base:400ms;--m-slow:500ms;--m-spring:cubic-bezier(.34,1.4,.64,1)}
 html{overscroll-behavior-y:none}
 button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulation}
 
@@ -23,34 +23,39 @@ button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulatio
 @keyframes m-fade{from{opacity:0}}
 .layer:not([hidden]) .scrim{animation:m-fade var(--m-fast) ease-out}
 
-/* Каскад: на входе в экран первые элементы списков вылетают снизу по очереди (шаг 25 мс); класс .m-enter держится 400 мс */
+/* Каскад: на входе в экран первые элементы списков вылетают снизу по очереди (шаг 50 мс); класс .m-enter держится 400 мс */
 @keyframes m-rise{from{opacity:0;transform:translateY(12px)}}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#payBody .block,#goalsBody,#eventsBody,#accountsBody)>*,.m-enter .pay-tiles>*{animation:m-rise var(--m-base) var(--ease) both}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(2),.m-enter .pay-tiles>:nth-child(2){animation-delay:25ms}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(3),.m-enter .pay-tiles>:nth-child(3){animation-delay:50ms}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(4),.m-enter .pay-tiles>:nth-child(4){animation-delay:75ms}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(5){animation-delay:100ms}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(6){animation-delay:125ms}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(7){animation-delay:150ms}
-.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(8){animation-delay:175ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(2),.m-enter .pay-tiles>:nth-child(2){animation-delay:50ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(3),.m-enter .pay-tiles>:nth-child(3){animation-delay:100ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(4),.m-enter .pay-tiles>:nth-child(4){animation-delay:150ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(5){animation-delay:200ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(6){animation-delay:250ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(7){animation-delay:300ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(8){animation-delay:350ms}
 .m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(n+9){animation:none}
 
 /* График «рисуется» слева направо за 300 мс (обрезка по ширине, без перерисовки линии) */
 @keyframes m-reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
-.m-enter #balanceTrend svg,.m-enter .flow-svg svg{animation:m-reveal 300ms ease-out both}
+.m-enter #balanceTrend svg,.m-enter .flow-svg svg{animation:m-reveal 600ms ease-out both}
 
 /* Значки категорий: нажатие увеличивает, выбранная «щёлкает» */
 .cat-tile .ci .pack-icon,.cat-tile .ci>svg{transition:scale var(--m-fast) var(--m-spring)}
 .cat-tile:active .ci .pack-icon,.cat-tile:active .ci>svg{scale:1.08}
 @keyframes m-icon{0%{scale:.85}60%{scale:1.12}100%{scale:1}}
-.cat-tile[aria-checked=true] .ci .pack-icon,.cat-tile[aria-checked=true] .ci>svg{animation:m-icon 220ms var(--ease)}
+.cat-tile[aria-checked=true] .ci .pack-icon,.cat-tile[aria-checked=true] .ci>svg{animation:m-icon 440ms var(--ease)}
 
 /* Ожидание ответа Фина: точки пульсируют по очереди (вместо пустого пузыря) */
 @keyframes m-dot{40%{opacity:1;transform:translateY(-3px)}}
 .bm.typing i{animation:m-dot 900ms ease-in-out infinite}
-.bm.typing i:nth-child(2){animation-delay:120ms}
-.bm.typing i:nth-child(3){animation-delay:240ms}
+.bm.typing i:nth-child(2){animation-delay:240ms}
+.bm.typing i:nth-child(3){animation-delay:480ms}
 
 /* Общий переход «баланс → анализ» (View Transitions): 240 мс */
-::view-transition-group(m-bal){animation-duration:200ms;animation-timing-function:var(--ease)}
-::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
+::view-transition-group(m-bal){animation-duration:400ms;animation-timing-function:var(--ease)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:360ms}
+
+/* Лаги: размытие фона под карточками, списками и переключателями пересчитывается на каждом кадре анимации.
+   Фон у них непрозрачный (design.css), поэтому размытие невидимо, а стоит дорого. Оставлено только у закреплённых слоёв (меню, подложка, шапки шторок). */
+.card,.grp,.list,.panel,.h-goal,.h-pay,.h-evt,.h-empty-card,.home-briefing,.acct,.pay-sum,.nudge,.ins>div,.stats-glass-list,.theme-grp,.old-grp,.h-free,
+.seg,.old-seg,.old-chips,.chip,.cur-row,.stats-view-tabs,.stats-view-tabs button,.ops-seg,.pay-tile,.h-ai-chat,.pill-btn{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}

@@ -253,7 +253,7 @@ function setNum(el, html, value) {
   const from = Number.isFinite(el._v) ? el._v : value, to = Number(value);
   if (!Number.isFinite(to) || from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) { el._v = value; el.innerHTML = html(value); return; }
   cancelAnimationFrame(el._numFrame);
-  const began = performance.now(), duration = 200;
+  const began = performance.now(), duration = 400;
   const tick = now => { const p = Math.min(1, (now - began) / duration), eased = 1 - Math.pow(1 - p, 3), current = from + (to - from) * eased; el.innerHTML = html(current); if (p < 1) el._numFrame = requestAnimationFrame(tick); else { el._v = value; el._numFrame = 0; } };
   el._numFrame = requestAnimationFrame(tick);
 }
