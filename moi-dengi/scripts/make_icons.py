@@ -7,7 +7,7 @@ HERE=os.path.dirname(__file__)
 OUT=os.path.join(HERE,'..','resources','android','res')
 SRC=Image.open(os.path.join(HERE,'..','resources','source','app-icon.png')).convert('RGB')
 S=1024
-BG=(26,49,37)                       # цвет фона самой картинки
+BG=(0,0,0)                          # цвет фона самой картинки (чёрный)
 img=SRC.resize((S,S),Image.LANCZOS)
 def mask(round_=False,radius=0.235):
     m=Image.new('L',(2048,2048),0); d=ImageDraw.Draw(m)
@@ -48,7 +48,7 @@ xml='''<?xml version="1.0" encoding="utf-8"?>
 '''
 for n in ('ic_launcher.xml','ic_launcher_round.xml'): open(os.path.join(v,n),'w').write(xml)
 vals=os.path.join(OUT,'values'); os.makedirs(vals,exist_ok=True)
-open(os.path.join(vals,'ic_launcher_background.xml'),'w').write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#1A3125</color>\n</resources>\n')
+open(os.path.join(vals,'ic_launcher_background.xml'),'w').write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#000000</color>\n</resources>\n')
 L.resize((512,512),Image.LANCZOS).save(os.path.join(HERE,'..','www','icon.png'),optimize=True)
 # превью: как увидит человек (квадрат, круг, мелкие размеры, адаптивная в круге)
 pv=Image.new('RGB',(1000,340),(238,241,245))

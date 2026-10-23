@@ -1,6 +1,6 @@
 /* Знакомство: три экрана при самом первом запуске, до всякого входа.
    Тёмный фон с цветным свечением, заголовок с цветным словом, стеклянная карточка-иллюстрация, полоска шагов, «Пропустить» и «Далее».
-   Показывается один раз; тем, у кого уже есть данные, не показывается. После него приложение показывает короткий тур по экрану (js/tour.js). */
+   Показывается один раз; тем, у кого уже есть данные, не показывается. Это всё знакомство: три экрана, без дополнительного тура (js/tour.js оставлен для ручного запуска MD.tour.reset()). */
 (function (root) {
   'use strict';
   const KEY = 'moidengi_intro';
@@ -43,7 +43,6 @@
       if (pushed > 0) history.go(-pushed);
       el.classList.add('is-leaving');
       setTimeout(() => el.remove(), 260);
-      if (root.MD && root.MD.tour && !document.body.classList.contains('welcome')) setTimeout(() => root.MD.tour.start(), 500);
     };
     function draw() {
       el.dataset.hue = SLIDES[i].hue;
