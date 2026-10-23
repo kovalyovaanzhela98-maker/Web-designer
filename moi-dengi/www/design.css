@@ -493,3 +493,7 @@ body:has(#s-pay:not([hidden])) .toast{bottom:calc(52px + var(--d-s20) + var(--d-
 
 /* Кнопка «Назад»: видимый левый край стрелки на поле экрана (20), как у карточек; зона касания остаётся 44 */
 .hdr:not(.chat-hdr) .back{margin-left:calc(-1*var(--d-s16));padding-left:var(--d-s4)}
+/* Шапки: видимые края на поле экрана (20): заголовок слева у экранов без «Назад», рамка кнопки действия справа (правило 19) */
+.hdr,.hdr--main{padding-right:0}
+.hdr--main{padding-left:0}
+#s-ops .hdr,#s-acc .hdr{padding-left:0}
