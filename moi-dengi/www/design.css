@@ -497,3 +497,8 @@ body:has(#s-pay:not([hidden])) .toast{bottom:calc(52px + var(--d-s20) + var(--d-
 .hdr,.hdr--main{padding-right:0}
 .hdr--main{padding-left:0}
 #s-ops .hdr,#s-acc .hdr{padding-left:0}
+/* Кнопка действия в шапке («Выбрать», «Новая», «Добавить») везде одинаковая: плашка с видимой рамкой, как «Чат с ИИ» (правила 1, 13, 16) */
+.screen>.hdr .pill-btn.act{position:relative;min-height:36px;height:36px;padding:0 var(--d-s12);gap:var(--d-s8);font-size:14px;font-weight:500;border-radius:var(--d-r12);background:rgba(18,18,34,.6);border:1px solid rgba(160,180,255,.35);color:var(--d-accent-text);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+.screen>.hdr .pill-btn.act::after{content:"";position:absolute;inset:-4px}
+.screen>.hdr .pill-btn.act svg,.screen>.hdr .pill-btn.act .pack-icon,.screen>.hdr .pill-btn.act img{width:16px;height:16px}
+#s-ops #opsSel.pill-btn.act{min-height:36px!important;height:36px!important;padding:0 var(--d-s12)!important;gap:var(--d-s8)!important;font-size:14px!important;font-weight:500!important;border-radius:var(--d-r12)!important;background:rgba(18,18,34,.6)!important;border:1px solid rgba(160,180,255,.35)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
