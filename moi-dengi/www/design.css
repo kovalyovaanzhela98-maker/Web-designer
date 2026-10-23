@@ -490,3 +490,6 @@ body:has(#s-pay:not([hidden])) .toast{bottom:calc(52px + var(--d-s20) + var(--d-
 #s-pay .pay-write{font-size:15px;font-weight:500}
 #lyPay #payRemind{flex-wrap:nowrap}
 #lyPay #payRemind .chip{flex:1 1 auto;padding:0 var(--d-s8)!important;justify-content:center}
+
+/* Кнопка «Назад»: видимый левый край стрелки на поле экрана (20), как у карточек; зона касания остаётся 44 */
+.hdr:not(.chat-hdr) .back{margin-left:calc(-1*var(--d-s16));padding-left:var(--d-s4)}
