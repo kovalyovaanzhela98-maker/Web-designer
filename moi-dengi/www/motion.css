@@ -1,0 +1,56 @@
+/* Движение и отклик. Только transform и opacity (без теней и фильтров): работает на GPU и не тормозит списки.
+   Тайминги: нажатие 0 мс, переходы 150–250 мс. При «уменьшить движение» всё отключает общее правило в app.css. */
+:root{--m-fast:150ms;--m-base:200ms;--m-slow:250ms;--m-spring:cubic-bezier(.34,1.4,.64,1)}
+html{overscroll-behavior-y:none}
+button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulation}
+
+/* Нажатие: элемент «проседает» сразу (0 мс), возвращается плавно; свойство scale не конфликтует с transform */
+:where(button):not(.btn):not(.fab):active,:where([role=button]):active{scale:.96}
+:where(.h-goal,.h-pay,.pay-tile,.row,.grp>button,.pay-row .pr-main,.dr,.old-tx,.tx):active{scale:.985}
+:where(button):not(.btn){transition:scale var(--m-fast) var(--ease)}
+.nav-item:active svg,.nav-item:active .pack-icon{scale:.9}
+.pay-tile{transition:scale var(--m-fast) var(--ease)}
+
+/* Смена экрана: быстро и без «белого мигания» (старт не с нуля прозрачности) */
+@keyframes tab{from{opacity:.5;transform:translateY(4px)}}
+.screen{animation-duration:var(--m-base)}
+.hero-fin{animation-duration:var(--m-slow)}
+
+/* Окна: выезжают снизу с лёгкой пружиной (низ закреплён, растяжение вверх, без щели под окном) */
+@keyframes m-sheet{0%{opacity:.4;transform:translateY(48px) scaleY(.98)}60%{opacity:1;transform:translateY(0) scaleY(1.012)}100%{transform:none}}
+.layer:not([hidden]):not(.dlg) .sheet{transform-origin:bottom center;animation:m-sheet var(--m-slow) var(--ease) both}
+@keyframes m-pop{0%{opacity:0;scale:.94}100%{opacity:1;scale:1}}
+.layer.dlg:not([hidden]) .dialog{animation:m-pop var(--m-base) var(--m-spring) both}
+@keyframes m-fade{from{opacity:0}}
+.layer:not([hidden]) .scrim{animation:m-fade var(--m-fast) ease-out}
+
+/* Каскад: на входе в экран первые элементы списков вылетают снизу по очереди (шаг 25 мс); класс .m-enter держится 700 мс */
+@keyframes m-rise{from{opacity:0;transform:translateY(12px)}}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#payBody .block,#goalsBody,#eventsBody,#accountsBody)>*,.m-enter .pay-tiles>*{animation:m-rise var(--m-base) var(--ease) both}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(2),.m-enter .pay-tiles>:nth-child(2){animation-delay:25ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(3),.m-enter .pay-tiles>:nth-child(3){animation-delay:50ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(4),.m-enter .pay-tiles>:nth-child(4){animation-delay:75ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(5){animation-delay:100ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(6){animation-delay:125ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(7){animation-delay:150ms}
+.m-enter :is(#recentList,#opsList,#catList,#insights,#goalsBody,#eventsBody,#accountsBody)>:nth-child(n+8){animation-delay:175ms}
+
+/* График «рисуется» слева направо за 300 мс (обрезка по ширине, без перерисовки линии) */
+@keyframes m-reveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.m-enter #balanceTrend svg,.m-enter .flow-svg svg{animation:m-reveal 300ms ease-out both}
+
+/* Значки категорий: нажатие увеличивает, выбранная «щёлкает» */
+.cat-tile .ci{transition:scale var(--m-fast) var(--m-spring)}
+.cat-tile:active .ci{scale:1.15}
+@keyframes m-icon{0%{scale:.85}60%{scale:1.12}100%{scale:1}}
+.cat-tile[aria-checked=true] .ci{animation:m-icon 220ms var(--ease)}
+
+/* Ожидание ответа Фина: точки пульсируют по очереди (вместо пустого пузыря) */
+@keyframes m-dot{40%{opacity:1;transform:translateY(-3px)}}
+.bm.typing i{animation:m-dot 900ms ease-in-out infinite}
+.bm.typing i:nth-child(2){animation-delay:120ms}
+.bm.typing i:nth-child(3){animation-delay:240ms}
+
+/* Общий переход «баланс → анализ» (View Transitions): 240 мс */
+::view-transition-group(m-bal){animation-duration:240ms;animation-timing-function:var(--ease)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
