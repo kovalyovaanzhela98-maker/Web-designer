@@ -40,10 +40,10 @@ button,[role=button],a,.row,.chip,.seg button,.nav-item{touch-action:manipulatio
 .m-enter #balanceTrend svg,.m-enter .flow-svg svg{animation:m-reveal 300ms ease-out both}
 
 /* Значки категорий: нажатие увеличивает, выбранная «щёлкает» */
-.cat-tile .ci{transition:scale var(--m-fast) var(--m-spring)}
-.cat-tile:active .ci{scale:1.15}
+.cat-tile .ci .pack-icon,.cat-tile .ci>svg{transition:scale var(--m-fast) var(--m-spring)}
+.cat-tile:active .ci .pack-icon,.cat-tile:active .ci>svg{scale:1.15}
 @keyframes m-icon{0%{scale:.85}60%{scale:1.12}100%{scale:1}}
-.cat-tile[aria-checked=true] .ci{animation:m-icon 220ms var(--ease)}
+.cat-tile[aria-checked=true] .ci .pack-icon,.cat-tile[aria-checked=true] .ci>svg{animation:m-icon 220ms var(--ease)}
 
 /* Ожидание ответа Фина: точки пульсируют по очереди (вместо пустого пузыря) */
 @keyframes m-dot{40%{opacity:1;transform:translateY(-3px)}}
